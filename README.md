@@ -36,6 +36,16 @@ bun run check   # lint, typecheck and tests
 | `bun run check`    | Lint, typecheck and test, as CI does |
 | `bun run lint:fix` | Fix lint and formatting problems     |
 
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request. Every commit must be
+signed off (`git commit -s`). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+Found a vulnerability? Report it privately, as described in [SECURITY.md](SECURITY.md).
+Opentrail never asks for your private key or seed phrase.
+
 ## License
 
 [AGPL-3.0](LICENSE). If you run a changed version of Opentrail as a service, you must share
