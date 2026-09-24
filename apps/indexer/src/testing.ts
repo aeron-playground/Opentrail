@@ -1,5 +1,9 @@
 // Helpers for this app's tests. Never import this from app code.
 import { createLogger, type Logger } from "@repo/server";
+import type { Inbox } from "./inbox";
+
+// Long enough for the settings check. Used only by tests.
+export const TEST_WEBHOOK_SECRET = "test-webhook-secret-that-is-long-enough";
 
 const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
@@ -28,5 +32,14 @@ export function fakeRawTransaction(signature = fakeSignature()) {
     blockTime: 1_700_000_000,
     transaction: { signatures: [signature], message: { accountKeys: [], instructions: [] } },
     meta: { err: null, fee: 5000, preBalances: [], postBalances: [] },
+  };
+}
+
+// An inbox without a database, for tests that don't need one.
+export function fakeInbox(overrides: Partial<Inbox> = {}): Inbox {
+  return {
+    save: async (_provider, events) => events.length,
+    stats: async () => ({ pending: 0, oldestPendingSeconds: null }),
+    ...overrides,
   };
 }

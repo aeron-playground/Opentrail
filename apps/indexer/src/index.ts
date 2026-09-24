@@ -18,7 +18,7 @@ try {
 const logger = createLogger(env.LOG_LEVEL);
 const database = createDb(env.DATABASE_URL);
 const inbox = createInbox(database.db);
-const app = createApp({ logger, inbox });
+const app = createApp({ logger, inbox, webhookSecret: env.HELIUS_WEBHOOK_SECRET });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
 const scheduler = createScheduler([], logger);
 scheduler.start();

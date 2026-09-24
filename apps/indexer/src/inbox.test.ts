@@ -33,6 +33,21 @@ async function insertEvent(receivedSecondsAgo: number, processed: boolean): Prom
   `);
 }
 
+describe("save", () => {
+  test("saves new events and returns how many were new", async () => {
+    const events = [fakeSignature(), fakeSignature()].map((signature) => ({
+      signature,
+      payload: fakeRawTransaction(signature),
+    }));
+    expect(await inbox.save("helius", events)).toBe(2);
+    expect(await inbox.save("helius", events)).toBe(0);
+  });
+
+  test("saves nothing for an empty list", async () => {
+    expect(await inbox.save("helius", [])).toBe(0);
+  });
+});
+
 describe("stats", () => {
   test("reports an empty inbox", async () => {
     expect(await inbox.stats()).toEqual({ pending: 0, oldestPendingSeconds: null });

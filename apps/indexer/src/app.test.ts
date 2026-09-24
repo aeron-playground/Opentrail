@@ -1,10 +1,12 @@
 import { expect, test } from "bun:test";
 import { createLogger, REQUEST_ID_HEADER } from "@repo/server";
 import { createApp } from "./app";
+import { fakeInbox, TEST_WEBHOOK_SECRET } from "./testing";
 
 const app = createApp({
   logger: createLogger("silent"),
-  inbox: { stats: async () => ({ pending: 0, oldestPendingSeconds: null }) },
+  inbox: fakeInbox(),
+  webhookSecret: TEST_WEBHOOK_SECRET,
 });
 
 test("an unknown route answers 404 in the shared error shape, with a request id", async () => {

@@ -9,7 +9,7 @@ export type HealthBody =
   | { status: "error"; checks: { database: "down" }; inbox: null };
 
 export type HealthDeps = {
-  inbox: Inbox;
+  inbox: Pick<Inbox, "stats">;
   logger: Logger;
   timeoutMs?: number;
 };

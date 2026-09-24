@@ -4,8 +4,8 @@ import { createTestDb } from "@repo/db/testing";
 import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { healthRoute } from "./health";
-import { createInbox, type Inbox } from "./inbox";
-import { capturedLogger } from "./testing";
+import { createInbox } from "./inbox";
+import { capturedLogger, fakeInbox, TEST_WEBHOOK_SECRET } from "./testing";
 
 let handle: DbHandle;
 
@@ -17,12 +17,16 @@ afterAll(async () => {
   await handle.close();
 });
 
-const failingInbox: Inbox = { stats: () => Promise.reject(new Error("connection refused")) };
-const hangingInbox: Inbox = { stats: () => new Promise(() => {}) };
+const failingInbox = fakeInbox({ stats: () => Promise.reject(new Error("connection refused")) });
+const hangingInbox = fakeInbox({ stats: () => new Promise(() => {}) });
 
 describe("GET /health", () => {
   test("answers 200 with the inbox numbers when the database answers", async () => {
-    const app = createApp({ logger: createLogger("silent"), inbox: createInbox(handle.db) });
+    const app = createApp({
+      logger: createLogger("silent"),
+      inbox: createInbox(handle.db),
+      webhookSecret: TEST_WEBHOOK_SECRET,
+    });
     const response = await app.request("/health");
 
     expect(response.status).toBe(200);
@@ -36,7 +40,8 @@ describe("GET /health", () => {
 
   test("answers 503 and logs a warning when the database fails", async () => {
     const { logger, lines } = capturedLogger();
-    const response = await createApp({ logger, inbox: failingInbox }).request("/health");
+    const app = createApp({ logger, inbox: failingInbox, webhookSecret: TEST_WEBHOOK_SECRET });
+    const response = await app.request("/health");
 
     expect(response.status).toBe(503);
     expect(response.headers.get("cache-control")).toBe("no-store");
