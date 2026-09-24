@@ -1,0 +1,78 @@
+name: Bug report
+description: Something doesn't work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Found a security problem? Don't file it here. Follow [SECURITY.md](https://github.com/aeron-playground/Opentrail/blob/main/SECURITY.md) instead.
+        Never share private keys, seed phrases or access tokens in an issue.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - Web app
+        - API
+        - Indexer
+        - Docs
+        - Local development setup
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and OS, or the commit you ran.
+      placeholder: Firefox 142 on Ubuntu 24.04, or commit 1a2b3c4
+
+  - type: input
+    id: transaction
+    attributes:
+      label: Transaction signature
+      description: If a trade, deposit or withdrawal went wrong. Signatures are public, so this is safe to share.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error messages
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: This report has no private keys, seed phrases or tokens in it.
+          required: true
