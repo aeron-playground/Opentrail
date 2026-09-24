@@ -1,5 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import type { Logger } from "@repo/server";
+import { type Logger, withTimeout } from "@repo/server";
 import { createRouter } from "../../lib/router";
 
 const DATABASE_TIMEOUT_MS = 2_000;
@@ -54,13 +54,4 @@ export function healthRoutes({
       return c.json({ status: "error", checks: { database: "down" } }, 503);
     }
   });
-}
-
-// A hung connection must not hang the health check: monitors need an answer in time.
-function withTimeout(promise: Promise<void>, ms: number): Promise<void> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`No answer within ${ms} ms`)), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }

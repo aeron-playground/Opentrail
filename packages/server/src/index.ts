@@ -2,3 +2,4 @@ export { AppError, type ErrorBody, errorHandler, errorResponse, notFound } from 
 export { createLogger, LOG_LEVELS, type Logger } from "./logger";
 export { REQUEST_ID_HEADER, type RequestIdEnv, requestId } from "./request-id";
 export { requestLog } from "./request-log";
+export { withTimeout } from "./timeout";
