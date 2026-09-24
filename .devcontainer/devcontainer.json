@@ -1,0 +1,21 @@
+{
+  "name": "Bun and Postgres",
+  "dockerComposeFile": ["../docker-compose.yml", "compose.yaml"],
+  "service": "workspace",
+  "runServices": ["postgres", "workspace"],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3001],
+  "portsAttributes": {
+    "3001": { "label": "API" }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["biomejs.biome", "editorconfig.editorconfig"]
+    }
+  }
+}
