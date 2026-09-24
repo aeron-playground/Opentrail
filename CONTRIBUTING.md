@@ -25,9 +25,13 @@ cd Opentrail
 bun install                                        # also installs the git hooks
 bun run db:up                                      # start Postgres in Docker
 cp packages/db/.env.example packages/db/.env
+cp apps/api/.env.example apps/api/.env
 bun run db:migrate
 bun run check                                      # lint, typecheck and tests
+bun run dev                                        # API on http://localhost:3001
 ```
+
+Check that the API is up: open http://localhost:3001/v1/health.
 
 | Command               | What it does                                 |
 | --------------------- | -------------------------------------------- |
@@ -39,6 +43,7 @@ bun run check                                      # lint, typecheck and tests
 | `bun run db:down`     | Stop it (your data stays)                    |
 | `bun run db:generate` | Create a migration after a schema change     |
 | `bun run db:migrate`  | Apply migrations to your local database      |
+| `bun run openapi`     | Update the API contract after a route change |
 
 Tests use a separate database, `app_test`, and wipe it on every run. They refuse to touch any
 database whose name doesn't end in `_test`.
@@ -133,7 +138,16 @@ publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/relea
 - TypeScript strict mode, ESM, named exports. No `any`: use `unknown` and zod.
 - File and folder names in kebab-case. React components in PascalCase.
 - Comments explain *why*, not *what*.
-- `/v1` of the API is a public contract: only additive changes.
+
+### API
+
+- `/v1` of the API is a public contract for the web app, the mobile app and other developers:
+  only additive changes.
+- Routes are defined with `@hono/zod-openapi`, so the contract comes from the code. After you
+  change a route, run `bun run openapi` and commit the changes in `packages/api-client`.
+  CI fails when they are out of date.
+- Throw `AppError` with a code from `packages/shared/src/errors.ts`. Every error has the same
+  shape, `{ "error": { "code", "message", "requestId" } }`, and never includes a stack trace.
 
 ### Database
 
