@@ -1,0 +1,41 @@
+# Labels added to pull requests automatically.
+# Areas come from the changed paths; the type comes from the branch prefix (see CONTRIBUTING.md).
+
+"area:web":
+  - changed-files:
+      - any-glob-to-any-file: apps/web/**
+
+"area:api":
+  - changed-files:
+      - any-glob-to-any-file: [apps/api/**, packages/api-client/**]
+
+"area:indexer":
+  - changed-files:
+      - any-glob-to-any-file: apps/indexer/**
+
+"area:docs":
+  - changed-files:
+      - any-glob-to-any-file: apps/docs/**
+
+"area:db":
+  - changed-files:
+      - any-glob-to-any-file: packages/db/**
+
+"area:solana":
+  - changed-files:
+      - any-glob-to-any-file: packages/solana/**
+
+feature:
+  - head-branch: ["^feat/"]
+
+bug:
+  - head-branch: ["^fix/"]
+
+docs:
+  - head-branch: ["^docs/"]
+
+chore:
+  - head-branch: ["^chore/", "^refactor/", "^test/"]
+
+dependencies:
+  - head-branch: ["^dependabot/"]
