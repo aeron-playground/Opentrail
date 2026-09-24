@@ -38,6 +38,14 @@ Out of scope:
 - social engineering, phishing and physical attacks
 - reports from automated scanners without a working impact
 
+## How we check dependencies
+
+- Every pull request runs GitHub's dependency review. It blocks new packages with a high or
+  critical vulnerability.
+- `bun audit` checks every package in `bun.lock`, including indirect ones, every Monday and
+  whenever dependencies change. It fails on high or critical vulnerabilities.
+- Dependabot raises security alerts and keeps our GitHub Actions and container images up to date.
+
 ## Supported versions
 
 Opentrail is in early development. Only the latest commit on `main` gets security fixes.
