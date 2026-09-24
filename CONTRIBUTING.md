@@ -43,10 +43,11 @@ cp apps/api/.env.example apps/api/.env
 cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
 bun run check                                      # lint, typecheck and tests
-bun run dev                                        # API on port 3001, indexer on 3002
+bun run dev                                        # web on port 5173, API on 3001, indexer on 3002
 ```
 
-Check that both are up: open http://localhost:3001/v1/health and http://localhost:3002/health.
+Open the web app at http://localhost:5173. Check that the services are up at
+http://localhost:3001/v1/health and http://localhost:3002/health.
 
 | Command               | What it does                                 |
 | --------------------- | -------------------------------------------- |
@@ -167,6 +168,16 @@ publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/relea
   CI fails when they are out of date.
 - Throw `AppError` with a code from `packages/shared/src/errors.ts`. Every error has the same
   shape, `{ "error": { "code", "message", "requestId" } }`, and never includes a stack trace.
+
+### Web
+
+- Colors, fonts, text sizes, radii and shadows are defined only in `apps/web/src/styles/theme.css`.
+  Tailwind's default palette is switched off, so use the token classes (`bg-paper`, `text-ink-2`,
+  `text-title`, `rounded-control`). A class like `bg-blue-500` produces no style at all.
+- A test checks every text color pair against WCAG AA. If you add a color, add its pairs there.
+- Route files in `apps/web/src/routes/` stay thin: layout and data loading. Screens live in
+  `apps/web/src/features/<name>/`.
+- UI pull requests need screenshots: light and dark theme, phone and desktop.
 
 ### Database
 
