@@ -7,7 +7,11 @@ import { REQUEST_ID_HEADER } from "./middleware/request-id";
 const WEB_ORIGIN = "http://localhost:5173";
 const OTHER_ORIGIN = "https://evil.example";
 
-const app = createApp({ logger: createLogger("silent"), corsOrigins: [WEB_ORIGIN] });
+const app = createApp({
+  logger: createLogger("silent"),
+  corsOrigins: [WEB_ORIGIN],
+  checkDatabase: async () => {},
+});
 
 describe("errors", () => {
   test("an unknown route answers 404 in the shared error shape", async () => {

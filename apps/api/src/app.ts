@@ -1,12 +1,14 @@
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
-import { AppError } from "./lib/errors";
+import { AppError, ErrorBodySchema } from "./lib/errors";
 import type { Logger } from "./lib/logger";
 import { createRouter } from "./lib/router";
 import { errorHandler, notFound } from "./middleware/error-handler";
 import { REQUEST_ID_HEADER, requestId } from "./middleware/request-id";
 import { requestLog } from "./middleware/request-log";
+import { OPENAPI_CONFIG, OPENAPI_PATH } from "./openapi";
+import { healthRoutes } from "./routes/v1/health";
 
 export const MAX_BODY_BYTES = 64 * 1024;
 
@@ -14,13 +16,15 @@ export type AppDeps = {
   logger: Logger;
   // Exact browser origins that may call the API, such as https://example.com.
   corsOrigins: string[];
+  // Resolves when the database answers, rejects when it doesn't.
+  checkDatabase: () => Promise<void>;
 };
 
 export type App = ReturnType<typeof createApp>;
 
 // Builds the app from its dependencies and reads no settings itself, so tests can build one
 // with fakes.
-export function createApp({ logger, corsOrigins }: AppDeps) {
+export function createApp({ logger, corsOrigins, checkDatabase }: AppDeps) {
   const app = createRouter();
 
   app.use(
@@ -46,6 +50,12 @@ export function createApp({ logger, corsOrigins }: AppDeps) {
       },
     }),
   );
+
+  app.route("/v1", healthRoutes({ checkDatabase, logger }));
+
+  // Listed on its own because no route declares it yet, and clients need the shared shape.
+  app.openAPIRegistry.register("Error", ErrorBodySchema);
+  app.doc31(OPENAPI_PATH, OPENAPI_CONFIG);
 
   app.notFound(notFound);
   app.onError(errorHandler(logger));

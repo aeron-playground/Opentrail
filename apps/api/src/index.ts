@@ -15,7 +15,11 @@ try {
 
 const logger = createLogger(env.LOG_LEVEL);
 const database = createDb(env.DATABASE_URL);
-const app = createApp({ logger, corsOrigins: env.CORS_ORIGINS });
+const app = createApp({
+  logger,
+  corsOrigins: env.CORS_ORIGINS,
+  checkDatabase: database.ping,
+});
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
 logger.info({ port: server.port }, "API started");
 
