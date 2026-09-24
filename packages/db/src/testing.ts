@@ -14,11 +14,17 @@ export function assertTestDatabaseUrl(url: string): void {
   }
 }
 
-// Returns a fresh database: every table dropped, then all migrations applied.
-export async function createTestDb(): Promise<DbHandle> {
+// Connects to the test database without resetting it, for tests that only need a live
+// connection. Other packages' tests may reset the same database at the same time.
+export function connectTestDb(): DbHandle {
   const { TEST_DATABASE_URL } = readTestDbEnv();
   assertTestDatabaseUrl(TEST_DATABASE_URL);
-  const handle = createDb(TEST_DATABASE_URL, { maxConnections: 1 });
+  return createDb(TEST_DATABASE_URL, { maxConnections: 1 });
+}
+
+// Returns a fresh database: every table dropped, then all migrations applied.
+export async function createTestDb(): Promise<DbHandle> {
+  const handle = connectTestDb();
   await handle.db.execute(sql`drop schema if exists drizzle cascade`);
   await handle.db.execute(sql`drop schema if exists public cascade`);
   await handle.db.execute(sql`create schema public`);

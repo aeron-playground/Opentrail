@@ -82,6 +82,15 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: bun run build
+      - name: Check that the API contract snapshot is up to date
+        run: |
+          bun run openapi
+          if [ -n "$(git status --porcelain --untracked-files=all -- packages/api-client)" ]; then
+            echo "::error::The API routes changed without a new contract snapshot. Run 'bun run openapi' and commit the result."
+            git status --short -- packages/api-client
+            git diff -- packages/api-client
+            exit 1
+          fi
 
   dco:
     if: github.event_name == 'pull_request'

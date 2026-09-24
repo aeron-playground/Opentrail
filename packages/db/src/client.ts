@@ -13,6 +13,10 @@ export function createDb(url: string, options: { maxConnections?: number } = {})
   });
   return {
     db: drizzle(client, { schema }),
+    // Resolves when the database answers a trivial query; health checks use it.
+    ping: async (): Promise<void> => {
+      await client`select 1`;
+    },
     close: () => client.end(),
   };
 }

@@ -28,8 +28,10 @@ You need [Bun](https://bun.sh) 1.4 or newer and [Docker](https://docs.docker.com
 bun install
 bun run db:up                                  # start Postgres in Docker
 cp packages/db/.env.example packages/db/.env
+cp apps/api/.env.example apps/api/.env
 bun run db:migrate
 bun run check                                  # lint, typecheck and tests
+bun run dev                                    # API on http://localhost:3001
 ```
 
 | Command            | What it does                         |
@@ -38,6 +40,7 @@ bun run check                                  # lint, typecheck and tests
 | `bun run build`    | Build every app and package          |
 | `bun run check`    | Lint, typecheck and test, as CI does |
 | `bun run lint:fix` | Fix lint and formatting problems     |
+| `bun run openapi`  | Update the API contract and types    |
 
 ## Contributing
 

@@ -1,0 +1,111 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Opentrail API",
+    "version": "1",
+    "description": "Every response has an x-request-id header, and every error uses the Error shape. Amounts are strings, and times are ISO 8601 in UTC."
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Stable, machine-readable code. Handle codes you don't know as a generic error.",
+                "example": "NOT_FOUND"
+              },
+              "message": {
+                "type": "string",
+                "description": "A sentence you can show to the user.",
+                "example": "We couldn't find that."
+              },
+              "requestId": {
+                "type": "string",
+                "description": "The same id as the x-request-id header. Quote it when you report a problem.",
+                "example": "0192b6f0-7c1e-7a3b-9d7e-3f5c1a2b4d6e"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "checks": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "down"
+                ]
+              }
+            },
+            "required": [
+              "database"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "checks"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Check that the API and its database are up",
+        "description": "Answers 503 when the database doesn't respond within 2 seconds.",
+        "responses": {
+          "200": {
+            "description": "The API and the database are up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The database is down or too slow.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
