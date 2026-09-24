@@ -15,6 +15,13 @@
       "when": 1790230998304,
       "tag": "0001_create-users",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790256023651,
+      "tag": "0002_create-webhook-events",
+      "breakpoints": true
     }
   ]
 }
