@@ -1,0 +1,28 @@
+name: PR title
+
+on:
+  pull_request:
+    branches: [main]
+    # `synchronize` reports the check on every new head commit, which a required check needs.
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # The title becomes the squash commit on main, so it follows the commit rules.
+      - run: printf '%s\n' "$PR_TITLE" | bunx --bun commitlint --verbose
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
