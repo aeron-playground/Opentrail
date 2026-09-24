@@ -119,6 +119,10 @@ The `dco` check in CI fails when any commit in a pull request isn't signed off.
 These checks must pass before a pull request can merge: `lint`, `typecheck`, `test`, `build`,
 `dco`, `dependency-review` and `pr-title`.
 
+Two more checks run only when they matter, and don't block merging: `devcontainer`, when the dev
+container changes, and `audit`, when dependencies change and every Monday. To list known
+vulnerabilities in every package yourself, run `bun audit`. CI fails on high or critical ones.
+
 Labels are added for you: `area:*` from the folders you change, and the type from your branch
 prefix (`feat/` → `feature`, `fix/` → `bug`, `docs/` → `docs`, `chore/`, `refactor/`, `test/` → `chore`).
 
