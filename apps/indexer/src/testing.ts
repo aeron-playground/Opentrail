@@ -40,6 +40,7 @@ export function fakeInbox(overrides: Partial<Inbox> = {}): Inbox {
   return {
     save: async (_provider, events) => events.length,
     stats: async () => ({ pending: 0, oldestPendingSeconds: null }),
+    deleteProcessedBefore: async () => 0,
     ...overrides,
   };
 }

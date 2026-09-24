@@ -1,5 +1,5 @@
 import { type Database, type WebhookProvider, webhookEvents } from "@repo/db";
-import { count, isNull, sql } from "drizzle-orm";
+import { count, isNull, lt, sql } from "drizzle-orm";
 
 export type InboxStats = {
   pending: number;
@@ -18,6 +18,8 @@ export type Inbox = {
   // providers deliver the same event more than once.
   save(provider: WebhookProvider, events: InboxEvent[]): Promise<number>;
   stats(): Promise<InboxStats>;
+  // Deletes events processed before the cutoff and returns how many. Unprocessed events stay.
+  deleteProcessedBefore(cutoff: Date): Promise<number>;
 };
 
 export function createInbox(db: Database): Inbox {
@@ -48,6 +50,15 @@ export function createInbox(db: Database): Inbox {
         pending: row?.pending ?? 0,
         oldestPendingSeconds: row?.oldestPendingSeconds ?? null,
       };
+    },
+
+    async deleteProcessedBefore(cutoff) {
+      const deleted = await db
+        .delete(webhookEvents)
+        // Never true while processed_at is null, so unprocessed events are never deleted.
+        .where(lt(webhookEvents.processedAt, cutoff))
+        .returning({ id: webhookEvents.id });
+      return deleted.length;
     },
   };
 }

@@ -4,6 +4,7 @@ import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { type IndexerEnv, readIndexerEnv } from "./env";
 import { createInbox } from "./inbox";
+import { cleanupJob } from "./jobs/cleanup";
 import { createScheduler } from "./jobs/scheduler";
 
 let env: IndexerEnv;
@@ -20,7 +21,7 @@ const database = createDb(env.DATABASE_URL);
 const inbox = createInbox(database.db);
 const app = createApp({ logger, inbox, webhookSecret: env.HELIUS_WEBHOOK_SECRET });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
-const scheduler = createScheduler([], logger);
+const scheduler = createScheduler([cleanupJob({ inbox, logger })], logger);
 scheduler.start();
 logger.info({ port: server.port }, "indexer started");
 
