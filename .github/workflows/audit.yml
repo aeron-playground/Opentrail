@@ -1,0 +1,56 @@
+name: Audit
+
+# Checks every package in bun.lock, including indirect ones, for known vulnerabilities.
+# Dependabot can't read this lockfile format yet, so this job fills the gap.
+# Not a required check: a new advisory about an old package must not block every pull request.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - bun.lock
+      - "**/package.json"
+      - .github/workflows/audit.yml
+  push:
+    branches: [main]
+    paths:
+      - bun.lock
+      - "**/package.json"
+      - .github/workflows/audit.yml
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DO_NOT_TRACK: 1
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # bun audit reads only bun.lock, so nothing needs to be installed.
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+      - name: List every known vulnerability
+        run: |
+          {
+            echo "## Known vulnerabilities, all severities"
+            echo '```'
+            bun audit || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail on high or critical vulnerabilities
+        # The same bar as dependency-review. To accept an advisory that has no fix and doesn't
+        # affect us, add --ignore=<GHSA id> here, with a comment that says why.
+        run: bun audit --audit-level=high
