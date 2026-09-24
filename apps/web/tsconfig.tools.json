@@ -4,5 +4,12 @@
     // The Vite config and the tests run in Bun, not in the browser.
     "types": ["bun", "vite/client"]
   },
-  "include": ["vite.config.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/test/**/*.ts"]
+  "include": [
+    "vite.config.ts",
+    "vite.config.test.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/test/**/*.ts",
+    "src/test/**/*.tsx"
+  ]
 }

@@ -5,11 +5,12 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 // The product name lives only in @repo/shared, so the page title is filled in at build time.
-export function productName(): Plugin {
-  return {
-    name: "product-name",
-    transformIndexHtml: (html) => html.replaceAll("%APP_NAME%", APP_NAME),
-  };
+export function fillProductName(html: string): string {
+  return html.replaceAll("%APP_NAME%", APP_NAME);
+}
+
+function productName(): Plugin {
+  return { name: "product-name", transformIndexHtml: fillProductName };
 }
 
 export default defineConfig({
