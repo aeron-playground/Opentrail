@@ -28,6 +28,18 @@ updates:
     commit-message:
       prefix: chore(deps)
 
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies]
+    commit-message:
+      prefix: chore(deps)
+    ignore:
+      # Bun must match "packageManager" in package.json, so both are bumped together by hand.
+      - dependency-name: oven/bun
+
   - package-ecosystem: github-actions
     directories: [/, /.github/actions/*]
     schedule:
