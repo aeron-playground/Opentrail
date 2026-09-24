@@ -17,7 +17,7 @@ bun install --frozen-lockfile
 
 # The example settings fit this container, where Postgres answers on localhost.
 # Files that already exist are kept.
-for dir in packages/db apps/api; do
+for dir in packages/db apps/api apps/indexer; do
   if [ ! -f "$dir/.env" ]; then
     cp "$dir/.env.example" "$dir/.env"
   fi
