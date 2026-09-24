@@ -41,12 +41,37 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        # Keep in sync with docker-compose.yml.
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      TEST_DATABASE_URL: postgres://app:app@localhost:5432/app_test
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: bun run test
+      - name: Check that migrations match the schema
+        run: |
+          bun run db:generate
+          if [ -n "$(git status --porcelain --untracked-files=all -- packages/db/migrations)" ]; then
+            echo "::error::The database schema changed without a migration. Run 'bun run db:generate' and commit the result."
+            git status --short -- packages/db/migrations
+            exit 1
+          fi
 
   build:
     runs-on: ubuntu-latest
