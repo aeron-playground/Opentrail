@@ -1,0 +1,3 @@
+[install]
+# Save exact versions in package.json. Dependabot proposes updates as pull requests.
+exact = true
