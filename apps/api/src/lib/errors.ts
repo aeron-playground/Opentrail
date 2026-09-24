@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import { ERRORS, type ErrorCode } from "@repo/shared";
 
-export type ErrorStatus = (typeof ERRORS)[ErrorCode]["status"];
+type ErrorStatus = (typeof ERRORS)[ErrorCode]["status"];
 
 // Throw this for any failure the client should see. The code decides the HTTP status and the
 // message, so the same problem looks the same on every route.

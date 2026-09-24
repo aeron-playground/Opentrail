@@ -1,5 +1,6 @@
-// Error codes the API returns. Codes, statuses and messages are part of the public /v1 contract:
-// add new codes freely, but never change or remove one that has shipped.
+// Error codes the API returns. Codes and statuses are part of the public /v1 contract: add new
+// codes freely, but never change or remove one that has shipped. Messages are for people and
+// may be reworded, so clients must never branch on them.
 export const ERRORS = {
   VALIDATION_FAILED: { status: 400, message: "Check the highlighted fields." },
   NOT_FOUND: { status: 404, message: "We couldn't find that." },
