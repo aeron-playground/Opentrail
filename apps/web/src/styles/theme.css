@@ -37,7 +37,7 @@
 
 /* Settings → PnL colors → Colorblind: blue for gains, orange for losses. */
 :root[data-pnl="colorblind"] {
-  --gain: #2f6fe0;
+  --gain: #296bdf;
   --loss: #af5817;
 }
 
