@@ -23,3 +23,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Personal git hook overrides
+lefthook-local.yml
