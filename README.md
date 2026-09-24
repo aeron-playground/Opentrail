@@ -22,11 +22,14 @@ The apps and most packages are still being set up.
 
 ## Local development
 
-You need [Bun](https://bun.sh) 1.4 or newer.
+You need [Bun](https://bun.sh) 1.4 or newer and [Docker](https://docs.docker.com/get-docker/).
 
 ```bash
 bun install
-bun run check   # lint, typecheck and tests
+bun run db:up                                  # start Postgres in Docker
+cp packages/db/.env.example packages/db/.env
+bun run db:migrate
+bun run check                                  # lint, typecheck and tests
 ```
 
 | Command            | What it does                         |
