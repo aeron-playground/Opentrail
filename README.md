@@ -22,7 +22,14 @@ The apps and most packages are still being set up.
 
 ## Local development
 
-You need [Bun](https://bun.sh) 1.4 or newer and [Docker](https://docs.docker.com/get-docker/).
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/aeron-playground/Opentrail?quickstart=1)
+
+The quickest start: open the repository in GitHub Codespaces with the button above, or in VS Code
+with **Dev Containers: Reopen in Container**. Bun, Postgres and the settings are ready, so you can
+run `bun run check` and `bun run dev` right away.
+
+On your own machine, you need [Bun](https://bun.sh) 1.4 or newer and
+[Docker](https://docs.docker.com/get-docker/).
 
 ```bash
 bun install
