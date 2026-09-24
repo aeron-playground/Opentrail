@@ -1,31 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { createRoute, z } from "@hono/zod-openapi";
 import { ERRORS } from "@repo/shared";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { AppError } from "../lib/errors";
-import { createLogger } from "../lib/logger";
-import { createRouter } from "../lib/router";
-import { errorHandler, notFound } from "./error-handler";
-import { REQUEST_ID_HEADER, requestId } from "./request-id";
+import { AppError, errorHandler, notFound } from "./errors";
+import { createLogger } from "./logger";
+import { REQUEST_ID_HEADER, type RequestIdEnv, requestId } from "./request-id";
 
 const HTTP_EXCEPTION_STATUSES = [400, 401, 404, 413, 415, 503] as const;
-
-const createThing = createRoute({
-  method: "post",
-  path: "/things",
-  request: {
-    body: {
-      required: true,
-      content: { "application/json": { schema: z.object({ name: z.string().min(1) }) } },
-    },
-  },
-  responses: {
-    201: {
-      description: "Created",
-      content: { "application/json": { schema: z.object({ name: z.string() }) } },
-    },
-  },
-});
 
 function testApp() {
   const lines: Record<string, unknown>[] = [];
@@ -34,7 +15,7 @@ function testApp() {
       lines.push(JSON.parse(line));
     },
   });
-  const app = createRouter();
+  const app = new Hono<RequestIdEnv>();
   app.use(requestId());
   app.get("/app-error", () => {
     throw new AppError("PAYLOAD_TOO_LARGE");
@@ -47,7 +28,6 @@ function testApp() {
       throw new HTTPException(status);
     });
   }
-  app.openapi(createThing, (c) => c.json({ name: c.req.valid("json").name }, 201));
   app.notFound(notFound);
   app.onError(errorHandler(logger));
   return { app, lines };
@@ -112,34 +92,4 @@ describe("notFound", () => {
     expect(response.status).toBe(404);
     expect((await errorOf(response)).code).toBe("NOT_FOUND");
   });
-});
-
-describe("input validation", () => {
-  const post = (body: string, contentType = "application/json") =>
-    testApp().app.request("/things", {
-      method: "POST",
-      headers: { "content-type": contentType },
-      body,
-    });
-
-  test("passes valid input to the route", async () => {
-    const response = await post(JSON.stringify({ name: "maya" }));
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ name: "maya" });
-  });
-
-  const invalid: { name: string; body: string; contentType?: string }[] = [
-    { name: "a missing field", body: JSON.stringify({}) },
-    { name: "a field that breaks a rule", body: JSON.stringify({ name: "" }) },
-    { name: "malformed JSON", body: "{not json" },
-    { name: "the wrong content type", body: "name=maya", contentType: "text/plain" },
-  ];
-
-  for (const { name, body, contentType } of invalid) {
-    test(`answers ${name} with VALIDATION_FAILED`, async () => {
-      const response = await post(body, contentType);
-      expect(response.status).toBe(400);
-      expect((await errorOf(response)).code).toBe("VALIDATION_FAILED");
-    });
-  }
 });

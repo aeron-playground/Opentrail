@@ -1,8 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { createLogger, REQUEST_ID_HEADER } from "@repo/server";
 import { ERRORS } from "@repo/shared";
 import { createApp, MAX_BODY_BYTES } from "./app";
-import { createLogger } from "./lib/logger";
-import { REQUEST_ID_HEADER } from "./middleware/request-id";
 
 const WEB_ORIGIN = "http://localhost:5173";
 const OTHER_ORIGIN = "https://evil.example";

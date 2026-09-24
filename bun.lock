@@ -19,13 +19,28 @@
       "dependencies": {
         "@hono/zod-openapi": "1.6.3",
         "@repo/db": "workspace:*",
+        "@repo/server": "workspace:*",
         "@repo/shared": "workspace:*",
         "hono": "4.13.9",
-        "pino": "10.3.1",
         "zod": "4.6.5",
       },
       "devDependencies": {
         "@repo/api-client": "workspace:*",
+        "@repo/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
+      },
+    },
+    "apps/indexer": {
+      "name": "@repo/indexer",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/db": "workspace:*",
+        "@repo/server": "workspace:*",
+        "drizzle-orm": "0.45.3",
+        "hono": "4.13.9",
+        "zod": "4.6.5",
+      },
+      "devDependencies": {
         "@repo/tsconfig": "workspace:*",
         "@types/bun": "1.4.2",
       },
@@ -54,6 +69,19 @@
         "@repo/tsconfig": "workspace:*",
         "@types/bun": "1.4.2",
         "drizzle-kit": "0.31.11",
+      },
+    },
+    "packages/server": {
+      "name": "@repo/server",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/shared": "workspace:*",
+        "hono": "4.13.9",
+        "pino": "10.3.1",
+      },
+      "devDependencies": {
+        "@repo/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
       },
     },
     "packages/shared": {
@@ -216,7 +244,11 @@
 
     "@repo/db": ["@repo/db@workspace:packages/db"],
 
+    "@repo/indexer": ["@repo/indexer@workspace:apps/indexer"],
+
     "@repo/scripts": ["@repo/scripts@workspace:scripts"],
+
+    "@repo/server": ["@repo/server@workspace:packages/server"],
 
     "@repo/shared": ["@repo/shared@workspace:packages/shared"],
 

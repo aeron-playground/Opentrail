@@ -1,9 +1,8 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { connectTestDb } from "@repo/db/testing";
+import { createLogger, requestId } from "@repo/server";
 import { createApp } from "../../app";
-import { createLogger } from "../../lib/logger";
 import { createRouter } from "../../lib/router";
-import { requestId } from "../../middleware/request-id";
 import { healthRoutes } from "./health";
 
 const database = connectTestDb();

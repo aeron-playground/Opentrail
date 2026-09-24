@@ -1,5 +1,5 @@
 {
-  "name": "@repo/api",
+  "name": "@repo/indexer",
   "version": "0.0.0",
   "private": true,
   "license": "AGPL-3.0-only",
@@ -8,19 +8,16 @@
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "typecheck": "tsc",
-    "test": "bun test",
-    "openapi": "bun src/write-openapi.ts"
+    "test": "bun test"
   },
   "dependencies": {
-    "@hono/zod-openapi": "1.6.3",
     "@repo/db": "workspace:*",
     "@repo/server": "workspace:*",
-    "@repo/shared": "workspace:*",
+    "drizzle-orm": "0.45.3",
     "hono": "4.13.9",
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@repo/api-client": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@types/bun": "1.4.2"
   }

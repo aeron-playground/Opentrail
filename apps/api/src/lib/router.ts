@@ -1,12 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { AppError } from "./errors";
+import { AppError, type RequestIdEnv } from "@repo/server";
 
-// Values that middleware puts on the request context, read as c.var.<name>.
-export type AppEnv = {
-  Variables: {
-    requestId: string;
-  };
-};
+export type AppEnv = RequestIdEnv;
 
 // Every router turns input that fails its zod schema into the same VALIDATION_FAILED error.
 export function createRouter(): OpenAPIHono<AppEnv> {

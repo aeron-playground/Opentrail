@@ -40,12 +40,13 @@ bun install                                        # also installs the git hooks
 bun run db:up                                      # start Postgres in Docker
 cp packages/db/.env.example packages/db/.env
 cp apps/api/.env.example apps/api/.env
+cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
 bun run check                                      # lint, typecheck and tests
-bun run dev                                        # API on http://localhost:3001
+bun run dev                                        # API on port 3001, indexer on 3002
 ```
 
-Check that the API is up: open http://localhost:3001/v1/health.
+Check that both are up: open http://localhost:3001/v1/health and http://localhost:3002/health.
 
 | Command               | What it does                                 |
 | --------------------- | -------------------------------------------- |
@@ -79,7 +80,7 @@ fix(web): show the right balance after a deposit
 
 | Types | `feat` `fix` `perf` `refactor` `test` `docs` `chore` `ci` `build` `revert` |
 | --- | --- |
-| **Scopes** | `web` `api` `indexer` `docs` `db` `shared` `solana` `pnl` `format` `api-client` `ci` `deps` `repo` `release` |
+| **Scopes** | `web` `api` `indexer` `docs` `db` `shared` `solana` `pnl` `format` `api-client` `server` `ci` `deps` `repo` `release` |
 
 A git hook checks every commit message. CI checks the pull request title the same way, because
 we squash-merge and the title becomes the commit on `main`.

@@ -1,5 +1,5 @@
+import { LOG_LEVELS } from "@repo/server";
 import { z } from "zod";
-import { LOG_LEVELS } from "./lib/logger";
 
 // Browsers send the Origin header in exactly this form, so any other spelling would never match.
 function isOrigin(value: string): boolean {

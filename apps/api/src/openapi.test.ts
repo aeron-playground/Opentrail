@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
+import { createLogger } from "@repo/server";
 import { APP_NAME } from "@repo/shared";
 import { createApp } from "./app";
-import { createLogger } from "./lib/logger";
 import { OPENAPI_PATH, renderOpenApi, SNAPSHOT_PATH } from "./openapi";
 
 const app = createApp({

@@ -3,6 +3,7 @@
 // may be reworded, so clients must never branch on them.
 export const ERRORS = {
   VALIDATION_FAILED: { status: 400, message: "Check the highlighted fields." },
+  UNAUTHORIZED: { status: 401, message: "Sign in again to continue." },
   NOT_FOUND: { status: 404, message: "We couldn't find that." },
   PAYLOAD_TOO_LARGE: { status: 413, message: "This request is too large. Send less data." },
   INTERNAL: { status: 500, message: "Something went wrong on our side. Try again." },

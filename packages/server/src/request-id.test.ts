@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
-import { createRouter } from "../lib/router";
-import { REQUEST_ID_HEADER, requestId } from "./request-id";
+import { Hono } from "hono";
+import { REQUEST_ID_HEADER, type RequestIdEnv, requestId } from "./request-id";
 
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 function testApp() {
-  const app = createRouter();
+  const app = new Hono<RequestIdEnv>();
   app.use(requestId());
   app.get("/ok", (c) => c.json({ requestId: c.var.requestId }));
   app.get("/raw", () => new Response("raw"));

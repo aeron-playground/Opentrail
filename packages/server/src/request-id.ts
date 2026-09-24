@@ -1,11 +1,17 @@
 import type { MiddlewareHandler } from "hono";
-import type { AppEnv } from "../lib/router";
 
 export const REQUEST_ID_HEADER = "x-request-id";
 
+// What the request id middleware puts on the context, read as c.var.requestId.
+export type RequestIdEnv = {
+  Variables: {
+    requestId: string;
+  };
+};
+
 // Every request gets a fresh UUIDv7. An id sent by the client is ignored, so nobody can
 // choose what appears in our logs.
-export function requestId(): MiddlewareHandler<AppEnv> {
+export function requestId(): MiddlewareHandler<RequestIdEnv> {
   return async (c, next) => {
     const id = Bun.randomUUIDv7();
     c.set("requestId", id);

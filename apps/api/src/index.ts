@@ -1,8 +1,8 @@
 // Starts the API: `bun run dev` locally, `bun run start` in production.
 import { createDb } from "@repo/db";
+import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { type ApiEnv, readApiEnv } from "./env";
-import { createLogger } from "./lib/logger";
 
 let env: ApiEnv;
 try {
