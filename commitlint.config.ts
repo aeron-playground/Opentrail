@@ -23,6 +23,7 @@ export default {
         "pnl",
         "format",
         "api-client",
+        "server",
         "ci",
         "deps",
         "repo",

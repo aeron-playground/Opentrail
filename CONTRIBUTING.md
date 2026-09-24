@@ -79,7 +79,7 @@ fix(web): show the right balance after a deposit
 
 | Types | `feat` `fix` `perf` `refactor` `test` `docs` `chore` `ci` `build` `revert` |
 | --- | --- |
-| **Scopes** | `web` `api` `indexer` `docs` `db` `shared` `solana` `pnl` `format` `api-client` `ci` `deps` `repo` `release` |
+| **Scopes** | `web` `api` `indexer` `docs` `db` `shared` `solana` `pnl` `format` `api-client` `server` `ci` `deps` `repo` `release` |
 
 A git hook checks every commit message. CI checks the pull request title the same way, because
 we squash-merge and the title becomes the commit on `main`.
