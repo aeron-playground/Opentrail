@@ -1,7 +1,8 @@
+import { RouterProvider } from "@tanstack/react-router";
+import { useState } from "react";
+import { createAppRouter } from "./router";
+
 export function App() {
-  return (
-    <main>
-      <h1>See what people are trading. Trade it yourself.</h1>
-    </main>
-  );
+  const [router] = useState(() => createAppRouter());
+  return <RouterProvider router={router} />;
 }
