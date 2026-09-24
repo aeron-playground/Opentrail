@@ -1,0 +1,25 @@
+{
+  "name": "opentrail",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "packageManager": "bun@1.4.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check": "bun run lint && bun run typecheck && bun run test",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "turbo": "2.11.3",
+    "typescript": "6.0.3"
+  }
+}
