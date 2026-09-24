@@ -1,0 +1,15 @@
+# Owners are asked to review every pull request that touches their paths.
+
+* @aeron-gh
+
+# Money, fee and transaction code. Listed on its own so it keeps a named owner
+# when the default owners above change.
+/packages/solana/ @aeron-gh
+/packages/pnl/ @aeron-gh
+/apps/api/src/services/fees.ts @aeron-gh
+/apps/api/src/services/swaps.ts @aeron-gh
+/apps/api/src/services/tx-sender.ts @aeron-gh
+/apps/api/src/services/withdrawals.ts @aeron-gh
+
+# CI and repository automation
+/.github/ @aeron-gh
