@@ -1,0 +1,104 @@
+/*
+ * Design tokens: the only place colors, fonts, text sizes, radii and shadows are defined.
+ * Components use them through Tailwind: bg-paper, text-ink-2, font-condensed, text-title,
+ * rounded-control, shadow-float, max-w-feed.
+ */
+
+/* Light is the default. public/theme.js sets data-theme="dark" before the first paint. */
+:root {
+  color-scheme: light;
+  --paper: #ffffff;
+  --paper-2: #f4f5f7;
+  --line: #e3e5e8;
+  --ink: #15181d;
+  --ink-2: #5b616b;
+  --ink-3: #8a909a;
+  --gain: #0b7a43;
+  --loss: #c0352b;
+  --caution: #9a5b00;
+  --caution-bg: #fff4db;
+  --shadow-float-color: rgb(21 24 29 / 0.12);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #15181d;
+  --paper-2: #1d2127;
+  --line: #2a2f37;
+  --ink: #eceef1;
+  --ink-2: #a3a9b3;
+  --ink-3: #6f7682;
+  --gain: #3dd68c;
+  --loss: #ff6b5e;
+  --caution: #f2b34b;
+  --caution-bg: #2b2414;
+  --shadow-float-color: rgb(0 0 0 / 0.4);
+}
+
+/* Settings → PnL colors → Colorblind: blue for gains, orange for losses. */
+:root[data-pnl="colorblind"] {
+  --gain: #2f6fe0;
+  --loss: #af5817;
+}
+
+:root[data-theme="dark"][data-pnl="colorblind"] {
+  --gain: #6aa6ff;
+  --loss: #ff9f4a;
+}
+
+/* Only our tokens exist: Tailwind's default colors, fonts, sizes, radii and shadows are removed. */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+  --color-caution: var(--caution);
+  --color-caution-bg: var(--caution-bg);
+
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-condensed: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Type scale in rem (px ÷ 16), so a larger browser font size still scales the text. */
+  --text-hero: 2.75rem;
+  --text-hero--line-height: 3rem;
+  --text-hero--letter-spacing: -0.01em;
+  --text-hero-lg: 3.5rem;
+  --text-hero-lg--line-height: 3.75rem;
+  --text-hero-lg--letter-spacing: -0.01em;
+  --text-title: 1.75rem;
+  --text-title--line-height: 2rem;
+  --text-section: 1.25rem;
+  --text-section--line-height: 1.625rem;
+  --text-row: 1.0625rem;
+  --text-row--line-height: 1.5rem;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.375rem;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.125rem;
+  --text-fine: 0.75rem;
+  --text-fine--line-height: 1rem;
+
+  /* Radius by role. Avatars and token icons use rounded-full. */
+  --radius-control: 8px;
+  --radius-sheet: 16px;
+
+  /* The one shadow, only for floating layers: menus, sheets and toasts. */
+  --shadow-float: 0 8px 24px var(--shadow-float-color);
+
+  /* Column widths: the feed column and the desktop trade panel. */
+  --container-feed: 42.5rem;
+  --container-panel: 22.5rem;
+}

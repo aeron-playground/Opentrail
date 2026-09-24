@@ -1,4 +1,5 @@
 import { APP_NAME } from "@repo/shared";
+import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
@@ -13,7 +14,12 @@ export function productName(): Plugin {
 
 export default defineConfig({
   // The router plugin must run before React: it generates src/routeTree.gen.ts from src/routes.
-  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), productName()],
+  plugins: [
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    react(),
+    tailwindcss(),
+    productName(),
+  ],
   server: { port: 5173, strictPort: true },
   preview: { port: 5173, strictPort: true },
 });

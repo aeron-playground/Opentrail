@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  body {
+    @apply bg-paper font-sans text-body text-ink antialiased;
+    /* Numbers line up in columns everywhere. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must win over every component's own motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  /* biome-ignore-end lint/complexity/noImportantStyles: reduced motion must win over every component's own motion */
+}
