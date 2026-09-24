@@ -50,6 +50,31 @@ bun run dev                                    # API on port 3001, indexer on 30
 | `bun run lint:fix` | Fix lint and formatting problems     |
 | `bun run openapi`  | Update the API contract and types    |
 
+## Docker images
+
+Releases publish images of the API and the indexer to GitHub Packages. They run as an unprivileged
+user, contain only production dependencies, and carry a signed record of the CI build that made them.
+
+| Image                                        | Port | Health check |
+| -------------------------------------------- | ---- | ------------ |
+| `ghcr.io/aeron-playground/opentrail-api`     | 3001 | `/v1/health` |
+| `ghcr.io/aeron-playground/opentrail-indexer` | 3002 | `/health`    |
+
+```bash
+# Build an image yourself, from the repository root
+docker build -f apps/api/Dockerfile -t opentrail-api .
+
+# Apply the database migrations, then start the API
+docker run --rm -e DATABASE_URL=postgres://... opentrail-api packages/db/src/migrate.ts
+docker run -p 3001:3001 -e DATABASE_URL=postgres://... -e CORS_ORIGINS=https://example.com opentrail-api
+
+# Check that a published image was built by this repository's CI
+gh attestation verify oci://ghcr.io/aeron-playground/opentrail-api:0.0.2 -R aeron-playground/Opentrail
+```
+
+Settings are the same as in each app's `.env.example`. Images are tagged with the release version,
+such as `0.0.2`, and `edge` is the latest build of `main`. There is no `latest` tag yet.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request. Every commit must be
