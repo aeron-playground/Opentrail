@@ -8,7 +8,12 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/migrations"]
+    "includes": [
+      "**",
+      "!**/migrations",
+      "!packages/api-client/openapi.json",
+      "!packages/api-client/src/schema.d.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

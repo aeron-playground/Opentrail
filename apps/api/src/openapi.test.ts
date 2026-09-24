@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { APP_NAME } from "@repo/shared";
 import { createApp } from "./app";
 import { createLogger } from "./lib/logger";
-import { OPENAPI_PATH } from "./openapi";
+import { OPENAPI_PATH, renderOpenApi, SNAPSHOT_PATH } from "./openapi";
 
 const app = createApp({
   logger: createLogger("silent"),
@@ -24,4 +24,8 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
   expect(document.info).toMatchObject({ title: `${APP_NAME} API`, version: "1" });
   expect(Object.keys(document.paths)).toEqual(["/v1/health"]);
   expect(Object.keys(document.components.schemas).sort()).toEqual(["Error", "Health"]);
+});
+
+test("the committed snapshot is up to date (if not, run `bun run openapi`)", async () => {
+  expect(await renderOpenApi(app)).toBe(await Bun.file(SNAPSHOT_PATH).text());
 });

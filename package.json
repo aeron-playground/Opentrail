@@ -21,7 +21,8 @@
     "db:up": "docker compose up --detach --wait postgres",
     "db:down": "docker compose down",
     "db:generate": "bun run --cwd packages/db generate",
-    "db:migrate": "bun run --cwd packages/db migrate"
+    "db:migrate": "bun run --cwd packages/db migrate",
+    "openapi": "bun run --cwd apps/api openapi && bun run --cwd packages/api-client generate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
