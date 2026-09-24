@@ -1,13 +1,13 @@
 import { expect, test } from "bun:test";
-import { createLogger } from "../lib/logger";
-import { createRouter } from "../lib/router";
-import { REQUEST_ID_HEADER, requestId } from "./request-id";
+import { Hono } from "hono";
+import { createLogger } from "./logger";
+import { REQUEST_ID_HEADER, type RequestIdEnv, requestId } from "./request-id";
 import { requestLog } from "./request-log";
 
 function testApp() {
   const lines: string[] = [];
   const logger = createLogger("info", { write: (line) => void lines.push(line) });
-  const app = createRouter();
+  const app = new Hono<RequestIdEnv>();
   app.use(requestId(), requestLog(logger));
   app.get("/v1/things/:id", (c) => c.json({ ok: true }, 201));
   return { app, lines };

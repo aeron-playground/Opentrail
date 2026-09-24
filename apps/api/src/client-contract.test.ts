@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { createApiClient } from "@repo/api-client";
+import { createLogger } from "@repo/server";
 import { createApp } from "./app";
-import { createLogger } from "./lib/logger";
 
 // The generated client talks to the real app in memory: no network, same contract.
 function clientFor(checkDatabase: () => Promise<void>) {

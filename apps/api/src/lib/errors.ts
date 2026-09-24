@@ -1,22 +1,7 @@
 import { z } from "@hono/zod-openapi";
-import { ERRORS, type ErrorCode } from "@repo/shared";
+import type { ErrorBody } from "@repo/server";
 
-type ErrorStatus = (typeof ERRORS)[ErrorCode]["status"];
-
-// Throw this for any failure the client should see. The code decides the HTTP status and the
-// message, so the same problem looks the same on every route.
-export class AppError extends Error {
-  readonly code: ErrorCode;
-  readonly status: ErrorStatus;
-
-  constructor(code: ErrorCode, options?: ErrorOptions) {
-    super(ERRORS[code].message, options);
-    this.name = "AppError";
-    this.code = code;
-    this.status = ERRORS[code].status;
-  }
-}
-
+// The OpenAPI description of the shared error shape. `satisfies` keeps the two in step.
 export const ErrorBodySchema = z
   .object({
     error: z.object({
@@ -36,6 +21,4 @@ export const ErrorBodySchema = z
       }),
     }),
   })
-  .openapi("Error");
-
-export type ErrorBody = z.infer<typeof ErrorBodySchema>;
+  .openapi("Error") satisfies z.ZodType<ErrorBody>;

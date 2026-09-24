@@ -1,5 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import type { Logger } from "../../lib/logger";
+import type { Logger } from "@repo/server";
 import { createRouter } from "../../lib/router";
 
 const DATABASE_TIMEOUT_MS = 2_000;
