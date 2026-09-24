@@ -14,21 +14,32 @@ Found a security problem? Don't open an issue. Follow [SECURITY.md](SECURITY.md)
 
 ## Set up
 
-You need [Bun](https://bun.sh) 1.4 or newer and git.
+You need [Bun](https://bun.sh) 1.4 or newer, git, and [Docker](https://docs.docker.com/get-docker/)
+for the local database.
 
 ```bash
 git clone https://github.com/aeron-playground/Opentrail.git
 cd Opentrail
-bun install       # also installs the git hooks
-bun run check     # lint, typecheck and tests
+bun install                                        # also installs the git hooks
+bun run db:up                                      # start Postgres in Docker
+cp packages/db/.env.example packages/db/.env
+bun run db:migrate
+bun run check                                      # lint, typecheck and tests
 ```
 
-| Command            | What it does                         |
-| ------------------ | ------------------------------------ |
-| `bun run dev`      | Start every app in development mode  |
-| `bun run build`    | Build every app and package          |
-| `bun run check`    | Lint, typecheck and test, as CI does |
-| `bun run lint:fix` | Fix lint and formatting problems     |
+| Command               | What it does                                 |
+| --------------------- | -------------------------------------------- |
+| `bun run dev`         | Start every app in development mode          |
+| `bun run build`       | Build every app and package                  |
+| `bun run check`       | Lint, typecheck and test, as CI does         |
+| `bun run lint:fix`    | Fix lint and formatting problems             |
+| `bun run db:up`       | Start the local database                     |
+| `bun run db:down`     | Stop it (your data stays)                    |
+| `bun run db:generate` | Create a migration after a schema change     |
+| `bun run db:migrate`  | Apply migrations to your local database      |
+
+Tests use a separate database, `app_test`, and wipe it on every run. They refuse to touch any
+database whose name doesn't end in `_test`.
 
 ## Branches
 
@@ -108,6 +119,14 @@ These checks must pass before a pull request can merge: `lint`, `typecheck`, `te
 - File and folder names in kebab-case. React components in PascalCase.
 - Comments explain *why*, not *what*.
 - `/v1` of the API is a public contract: only additive changes.
+
+### Database
+
+- The schema lives in `packages/db/src/schema/`. After a change, run `bun run db:generate` and
+  commit the new migration. CI fails when a schema change has no migration.
+- Never edit a migration after it is merged. Write a new one.
+- Migrations must be backward-compatible: add first, move data, remove in a later pull request.
+- Each table has one app that writes to it, noted at the top of its schema file.
 
 ### Tests
 
