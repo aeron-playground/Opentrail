@@ -1,0 +1,14 @@
+# Only what the images need reaches the build: package manifests, sources and migrations.
+# Everything else stays out, including every .env file.
+*
+!package.json
+!bun.lock
+!bunfig.toml
+!apps/*/package.json
+!apps/*/src
+!packages/*/package.json
+!packages/*/src
+!packages/db/migrations
+!scripts/package.json
+**/*.test.ts
+**/node_modules
