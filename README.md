@@ -36,9 +36,10 @@ bun install
 bun run db:up                                  # start Postgres in Docker
 cp packages/db/.env.example packages/db/.env
 cp apps/api/.env.example apps/api/.env
+cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
 bun run check                                  # lint, typecheck and tests
-bun run dev                                    # API on http://localhost:3001
+bun run dev                                    # API on port 3001, indexer on 3002
 ```
 
 | Command            | What it does                         |

@@ -40,12 +40,13 @@ bun install                                        # also installs the git hooks
 bun run db:up                                      # start Postgres in Docker
 cp packages/db/.env.example packages/db/.env
 cp apps/api/.env.example apps/api/.env
+cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
 bun run check                                      # lint, typecheck and tests
-bun run dev                                        # API on http://localhost:3001
+bun run dev                                        # API on port 3001, indexer on 3002
 ```
 
-Check that the API is up: open http://localhost:3001/v1/health.
+Check that both are up: open http://localhost:3001/v1/health and http://localhost:3002/health.
 
 | Command               | What it does                                 |
 | --------------------- | -------------------------------------------- |
