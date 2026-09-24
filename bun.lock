@@ -27,6 +27,14 @@
         "drizzle-kit": "0.31.11",
       },
     },
+    "packages/shared": {
+      "name": "@repo/shared",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@repo/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
+      },
+    },
     "packages/tsconfig": {
       "name": "@repo/tsconfig",
       "version": "0.0.0",
@@ -162,6 +170,8 @@
     "@repo/db": ["@repo/db@workspace:packages/db"],
 
     "@repo/scripts": ["@repo/scripts@workspace:scripts"],
+
+    "@repo/shared": ["@repo/shared@workspace:packages/shared"],
 
     "@repo/tsconfig": ["@repo/tsconfig@workspace:packages/tsconfig"],
 
