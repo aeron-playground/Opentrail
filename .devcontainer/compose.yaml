@@ -1,0 +1,29 @@
+# Used together with the root docker-compose.yml (see devcontainer.json). Compose resolves
+# relative paths from the first file's folder: the repository root.
+
+# A project name of its own. Without it, the project would be named after the repository folder,
+# like a local `bun run db:up`, and the dev container would take over that Postgres container.
+name: opentrail-devcontainer
+
+services:
+  postgres:
+    # The workspace reaches Postgres through the shared network, so nothing is published on the
+    # host, and a local `bun run db:up` can keep port 5432.
+    ports: !reset []
+
+  workspace:
+    build:
+      context: .devcontainer
+    # The folder that holds the repository, mounted where Codespaces expects it.
+    volumes:
+      - ..:/workspaces:cached
+    # Shares the Postgres network, so localhost:5432 works as in the .env.example files.
+    network_mode: service:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DO_NOT_TRACK: "1"
+      TURBO_TELEMETRY_DISABLED: "1"
+    # Keeps the container running for the editor to attach to.
+    command: sleep infinity

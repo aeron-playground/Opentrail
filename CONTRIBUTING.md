@@ -16,6 +16,20 @@ Have a question or an early idea? Start a thread in
 
 ## Set up
 
+### In GitHub Codespaces or a Dev Container
+
+Open the repository in [GitHub Codespaces](https://codespaces.new/aeron-playground/Opentrail?quickstart=1),
+or in VS Code with **Dev Containers: Reopen in Container** (this needs Docker with Compose 2.24 or
+newer). The first start takes a few minutes. After that, Bun, Postgres, the settings files and the
+database tables are ready: run `bun run check` or `bun run dev`.
+
+- Postgres runs next to the container, so skip `bun run db:up` and `bun run db:down`.
+- Codespaces is free for a number of hours each month on personal GitHub accounts.
+- If you use the same folder in the container and on your own machine, run `bun install` again
+  after you switch.
+
+### On your own machine
+
 You need [Bun](https://bun.sh) 1.4 or newer, git, and [Docker](https://docs.docker.com/get-docker/)
 for the local database.
 

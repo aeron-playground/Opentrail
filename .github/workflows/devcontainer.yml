@@ -1,0 +1,53 @@
+name: Dev container
+
+# Builds the dev container that Codespaces and VS Code use, and runs the checks inside it.
+# Not a required check: it only runs when the container's files change, and once a week to
+# catch changes in the images it builds on.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .devcontainer/**
+      - docker-compose.yml
+      - infra/docker/**
+      - package.json
+      - .github/workflows/devcontainer.yml
+  push:
+    branches: [main]
+    paths:
+      - .devcontainer/**
+      - docker-compose.yml
+      - infra/docker/**
+      - package.json
+      - .github/workflows/devcontainer.yml
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DO_NOT_TRACK: 1
+  # The official Dev Container CLI, the same tool Codespaces uses.
+  DEVCONTAINER_CLI: "@devcontainers/cli@0.89.0"
+
+jobs:
+  devcontainer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+      - name: Build and start the dev container
+        run: bunx "$DEVCONTAINER_CLI" up --workspace-folder .
+      - name: Run the checks inside it
+        run: bunx "$DEVCONTAINER_CLI" exec --workspace-folder . bun run check
