@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isSignedOffBy, parseSignOffs } from "./dco";
+import { findUnsignedCommits, isSignedOffBy, parseGitLog, parseSignOffs } from "./dco";
 
 const AUTHOR = "ada@example.com";
 
@@ -88,5 +88,58 @@ describe("parseSignOffs", () => {
 
   test("returns nothing for a message without sign-offs", () => {
     expect(parseSignOffs("chore(repo): z\n\nSome body text.\n")).toEqual([]);
+  });
+});
+
+// Builds output the way `git log` prints GIT_LOG_FORMAT: fields split by \x1f, records end with \x1e.
+function gitLogOutput(commits: [sha: string, email: string, message: string][]): string {
+  return commits.map((fields) => `${fields.join("\x1f")}\x1e`).join("\n");
+}
+
+describe("parseGitLog", () => {
+  test("splits records and fields and keeps multi-line messages", () => {
+    const output = gitLogOutput([
+      [
+        "aaa111",
+        "ada@example.com",
+        "feat(api): a\n\nBody line.\n\nSigned-off-by: Ada <ada@example.com>\n",
+      ],
+      ["bbb222", "bob@example.com", "fix(web): b\n"],
+    ]);
+    expect(parseGitLog(output)).toEqual([
+      {
+        sha: "aaa111",
+        authorEmail: "ada@example.com",
+        message: "feat(api): a\n\nBody line.\n\nSigned-off-by: Ada <ada@example.com>\n",
+      },
+      { sha: "bbb222", authorEmail: "bob@example.com", message: "fix(web): b\n" },
+    ]);
+  });
+
+  test("returns nothing for empty output", () => {
+    expect(parseGitLog("")).toEqual([]);
+    expect(parseGitLog("\n")).toEqual([]);
+  });
+});
+
+describe("findUnsignedCommits", () => {
+  test("returns only the commits without a matching sign-off", () => {
+    const commits = parseGitLog(
+      gitLogOutput([
+        ["aaa111", "ada@example.com", "feat(api): a\n\nSigned-off-by: Ada <ada@example.com>\n"],
+        ["bbb222", "bob@example.com", "fix(web): b\n"],
+        ["ccc333", "cy@example.com", "docs(docs): c\n\nSigned-off-by: Ada <ada@example.com>\n"],
+      ]),
+    );
+    expect(findUnsignedCommits(commits).map((commit) => commit.sha)).toEqual(["bbb222", "ccc333"]);
+  });
+
+  test("returns nothing when every commit is signed off", () => {
+    const commits = parseGitLog(
+      gitLogOutput([
+        ["aaa111", "ada@example.com", "feat(api): a\n\nSigned-off-by: Ada <ada@example.com>\n"],
+      ]),
+    );
+    expect(findUnsignedCommits(commits)).toEqual([]);
   });
 });

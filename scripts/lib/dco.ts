@@ -25,3 +25,26 @@ export function isSignedOffBy(message: string, authorEmail: string): boolean {
   }
   return parseSignOffs(message).some((signOff) => signOff.email.toLowerCase() === author);
 }
+
+export type Commit = { sha: string; authorEmail: string; message: string };
+
+const RECORD_SEPARATOR = "\x1e";
+const FIELD_SEPARATOR = "\x1f";
+
+// The log format uses ASCII separators so any text in a commit message stays intact.
+export const GIT_LOG_FORMAT = "--format=%H%x1f%ae%x1f%B%x1e";
+
+export function parseGitLog(output: string): Commit[] {
+  return output
+    .split(RECORD_SEPARATOR)
+    .map((record) => record.replace(/^\r?\n/, ""))
+    .filter((record) => record.trim() !== "")
+    .map((record) => {
+      const [sha = "", authorEmail = "", message = ""] = record.split(FIELD_SEPARATOR);
+      return { sha, authorEmail, message };
+    });
+}
+
+export function findUnsignedCommits(commits: Commit[]): Commit[] {
+  return commits.filter((commit) => !isSignedOffBy(commit.message, commit.authorEmail));
+}
