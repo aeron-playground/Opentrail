@@ -1,5 +1,10 @@
 # Used together with the root docker-compose.yml (see devcontainer.json). Compose resolves
 # relative paths from the first file's folder: the repository root.
+
+# A project name of its own. Without it, the project would be named after the repository folder,
+# like a local `bun run db:up`, and the dev container would take over that Postgres container.
+name: opentrail-devcontainer
+
 services:
   postgres:
     # The workspace reaches Postgres through the shared network, so nothing is published on the
