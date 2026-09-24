@@ -39,7 +39,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
 bun run check                                  # lint, typecheck and tests
-bun run dev                                    # API on port 3001, indexer on 3002
+bun run dev                                    # web on port 5173, API on 3001, indexer on 3002
 ```
 
 | Command            | What it does                         |

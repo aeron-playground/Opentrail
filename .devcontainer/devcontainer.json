@@ -8,8 +8,9 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "forwardPorts": [3001, 3002],
+  "forwardPorts": [5173, 3001, 3002],
   "portsAttributes": {
+    "5173": { "label": "Web" },
     "3001": { "label": "API" },
     "3002": { "label": "Indexer" }
   },

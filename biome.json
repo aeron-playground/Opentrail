@@ -12,8 +12,14 @@
       "**",
       "!**/migrations",
       "!packages/api-client/openapi.json",
-      "!packages/api-client/src/schema.d.ts"
+      "!packages/api-client/src/schema.d.ts",
+      "!apps/web/src/routeTree.gen.ts"
     ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "formatter": {
     "enabled": true,
@@ -34,7 +40,9 @@
         "noNonNullAssertion": "error",
         "useFilenamingConvention": {
           "level": "error",
-          "options": { "filenameCases": ["kebab-case"] }
+          "options": {
+            "filenameCases": ["kebab-case"]
+          }
         }
       },
       "suspicious": {
@@ -55,7 +63,19 @@
       "includes": ["**/*.config.ts", "**/*.config.mts"],
       "linter": {
         "rules": {
-          "style": { "noDefaultExport": "off" }
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/routes/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
         }
       }
     }

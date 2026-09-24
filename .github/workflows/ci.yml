@@ -91,6 +91,14 @@ jobs:
             git diff -- packages/api-client
             exit 1
           fi
+      - name: Check that the web route tree is up to date
+        # The web build above regenerates it from apps/web/src/routes.
+        run: |
+          if [ -n "$(git status --porcelain -- apps/web/src/routeTree.gen.ts)" ]; then
+            echo "::error::The web routes changed without a new route tree. Run 'bun run build' and commit apps/web/src/routeTree.gen.ts."
+            git diff -- apps/web/src/routeTree.gen.ts
+            exit 1
+          fi
 
   dco:
     if: github.event_name == 'pull_request'
