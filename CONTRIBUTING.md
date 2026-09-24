@@ -103,6 +103,16 @@ These checks must pass before a pull request can merge: `lint`, `typecheck`, `te
 Labels are added for you: `area:*` from the folders you change, and the type from your branch
 prefix (`feat/` → `feature`, `fix/` → `bug`, `docs/` → `docs`, `chore/`, `refactor/`, `test/` → `chore`).
 
+## Releases
+
+Releases are automatic. A bot keeps one release pull request open with the next version and the
+changelog, both built from the commit messages on `main`. Merging it tags the version and
+publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/releases).
+
+- Don't edit `CHANGELOG.md` or version numbers by hand.
+- Until the public launch, versions stay on `0.0.x` and are marked as pre-releases.
+- `feat` and `fix` commits appear in the changelog, so write their summaries for users.
+
 ## Ground rules
 
 ### Money and safety
