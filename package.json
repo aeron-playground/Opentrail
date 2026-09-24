@@ -6,7 +6,8 @@
   "packageManager": "bun@1.4.0",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "scripts"
   ],
   "scripts": {
     "dev": "turbo run dev",
@@ -19,6 +20,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "lefthook": "2.1.14",
     "turbo": "2.11.3",
     "typescript": "6.0.3"
   }
