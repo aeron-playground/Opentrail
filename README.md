@@ -43,6 +43,8 @@ bun run check                                  # lint, typecheck and tests
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request. Every commit must be
 signed off (`git commit -s`). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+Questions and ideas are welcome in [Discussions](https://github.com/aeron-playground/Opentrail/discussions).
+You can follow the work on the [project board](https://github.com/orgs/aeron-playground/projects/1).
 
 ## Security
 

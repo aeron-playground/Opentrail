@@ -3,3 +3,9 @@ contact_links:
   - name: Report a security vulnerability
     url: https://github.com/aeron-playground/Opentrail/security/advisories/new
     about: Report privately. Please don't open a public issue for security problems.
+  - name: Ask a question
+    url: https://github.com/aeron-playground/Opentrail/discussions/categories/q-a
+    about: Questions and help with setup go to Discussions.
+  - name: Share an early idea
+    url: https://github.com/aeron-playground/Opentrail/discussions/categories/ideas
+    about: Talk it through in Discussions first. Open a feature request when the idea is concrete.

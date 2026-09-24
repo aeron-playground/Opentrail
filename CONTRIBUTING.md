@@ -5,6 +5,8 @@ pull request needs before it can merge.
 
 By taking part, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 Found a security problem? Don't open an issue. Follow [SECURITY.md](SECURITY.md) instead.
+Have a question or an early idea? Start a thread in
+[Discussions](https://github.com/aeron-playground/Opentrail/discussions).
 
 ## Before you start
 
@@ -97,6 +99,9 @@ The `dco` check in CI fails when any commit in a pull request isn't signed off.
 
 These checks must pass before a pull request can merge: `lint`, `typecheck`, `test`, `build`,
 `dco`, `dependency-review` and `pr-title`.
+
+Labels are added for you: `area:*` from the folders you change, and the type from your branch
+prefix (`feat/` → `feature`, `fix/` → `bug`, `docs/` → `docs`, `chore/`, `refactor/`, `test/` → `chore`).
 
 ## Ground rules
 
