@@ -1,0 +1,9 @@
+{
+  "extends": "@repo/tsconfig/react.json",
+  "compilerOptions": {
+    // Browser code: Vite's client types only, so Bun's server APIs can't slip in.
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test/**"]
+}

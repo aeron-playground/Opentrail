@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/tsconfig/react.json",
+  "compilerOptions": {
+    // The Vite config and the tests run in Bun, not in the browser.
+    "types": ["bun", "vite/client"]
+  },
+  "include": ["vite.config.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/test/**/*.ts"]
+}
