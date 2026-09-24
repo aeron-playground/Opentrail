@@ -1,0 +1,38 @@
+name: Welcome
+
+# pull_request_target lets the bot comment on pull requests from forks.
+# Never check out or run pull request code here.
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
+        with:
+          issue_message: |
+            Thanks for opening your first issue here. A maintainer will reply soon, usually within a few days.
+
+            While you wait:
+            - Check that it isn't already in the [open issues](https://github.com/aeron-playground/Opentrail/issues).
+            - Questions are easier to answer in [Discussions](https://github.com/aeron-playground/Opentrail/discussions/categories/q-a).
+            - Found a security problem? Please report it privately instead, as described in [SECURITY.md](https://github.com/aeron-playground/Opentrail/blob/main/SECURITY.md).
+          pr_message: |
+            Thanks for your first pull request here. A maintainer will review it soon.
+
+            Before review, please check:
+            - Every commit is signed off (`git commit -s`). If the `dco` check fails, its log shows the fix.
+            - The title follows `type(scope): summary`, for example `fix(web): show the right balance`.
+            - `bun run check` passes on your machine.
+
+            [CONTRIBUTING.md](https://github.com/aeron-playground/Opentrail/blob/main/CONTRIBUTING.md) has the details.
