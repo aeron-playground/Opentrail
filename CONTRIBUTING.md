@@ -177,6 +177,9 @@ publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/relea
 - A test checks every text color pair against WCAG AA. If you add a color, add its pairs there.
 - Route files in `apps/web/src/routes/` stay thin: layout and data loading. Screens live in
   `apps/web/src/features/<name>/`.
+- Icons come from Phosphor, in the regular weight. Import each icon from its own path, like
+  `import { HouseIcon } from "@phosphor-icons/react/House"`. The package index loads all of its
+  3,000 icons, which slows down the tests and the dev server.
 - UI pull requests need screenshots: light and dark theme, phone and desktop.
 
 ### Database
