@@ -29,3 +29,8 @@ test("the Portfolio page leads to Add funds, which has no phone tab of its own",
   fireEvent.click(within(main).getByRole("link", { name: "Add funds" }));
   expect(await screen.findByRole("heading", { level: 1, name: "Add funds" })).toBeDefined();
 });
+
+test("the Settings page has the theme switch", async () => {
+  await renderRoute("/settings");
+  expect(await screen.findByRole("group", { name: "Theme" })).toBeDefined();
+});
