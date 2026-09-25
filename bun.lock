@@ -132,6 +132,14 @@
         "drizzle-kit": "0.31.11",
       },
     },
+    "packages/format": {
+      "name": "@repo/format",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@repo/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
+      },
+    },
     "packages/pnl": {
       "name": "@repo/pnl",
       "version": "0.0.0",
@@ -493,6 +501,8 @@
     "@repo/db": ["@repo/db@workspace:packages/db"],
 
     "@repo/docs": ["@repo/docs@workspace:apps/docs"],
+
+    "@repo/format": ["@repo/format@workspace:packages/format"],
 
     "@repo/indexer": ["@repo/indexer@workspace:apps/indexer"],
 
