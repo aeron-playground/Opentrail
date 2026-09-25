@@ -1,0 +1,26 @@
+---
+title: "ADR 0017: Stay on TypeScript 6 for now"
+description: The repository uses TypeScript 6 until the tools it relies on support TypeScript 7.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+TypeScript 7 is a rewrite of the compiler in Go, and much faster. It doesn't offer a JavaScript API
+yet, and some tools we use, such as `openapi-typescript`, call the compiler through that API.
+
+## Decision
+
+The repository stays on TypeScript 6, pinned to an exact version, and Dependabot ignores
+TypeScript 7 updates. We move once the tools we depend on support it.
+
+## Consequences
+
+- Every tool that uses the compiler keeps working.
+- Type checks run at TypeScript 6's speed.
+- `openapi-typescript` still lists TypeScript 5 as its peer. It works with 6, and CI checks its
+  output through the contract snapshot.
+- A new record will follow when we move.

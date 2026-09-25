@@ -1,0 +1,26 @@
+---
+title: "ADR 0005: The platform fee is our own transfer"
+description: The 0.1% fee is a USDC transfer that the API adds to the same transaction as the swap.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+Each trade carries a small platform fee: 0.1%. Aggregators offer fees built into their swaps, but
+each does it differently, and the one we start with accepts fees only from 0.5%, well above ours.
+
+## Decision
+
+The fee is a plain USDC transfer to the project's fee wallet. The API adds it to the same
+transaction as the swap, so the swap and the fee happen together or not at all. It works the same
+with any aggregator.
+
+## Consequences
+
+- The fee is visible on-chain in every trade, and the fee wallet is public.
+- Changing the aggregator doesn't change how fees work.
+- Fee code is sensitive: every change needs tests and a clear explanation in its pull request.
+- If aggregators later support fees this small in the same way for everyone, this can be revisited.

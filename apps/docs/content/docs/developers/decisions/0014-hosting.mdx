@@ -1,0 +1,30 @@
+---
+title: "ADR 0014: Hosting on Cloudflare and Railway"
+description: The web app and the docs are static files on Cloudflare Workers; the API, the indexer and Postgres run on Railway.
+---
+
+## Status
+
+Accepted on 2026-09-24. Changed on 2026-09-25: Cloudflare Workers instead of Cloudflare Pages.
+
+## Context
+
+The project needs hosting that is simple, cheap and able to grow. The web app and the docs are
+static files. The API and the indexer are long-running Bun servers with a Postgres database.
+
+## Decision
+
+Cloudflare Workers serve the static sites, the web app and the docs, from Cloudflare's network.
+The first plan was Cloudflare Pages, but Cloudflare now puts new work only into Workers, so new
+projects start there.
+
+The API, the indexer and Postgres run on Railway. Deploys come from `main` after CI passes. The
+published Docker images of the API and the indexer are the way to host them anywhere else.
+
+Until the project has its own domain, the docs live at `opentrail.mraeron.tech`.
+
+## Consequences
+
+- Static files are served close to every reader, at no cost per request.
+- What is deployed is what CI tested.
+- Moving is possible: the apps are standard Bun servers and static files.

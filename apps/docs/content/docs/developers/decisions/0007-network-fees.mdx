@@ -1,0 +1,27 @@
+---
+title: "ADR 0007: People keep a little SOL for network fees"
+description: In version 1, each wallet pays its own network fees from a small SOL balance.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+Every Solana transaction costs a small network fee in SOL, and a new token account needs a small,
+refundable deposit. Someone has to pay these. Paying them for everyone means holding funds for it
+and guarding against abuse.
+
+## Decision
+
+In version 1, each wallet pays its own network fees. The app asks people to keep a little SOL next
+to their USDC, and "Max" buttons leave that amount aside. Paying fees for people is left for a
+later version.
+
+## Consequences
+
+- Simple and safe: the project holds no funds to pay for others.
+- A new person needs some SOL as well as USDC before their first trade. The guide for adding funds
+  explains this.
+- Paying network fees for people later would need its own decision.

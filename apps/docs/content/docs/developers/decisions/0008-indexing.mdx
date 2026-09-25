@@ -1,0 +1,28 @@
+---
+title: "ADR 0008: Indexing with webhooks and a regular check"
+description: The indexer learns about trades from Helius webhooks, and a regular job catches anything they miss.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The app shows trades as they happen and keeps every portfolio up to date. Polling the chain for
+every wallet is slow and costly, and webhooks alone can miss an event or deliver it twice.
+
+## Decision
+
+The indexer receives raw transactions from Helius webhooks for the wallets it follows. It reads a
+trade from the balance changes in the transaction, not from each program's instructions, so it
+doesn't depend on how a swap was routed. Every event is saved once, keyed by its transaction
+signature, so a repeated delivery changes nothing. A regular job compares recent transactions and
+balances with the chain and fills any gap.
+
+## Consequences
+
+- Trades show up within seconds.
+- A missed or repeated webhook can't corrupt the data.
+- Reading balance changes works for any route an aggregator picks.
+- With a very large number of wallets, a streaming feed may replace the webhooks.

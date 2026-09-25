@@ -1,0 +1,29 @@
+---
+title: "ADR 0006: The server builds transactions, the person signs them"
+description: The API builds each transaction, the person signs it on their device, and the API checks it and sends it.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The browser could build and send transactions by itself. Then the keys for outside services would
+ship to every browser, a modified client could leave out the fee and the safety checks, and we
+couldn't track a trade reliably.
+
+## Decision
+
+The API builds the transaction: the swap, the fee and any account setup. The client receives it
+unsigned, and the person signs it with their wallet on their device. The API then checks that the
+signed message is exactly the one it built and that the signature is valid. Only then does it send
+the transaction and follow it until it's confirmed.
+
+## Consequences
+
+- Keys for outside services stay on the server.
+- A modified client can't skip the fee or the safety checks.
+- The server never holds a private key; it only sees signed transactions.
+- A built transaction expires after about a minute, so someone who waits too long gets a fresh
+  quote instead of a stale one.

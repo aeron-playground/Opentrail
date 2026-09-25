@@ -1,0 +1,30 @@
+---
+title: "ADR 0002: Wallets whose keys we never hold"
+description: People sign in with Privy and get an embedded Solana wallet. The private key never reaches our servers.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+An app that holds its users' keys is a custodian: one breach can empty every account, and the
+legal duties are heavy. At the same time, people expect to sign in with email or a social account,
+not to manage a seed phrase from the first minute.
+
+## Decision
+
+Sign-in and wallets come from Privy. Each person gets an embedded Solana wallet, and transactions
+are signed on their own device. The private key is never sent to our servers, stored or logged.
+The same account and wallet work on the web and in the mobile app.
+
+The server learns a person's wallet address from Privy, never from what the client sends.
+
+## Consequences
+
+- We can't move anyone's funds, and a breach of our servers exposes no keys.
+- Anyone can export their key through Privy and use the wallet in another app.
+- Sign-in depends on Privy. If that stops fitting the project, another wallet provider can take
+  its place behind the same flow.
+- No code may ever ask for, store or log a private key or a seed phrase.

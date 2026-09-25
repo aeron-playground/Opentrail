@@ -3,4 +3,55 @@ title: Decision records
 description: Why the project is built the way it is.
 ---
 
-Each important decision gets a short record: the context, the decision and its consequences. The first records will be listed here soon.
+Each important decision gets a short record: its context, the decision and its consequences.
+A record isn't rewritten after it's accepted. A decision that changes gets a dated note in its
+Status section, or a new record that replaces it.
+
+| Record | Decision | Status |
+| ------ | -------- | ------ |
+| [0001](./0001-monorepo.mdx) | One repository for every app | Accepted |
+| [0002](./0002-non-custodial-wallets.mdx) | Wallets whose keys we never hold | Accepted |
+| [0003](./0003-solana-usdc-token-list.mdx) | Solana, USDC and a short list of tokens | Accepted |
+| [0004](./0004-swap-aggregator.mdx) | Swaps through an aggregator | Accepted |
+| [0005](./0005-platform-fee.mdx) | The platform fee is our own transfer | Accepted |
+| [0006](./0006-transaction-flow.mdx) | The server builds transactions, the person signs them | Accepted |
+| [0007](./0007-network-fees.mdx) | People keep a little SOL for network fees | Accepted |
+| [0008](./0008-indexing.mdx) | Indexing with webhooks and a regular check | Accepted |
+| [0009](./0009-database-and-money.mdx) | Postgres, Drizzle and exact money | Accepted |
+| [0010](./0010-pnl-average-cost.mdx) | Profit and loss by average cost | Accepted |
+| [0011](./0011-api-contract.mdx) | The API contract comes from the routes | Accepted |
+| [0012](./0012-live-updates.mdx) | Live updates over WebSocket, through Postgres | Accepted |
+| [0013](./0013-market-data.mdx) | Prices from Jupiter, charts from GeckoTerminal | Accepted |
+| [0014](./0014-hosting.mdx) | Hosting on Cloudflare and Railway | Accepted |
+| [0015](./0015-licenses.mdx) | AGPL for the app, MIT for the small libraries | Accepted |
+| [0016](./0016-design-principles.mdx) | Design principles | Accepted |
+| [0017](./0017-typescript-6.mdx) | Stay on TypeScript 6 for now | Accepted |
+
+## Adding a record
+
+Copy the template into a new file named with the next number, like `0018-short-name.mdx`, add a
+row to the table above, and open a pull request. A change that would break the public API always
+needs a record.
+
+```mdx title="0018-short-name.mdx"
+---
+title: "ADR 0018: A short name for the decision"
+description: One line that says what was decided.
+---
+
+## Status
+
+Accepted on 2026-10-01.
+
+## Context
+
+The problem, and what makes it hard.
+
+## Decision
+
+What we decided, in plain words.
+
+## Consequences
+
+What gets easier, what gets harder, and when to look at it again.
+```

@@ -192,6 +192,9 @@ publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/relea
   that every link leads to a page.
 - The API reference is built from `packages/api-client/openapi.json`. Change the routes, run
   `bun run openapi`, and the reference follows.
+- A decision that shapes the project, or any change that would break the public API, gets a
+  decision record in `apps/docs/content/docs/developers/decisions/`. The index page there has
+  the template.
 
 ### Database
 

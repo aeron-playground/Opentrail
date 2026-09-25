@@ -1,0 +1,29 @@
+---
+title: "ADR 0011: The API contract comes from the routes"
+description: The OpenAPI document is generated from the route definitions, and version 1 only grows.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The web app, the mobile app and outside developers all use the API. A description written by hand
+drifts away from the code.
+
+## Decision
+
+Routes are defined with `@hono/zod-openapi`: each route's input, output and errors are zod schemas,
+and the OpenAPI document is generated from them. The document is committed as
+`packages/api-client/openapi.json`, with generated types and a typed client, and CI fails when they
+are out of date.
+
+Version 1 only gains routes and fields. A change that would break a client needs a new decision
+record and a new route or a new version.
+
+## Consequences
+
+- The contract, the types and the API reference in these docs always match the code.
+- Clients can rely on version 1 not breaking.
+- Every change to a route includes regenerating the contract.
