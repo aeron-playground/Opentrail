@@ -1,6 +1,48 @@
 ---
 title: How PnL is calculated
-description: The average-cost method behind your profit and loss.
+description: The average-cost method behind your profit and loss, with a worked example.
 ---
 
-This page isn't written yet. It will be written once the portfolio works.
+PnL means profit and loss. %APP_NAME% uses the average-cost method: every token you hold has one
+average price, and each sale is measured against it.
+
+## The rules
+
+- **Buying** adds the tokens and everything you paid for them, fees included. Your average cost is
+  the total you paid divided by the tokens you hold.
+- **Selling** gives a realized result: what the sale brought in, after the fee, minus the average
+  cost of the tokens you sold. The tokens you keep stay at the same average cost.
+- **Tokens you receive** from another wallet count at their price when they arrive. Receiving
+  tokens is never a gain or a loss by itself.
+- **Tokens you send** to another wallet take their share of the cost with them, and realize
+  nothing.
+- **Unrealized** is what the tokens you still hold are worth at today's price, minus what they
+  cost.
+
+## A worked example
+
+| Step                  | Tokens held | Total cost | Average cost | Realized |
+| --------------------- | ----------: | ---------: | -----------: | -------: |
+| Buy 10 JUP for $5.00  |          10 |      $5.00 |        $0.50 |    $0.00 |
+| Buy 10 more for $7.00 |          20 |     $12.00 |        $0.60 |    $0.00 |
+| Sell 5 for $4.00      |          15 |      $9.00 |        $0.60 |   +$1.00 |
+
+The 5 tokens sold cost $3.00 at the average of $0.60, and brought in $4.00: a realized result of
++$1.00. At a price of $0.70, the 15 tokens still held are worth $10.50 against a cost of $9.00: an
+unrealized result of +$1.50.
+
+## Exact to the millionth
+
+Dollars are counted in millionths, and token amounts in each token's smallest unit, so nothing
+drifts after many trades. When a split can't be exact, it's rounded to the nearest millionth of a
+dollar, and a half rounds up.
+
+## The order of events
+
+How many tokens you hold comes from the blockchain itself. Your cost and results come from your
+trades and transfers, applied in the order they happened on-chain. A transaction that shows up late
+gives the same result as if it had arrived on time.
+
+The method is open source, in
+[`packages/pnl`](https://github.com/aeron-playground/Opentrail/tree/main/packages/pnl), under the
+MIT license, with a test for this example.
