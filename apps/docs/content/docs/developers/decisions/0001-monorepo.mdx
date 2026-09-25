@@ -1,0 +1,30 @@
+---
+title: "ADR 0001: One repository for every app"
+description: The web app, the API, the indexer and the docs live in one monorepo, with Bun workspaces and Turborepo.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The web app, the API, the indexer and the docs share types, error codes, money math and the API
+contract. In separate repositories these copies drift apart, and one change to the contract needs
+several pull requests that have to land together.
+
+## Decision
+
+One repository: Bun workspaces for the packages, and Turborepo to run tasks like build, typecheck
+and test across them, with a cache. Apps live in `apps/`, shared code in `packages/`.
+
+The mobile app is the exception. It lives in its own repository and uses only the public API and
+the WebSocket protocol.
+
+## Consequences
+
+- A change to shared code and to everything that uses it lands in one pull request, and CI checks
+  all of it.
+- One set of tools and rules: TypeScript settings, Biome, commit messages.
+- CI does more work per pull request; Turborepo's cache keeps it fast.
+- The mobile app can't import internal packages, so the public API has to stay stable.

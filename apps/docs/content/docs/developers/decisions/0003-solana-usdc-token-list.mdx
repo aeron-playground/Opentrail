@@ -1,0 +1,26 @@
+---
+title: "ADR 0003: Solana, USDC and a short list of tokens"
+description: Version 1 runs on Solana only, measures everything in USDC and trades a reviewed list of tokens.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+Every extra chain multiplies the work on wallets, indexing and fees. Letting people trade any token
+exposes them to scams and to tokens nobody can sell, and makes results hard to explain.
+
+## Decision
+
+Version 1 supports Solana only. USDC is the currency people add, trade from and measure their
+results in. Only tokens on a reviewed list can be traded. Each token has a safety level, and a
+token that fails the checks can't be traded.
+
+## Consequences
+
+- Every amount has one quote currency, so results are easy to compare.
+- Fewer tokens to review, index and price.
+- Someone who wants a token outside the list uses another app for it.
+- More chains or an open token list would each need a new decision.

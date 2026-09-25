@@ -1,0 +1,32 @@
+---
+title: "ADR 0016: Design principles"
+description: Color means money, one type family, and lists over cards.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+Trading apps are often loud: many colors, badges and effects that make it hard to see what matters.
+People need to read amounts and results quickly, and to trust them.
+
+## Decision
+
+- **Color means money.** Green and red are only for gains, losses and the Buy and Sell buttons.
+  Everything else is neutral ink on paper, with no accent colors. Gains and losses also show a sign
+  and an arrow, never color alone.
+- **One type family.** IBM Plex Sans for the interface, Plex Sans Condensed for big numbers and
+  titles, and Plex Mono for wallet addresses and signatures.
+- **Lists over cards**, radii by role, one shadow only for floating layers, and motion only in
+  answer to something the person does.
+- **One source of truth.** The design tokens live in `apps/web/src/styles/theme.css`. Tailwind's
+  default colors, fonts and sizes are switched off, so nothing else can creep in.
+
+## Consequences
+
+- A calm, consistent interface where money stands out.
+- The tokens include a palette for color vision deficiency (blue for gains, orange for losses),
+  and a test checks that every text color pair passes WCAG AA.
+- Contributors have clear rules. CONTRIBUTING lists them.

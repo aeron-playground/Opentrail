@@ -1,0 +1,26 @@
+---
+title: "ADR 0010: Profit and loss by average cost"
+description: Results use the average-cost method, built from a ledger of trades and transfers.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+There are several ways to calculate profit and loss, such as first in, first out, or average cost.
+People need to understand the number they see and be able to check it.
+
+## Decision
+
+Results use average cost. Each buy updates the average price paid for a token, and each sale
+realizes the difference between its price and that average. The ledger is built from trades and
+transfers. How much of each token a wallet holds is read from the chain, so the ledger never
+invents a balance.
+
+## Consequences
+
+- Easy to explain, and easy to check by hand.
+- Other methods can give a different number, for example in a tax report.
+- More detailed statistics are left for a later version.

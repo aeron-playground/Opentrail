@@ -1,0 +1,25 @@
+---
+title: "ADR 0004: Swaps through an aggregator"
+description: Trades are routed by a swap aggregator, Jupiter first, behind our own interface.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The liquidity for a token is spread over many pools. Trading in one pool gives worse prices, and
+routing across pools ourselves is a large and specialized job.
+
+## Decision
+
+The API gets quotes and swap instructions from a swap aggregator, starting with Jupiter. The code
+reaches it only through a `SwapProvider` interface, so another aggregator can be added or take its
+place without changes to the rest of the trading code.
+
+## Consequences
+
+- Good prices from the start, without building a router.
+- We depend on the aggregator's API and its limits. The interface keeps a change in one place.
+- Tests use a fake provider, so they never call the real service.

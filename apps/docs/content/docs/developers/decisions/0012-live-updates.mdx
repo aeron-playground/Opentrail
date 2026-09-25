@@ -1,0 +1,26 @@
+---
+title: "ADR 0012: Live updates over WebSocket, through Postgres"
+description: The API pushes live trades and prices over a WebSocket, fed by Postgres LISTEN/NOTIFY.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The feed and alerts show trades as they happen, and prices move all the time. Polling from every
+client wastes requests, and a separate message broker is one more service to run.
+
+## Decision
+
+Clients keep a WebSocket connection to the API. When the indexer saves a trade or a price changes,
+it sends a notification through Postgres `LISTEN/NOTIFY`, and the API forwards the event to the
+clients that asked for it. The message types live in `packages/shared` and are described in these
+docs.
+
+## Consequences
+
+- No extra services in version 1.
+- With many API servers, a publish-subscribe service such as Redis may take Postgres's place.
+- The message format is public, like the HTTP API, so changes to it have to stay compatible.

@@ -1,0 +1,25 @@
+---
+title: "ADR 0013: Prices from Jupiter, charts from GeckoTerminal"
+description: Token prices come from Jupiter and chart data from GeckoTerminal, fetched on the server and cached.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+Every screen needs prices, and token pages need charts. Fetching them from every browser would
+multiply the requests to outside services and run into their limits.
+
+## Decision
+
+The indexer fetches prices from Jupiter's price API, and chart candles from GeckoTerminal for each
+token's most liquid pool, always in USD. The results are stored and served by our own API, so one
+fetch serves everyone. Every chart names its data source.
+
+## Consequences
+
+- Few requests to outside services, however many people use the app.
+- A price can be a few seconds old.
+- Building our own candles from trades remains possible later.

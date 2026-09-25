@@ -1,0 +1,32 @@
+---
+title: "ADR 0015: AGPL for the app, MIT for the small libraries"
+description: The repository is licensed AGPL-3.0-only; the math and formatting libraries will be MIT.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+The code is open so that people can check how their money is handled and help improve it. With a
+permissive license, anyone could run a modified, closed version as a hosted service. Some small
+libraries, the profit-and-loss math and the number formatting, are useful on their own, and a
+copyleft license would keep many people from using them.
+
+## Decision
+
+The repository is licensed AGPL-3.0-only. Anyone who runs a modified version as a network service
+has to share its source under the same license. "Only" means that a future version of the AGPL
+doesn't apply without a new decision.
+
+`packages/pnl` and `packages/format` will be MIT-licensed when they're created, so they can be used
+anywhere.
+
+## Consequences
+
+- The app stays open, hosted copies included.
+- Contributors sign off every commit (the Developer Certificate of Origin) to confirm they may
+  contribute the code.
+- Whether outside contributions also need a contributor agreement gets its own review before the
+  first one arrives.

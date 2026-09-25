@@ -1,0 +1,28 @@
+---
+title: "ADR 0009: Postgres, Drizzle and exact money"
+description: Data lives in Postgres, through Drizzle. Money is always an exact integer, never a JavaScript number.
+---
+
+## Status
+
+Accepted on 2026-09-24.
+
+## Context
+
+A JavaScript `number` can't hold every token amount exactly, and small rounding errors in money add
+up. The data itself is relational: people, follows, trades, positions.
+
+## Decision
+
+Postgres is the database, with Drizzle for the schema, the queries and the migrations.
+
+Amounts are integers in the smallest unit: raw token units, and millionths of a dollar for values in
+USD. In code they're `bigint`, in JSON they're strings, and the database stores them exactly. Prices
+are decimal strings, and all math on them goes through shared helpers. Numbers are formatted only
+for display.
+
+## Consequences
+
+- No rounding drift in balances, fees or results.
+- Every amount is converted at the edges, and the shared helpers do that in one place.
+- Each table has one app that writes to it. Other apps only read it.
