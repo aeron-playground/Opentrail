@@ -1,0 +1,51 @@
+---
+title: "ADR 0018: Solana transactions with @solana/kit"
+description: The API builds transactions with @solana/kit, and people sign them in their Privy wallet. A test proved the whole flow first.
+---
+
+## Status
+
+Accepted on 2026-09-25.
+
+## Context
+
+[ADR 0006](./0006-transaction-flow.mdx) says the API builds each transaction, the person signs it in
+their wallet, and the API checks it before sending it. Two Solana libraries could build those
+transactions: the older `@solana/web3.js`, and its successor `@solana/kit`. What mattered was which
+one works with the Privy wallets people sign with ([ADR 0002](./0002-non-custodial-wallets.mdx)), and
+whether the checks hold up with a real wallet.
+
+## Decision
+
+Transactions are built and checked with `@solana/kit`. Privy's current SDK is built on it, and signs
+a transaction given as its serialized bytes, so nothing has to be converted between libraries.
+
+A test proved the flow before anything was built on it, with a real Privy wallet and a transaction
+that was signed but never sent:
+
+1. The server built a memo transaction with `@solana/kit`, paid by the person's wallet, with a fresh
+   blockhash: 205 bytes.
+2. The person signed it in their Privy wallet with `signTransaction`, which returned the signed
+   bytes and sent nothing.
+3. The server checked it and accepted it: the message is exactly the one it built, the wallet's
+   signature is valid for that message, and no other signer is present.
+
+The same checks rejected a transaction with one changed byte, a signature made with another key,
+and a transaction with no signature.
+
+Tested with `@privy-io/react-auth` 3.44.0, `@solana/kit` 8.3.0 and `@solana-program/memo` 0.14.1,
+on Bun 1.4.0 and in Chrome.
+
+## Consequences
+
+- One Solana library across the API, the indexer and the web app.
+- The API hands the client the transaction as bytes, and checks the bytes it gets back before
+  sending them. The test's checks are the starting point for `packages/solana`.
+- **Browsers can't use Solana's free public server.** It refuses requests from web pages with
+  HTTP 403, while the same request from a server works. Privy's signing window asks for the network
+  fee while it's open, so the web app reaches Solana through our own API, or a provider set up for
+  browsers, and never through the public server.
+- `@solana/web3.js` isn't used. Older examples and tools that expect it need `@solana/kit`'s
+  equivalents.
+- A new major version of Privy's SDK can change how signing works, so each one gets this test again
+  before it's adopted.
