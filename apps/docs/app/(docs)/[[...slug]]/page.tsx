@@ -2,7 +2,6 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layo
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { APIPage } from "../../../components/api-page";
 import { getMDXComponents } from "../../../components/mdx";
 import { REPOSITORY, REPOSITORY_URL } from "../../../lib/site";
 import { source } from "../../../lib/source";
@@ -11,20 +10,9 @@ type Props = { params: Promise<{ slug?: string[] }> };
 
 export default async function Page({ params }: Props) {
   const page = source.getPage((await params).slug);
-  if (!page) {
+  // The API reference has its own route, so this one never loads the API page's code.
+  if (page?.type !== "docs") {
     notFound();
-  }
-
-  if (page.type === "api") {
-    return (
-      <DocsPage toc={page.data.toc} full>
-        <DocsTitle>{page.data.title}</DocsTitle>
-        <DocsDescription>{page.data.description}</DocsDescription>
-        <DocsBody>
-          <APIPage {...page.data.getOpenAPIPageProps()} />
-        </DocsBody>
-      </DocsPage>
-    );
   }
 
   const Content = page.data.body;
@@ -46,7 +34,10 @@ export default async function Page({ params }: Props) {
 }
 
 export function generateStaticParams() {
-  return source.generateParams();
+  return source
+    .getPages()
+    .filter((page) => page.type === "docs")
+    .map((page) => ({ slug: page.slugs }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
