@@ -4,7 +4,7 @@
 /** A decimal string that Intl.NumberFormat accepts, like "-1234.5". */
 export type DecimalString = `${number}`;
 
-const TRUE_MINUS = "−";
+const TRUE_MINUS = "\u2212";
 
 function pow10(exponent: number): bigint {
   if (!Number.isInteger(exponent) || exponent < 0) {
