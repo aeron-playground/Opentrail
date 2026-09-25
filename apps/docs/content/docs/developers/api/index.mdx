@@ -1,0 +1,18 @@
+---
+title: API reference
+description: The public HTTP API, version 1. The pages below are built from its contract.
+---
+
+Every route lives under `/v1`. The web app, the mobile app and anyone else use the same API, so
+version 1 only ever gains new routes and fields. A change that would break a client gets a new
+route or a new version instead.
+
+- Every response has an `x-request-id` header. Include it when you report a problem.
+- Every error has the same shape: `{ "error": { "code", "message", "requestId" } }`. The message
+  says what happened, and never includes internal details.
+- Amounts of money and token amounts are strings, so no precision is lost. Times are ISO 8601
+  in UTC.
+
+The pages in this section are generated from the API contract,
+[`openapi.json`](https://github.com/aeron-playground/Opentrail/blob/main/packages/api-client/openapi.json),
+each time the docs are built, so they always match the routes.

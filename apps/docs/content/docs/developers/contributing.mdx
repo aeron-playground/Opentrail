@@ -1,0 +1,18 @@
+---
+title: Contributing
+description: How to propose a change, from the first issue to a merged pull request.
+---
+
+The full guide lives in the repository, next to the code:
+[CONTRIBUTING.md](https://github.com/aeron-playground/Opentrail/blob/main/CONTRIBUTING.md).
+
+In short:
+
+1. Start from an issue, or open one to discuss a larger change first.
+2. Work on a branch, and sign off every commit with `git commit -s`.
+3. Run `bun run check` before you push. It runs the same lint, typecheck and tests as CI.
+4. Open a pull request and fill in the template.
+
+Two rules matter most: amounts of money are `bigint` values in the smallest unit (for dollars,
+millionths of a dollar), never a JavaScript `number`, and the server never sees a private key.
+The guide explains these and the others.

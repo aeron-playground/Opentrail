@@ -1,0 +1,17 @@
+{
+  "extends": "@repo/tsconfig/react.json",
+  "compilerOptions": {
+    // The site builds and its tests run in Bun; the pages themselves are static HTML.
+    "types": ["bun"],
+    "plugins": [{ "name": "next" }]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mjs",
+    ".next/types/**/*.ts",
+    ".source/**/*.ts"
+  ],
+  "exclude": ["node_modules", "out"]
+}

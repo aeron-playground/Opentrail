@@ -60,7 +60,7 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.config.ts", "**/*.config.mts"],
+      "includes": ["**/*.config.ts", "**/*.config.mts", "**/*.config.mjs", "apps/docs/app/**"],
       "linter": {
         "rules": {
           "style": {

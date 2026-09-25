@@ -182,6 +182,17 @@ publishes a [GitHub Release](https://github.com/aeron-playground/Opentrail/relea
   3,000 icons, which slows down the tests and the dev server.
 - UI pull requests need screenshots: light and dark theme, phone and desktop.
 
+### Docs
+
+- Pages live in `apps/docs/content/docs/` as MDX. Every page needs a `title` and a `description`,
+  and a new page goes into its folder's `meta.json`, or it won't show in the sidebar. A test
+  checks both.
+- Write `%APP_NAME%` where the product name goes. The build fills it in from `packages/shared`.
+- Link to other pages by their file path, like `[Fees](../how-it-works/fees.mdx)`. A test checks
+  that every link leads to a page.
+- The API reference is built from `packages/api-client/openapi.json`. Change the routes, run
+  `bun run openapi`, and the reference follows.
+
 ### Database
 
 - The schema lives in `packages/db/src/schema/`. After a change, run `bun run db:generate` and
