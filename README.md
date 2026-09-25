@@ -9,6 +9,9 @@ well-known tokens. You can follow other traders and see their trades as they hap
 > [!WARNING]
 > Opentrail is in early development. Nothing here is ready to use with real funds.
 
+Read the docs at [opentrail.mraeron.tech](https://opentrail.mraeron.tech): guides, developer docs,
+the API reference and the decision records.
+
 ## Repository layout
 
 This is a monorepo managed with Bun workspaces and Turborepo.
