@@ -1,0 +1,4 @@
+{
+  "title": "Developers",
+  "pages": ["architecture", "local-setup", "contributing", "api", "websocket-protocol", "decisions"]
+}

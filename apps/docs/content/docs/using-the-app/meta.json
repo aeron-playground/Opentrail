@@ -1,0 +1,10 @@
+{
+  "title": "Using the app",
+  "pages": [
+    "web-app",
+    "feed-and-alerts",
+    "profiles-and-following",
+    "portfolio-and-pnl",
+    "settings-and-security"
+  ]
+}

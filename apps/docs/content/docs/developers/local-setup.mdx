@@ -1,0 +1,48 @@
+---
+title: Local setup
+description: Run every app on your own machine or in a dev container.
+---
+
+## The quick way: a dev container
+
+Open the repository in GitHub Codespaces, or in VS Code with **Dev Containers: Reopen in
+Container**. Bun, Postgres and the settings are ready, so you can run `bun run check` and
+`bun run dev` right away.
+
+## On your own machine
+
+You need [Bun](https://bun.sh) 1.4 or newer and [Docker](https://docs.docker.com/get-docker/).
+
+```bash
+bun install
+bun run db:up                                  # start Postgres in Docker
+cp packages/db/.env.example packages/db/.env
+cp apps/api/.env.example apps/api/.env
+cp apps/indexer/.env.example apps/indexer/.env
+bun run db:migrate
+bun run check                                  # lint, typecheck and tests
+bun run dev                                    # every app, see the ports below
+```
+
+| App     | Address                 |
+| ------- | ----------------------- |
+| Web     | `http://localhost:5173` |
+| API     | `http://localhost:3001` |
+| Indexer | `http://localhost:3002` |
+| Docs    | `http://localhost:3000` |
+
+To run one app only, filter by its package name:
+
+```bash
+bunx turbo run dev --filter=@repo/docs
+```
+
+## Commands
+
+| Command            | What it does                         |
+| ------------------ | ------------------------------------ |
+| `bun run dev`      | Start every app in development mode  |
+| `bun run build`    | Build every app and package          |
+| `bun run check`    | Lint, typecheck and test, as CI does |
+| `bun run lint:fix` | Fix lint and formatting problems     |
+| `bun run openapi`  | Update the API contract and types    |

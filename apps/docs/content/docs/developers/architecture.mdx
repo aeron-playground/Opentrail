@@ -1,0 +1,28 @@
+---
+title: Architecture
+description: The apps and packages in the repository, and what each one does.
+---
+
+The repository is a monorepo: Bun workspaces for the packages, and Turborepo to run tasks
+across them.
+
+## Apps
+
+| App            | What it does                                                                 |
+| -------------- | ---------------------------------------------------------------------------- |
+| `apps/web`     | The web app: React, TanStack Router and TanStack Query, built with Vite      |
+| `apps/api`     | The HTTP API under `/v1`, built with Hono. It builds and submits transactions |
+| `apps/indexer` | Receives on-chain events, turns them into trades and keeps prices up to date |
+| `apps/docs`    | This site, built with Fumadocs into static files                             |
+
+## Packages
+
+| Package               | What it holds                                                   |
+| --------------------- | --------------------------------------------------------------- |
+| `packages/db`         | The database schema, migrations and client (Drizzle, Postgres)  |
+| `packages/shared`     | Code every app shares, like the product name and error codes    |
+| `packages/api-client` | The API contract (`openapi.json`) and a typed client for it     |
+| `packages/server`     | Logging, request ids and error handling for the API and indexer |
+| `packages/tsconfig`   | Shared TypeScript settings                                      |
+
+A fuller picture of how a trade moves through the system will follow as those parts are built.
