@@ -1,0 +1,9 @@
+# Security headers for every page of the docs site. Cloudflare reads this file from the build
+# output and doesn't serve it. A Content-Security-Policy waits until the pages can run without
+# inline scripts (Next.js static export needs them today).
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000
