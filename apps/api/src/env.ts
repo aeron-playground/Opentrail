@@ -33,6 +33,9 @@ const apiEnvSchema = z.object({
   // From the Privy dashboard. The app id is public; the secret must stay on the server.
   PRIVY_APP_ID: z.string().min(1),
   PRIVY_APP_SECRET: z.string().min(1),
+  // The Solana server the API reads balances from. Solana's public one is fine for development;
+  // production uses a provider URL, which carries a key, so it's never logged.
+  SOLANA_RPC_URL: z.url({ protocol: /^https?$/ }).default("https://api.mainnet-beta.solana.com"),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
   LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
 });

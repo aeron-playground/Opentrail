@@ -21,14 +21,18 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
   expect(Object.keys(document.paths)).toEqual([
     "/v1/health",
     "/v1/me",
+    "/v1/me/balances",
     "/v1/usernames/suggest",
     "/v1/usernames/{name}/available",
   ]);
   expect(Object.keys(document.components.schemas).sort()).toEqual([
+    "Balance",
+    "Balances",
     "Error",
     "Health",
     "Me",
     "MeUpdate",
+    "Token",
     "UsernameAvailability",
     "UsernameSuggestion",
   ]);

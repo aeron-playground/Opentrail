@@ -141,6 +141,67 @@
           "username"
         ]
       },
+      "Balances": {
+        "type": "object",
+        "properties": {
+          "balances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Balance"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When these amounts were read from Solana.",
+            "example": "2026-09-26T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "balances",
+          "updatedAt"
+        ]
+      },
+      "Balance": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "$ref": "#/components/schemas/Token"
+          },
+          "amountRaw": {
+            "type": "string",
+            "description": "In the token's smallest unit, as a string so no digit is lost: 50 USDC is \"50000000\".",
+            "example": "50000000"
+          }
+        },
+        "required": [
+          "token",
+          "amountRaw"
+        ]
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "mint": {
+            "type": "string",
+            "example": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "USDC"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "How many of the raw amount's digits come after the decimal point.",
+            "example": 6
+          }
+        },
+        "required": [
+          "mint",
+          "symbol",
+          "decimals"
+        ]
+      },
       "UsernameSuggestion": {
         "type": "object",
         "properties": {
@@ -331,6 +392,52 @@
                 "description": "Seconds until you can change your username again."
               }
             },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/balances": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get your balances",
+        "description": "USDC and SOL in your wallet, read from Solana at the `confirmed` level. The answer can be up to 5 seconds old. More tokens will be listed as they're added.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your balances.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balances"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`: the access token is missing, expired or not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`WALLET_NOT_READY`: see GET /v1/me.",
             "content": {
               "application/json": {
                 "schema": {

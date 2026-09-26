@@ -174,6 +174,63 @@ export interface paths {
         };
         trace?: never;
     };
+    "/v1/me/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get your balances
+         * @description USDC and SOL in your wallet, read from Solana at the `confirmed` level. The answer can be up to 5 seconds old. More tokens will be listed as they're added.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Your balances. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Balances"];
+                    };
+                };
+                /** @description `UNAUTHORIZED`: the access token is missing, expired or not valid. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `WALLET_NOT_READY`: see GET /v1/me. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/usernames/suggest": {
         parameters: {
             query?: never;
@@ -332,6 +389,34 @@ export interface components {
              * @example maya
              */
             username: string;
+        };
+        Balances: {
+            balances: components["schemas"]["Balance"][];
+            /**
+             * Format: date-time
+             * @description When these amounts were read from Solana.
+             * @example 2026-09-26T10:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        Balance: {
+            token: components["schemas"]["Token"];
+            /**
+             * @description In the token's smallest unit, as a string so no digit is lost: 50 USDC is "50000000".
+             * @example 50000000
+             */
+            amountRaw: string;
+        };
+        Token: {
+            /** @example EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v */
+            mint: string;
+            /** @example USDC */
+            symbol: string;
+            /**
+             * @description How many of the raw amount's digits come after the decimal point.
+             * @example 6
+             */
+            decimals: number;
         };
         UsernameSuggestion: {
             /**

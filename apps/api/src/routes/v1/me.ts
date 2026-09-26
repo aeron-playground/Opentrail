@@ -5,6 +5,7 @@ import { ErrorBodySchema } from "../../lib/errors";
 import { createRouter } from "../../lib/router";
 import { type AuthEnv, BEARER_AUTH, requireAuth } from "../../middleware/auth";
 import type { PrivyProvider } from "../../providers/privy/types";
+import type { BalanceService } from "../../services/balances";
 import type { UsernameService } from "../../services/usernames";
 import type { UserService } from "../../services/users";
 
@@ -134,13 +135,69 @@ const updateMeRoute = createRoute({
   },
 });
 
+const TokenSchema = z
+  .object({
+    mint: z.string().openapi({ example: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" }),
+    symbol: z.string().openapi({ example: "USDC" }),
+    decimals: z.number().int().openapi({
+      description: "How many of the raw amount's digits come after the decimal point.",
+      example: 6,
+    }),
+  })
+  .openapi("Token");
+
+const BalancesSchema = z
+  .object({
+    balances: z.array(
+      z
+        .object({
+          token: TokenSchema,
+          amountRaw: z.string().openapi({
+            description:
+              "In the token's smallest unit, as a string so no digit is lost: 50 USDC is " +
+              '"50000000".',
+            example: "50000000",
+          }),
+        })
+        .openapi("Balance"),
+    ),
+    updatedAt: z.iso.datetime().openapi({
+      description: "When these amounts were read from Solana.",
+      example: "2026-09-26T10:00:00.000Z",
+    }),
+  })
+  .openapi("Balances");
+
+const balancesRoute = createRoute({
+  method: "get",
+  path: "/me/balances",
+  tags: ["Account"],
+  summary: "Get your balances",
+  description:
+    "USDC and SOL in your wallet, read from Solana at the `confirmed` level. The answer can be " +
+    "up to 5 seconds old. More tokens will be listed as they're added.",
+  security: [{ [BEARER_AUTH]: [] }],
+  responses: {
+    200: {
+      description: "Your balances.",
+      content: { "application/json": { schema: BalancesSchema } },
+    },
+    401: unauthorized,
+    409: {
+      description: "`WALLET_NOT_READY`: see GET /v1/me.",
+      content: errorContent,
+    },
+  },
+});
+
 export type MeDeps = {
   privy: Pick<PrivyProvider, "verifyAccessToken">;
   users: UserService;
   usernames: UsernameService;
+  balances: BalanceService;
 };
 
-export function meRoutes({ privy, users, usernames }: MeDeps) {
+export function meRoutes({ privy, users, usernames, balances }: MeDeps) {
   const toMe = (user: User) => ({
     id: user.id,
     username: user.username,
@@ -152,6 +209,7 @@ export function meRoutes({ privy, users, usernames }: MeDeps) {
 
   const router = createRouter<AuthEnv>();
   router.use(meRoute.path, requireAuth(privy));
+  router.use(`${meRoute.path}/*`, requireAuth(privy));
   return router
     .openapi(meRoute, async (c) => {
       const user = await users.getOrCreate(c.var.privyDid);
@@ -164,5 +222,21 @@ export function meRoutes({ privy, users, usernames }: MeDeps) {
       const user = await usernames.change(await users.getOrCreate(c.var.privyDid), username);
       c.header("Cache-Control", "no-store");
       return c.json(toMe(user), 200);
+    })
+    .openapi(balancesRoute, async (c) => {
+      // The wallet comes from the account, which got it from Privy: never from the request.
+      const user = await users.getOrCreate(c.var.privyDid);
+      const result = await balances.forWallet(user.walletAddress);
+      c.header("Cache-Control", "no-store");
+      return c.json(
+        {
+          balances: result.balances.map(({ token, amountRaw }) => ({
+            token: { mint: token.mint, symbol: token.symbol, decimals: token.decimals },
+            amountRaw: amountRaw.toString(),
+          })),
+          updatedAt: result.updatedAt.toISOString(),
+        },
+        200,
+      );
     });
 }

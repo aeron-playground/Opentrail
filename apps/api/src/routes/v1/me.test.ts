@@ -3,14 +3,18 @@ import { type DbHandle, users } from "@repo/db";
 import { createTestDb } from "@repo/db/testing";
 import { type Logger, REQUEST_ID_HEADER } from "@repo/server";
 import { ERRORS, USERNAME_PATTERN } from "@repo/shared";
+import { SOL, USDC } from "@repo/solana";
 import { createApp } from "../../app";
 import { createFakePrivy, type FakePrivy } from "../../providers/privy/fake";
+import { createFakeSolana, type FakeSolana } from "../../providers/solana/fake";
+import { createBalanceService } from "../../services/balances";
 import { createUsernameService } from "../../services/usernames";
 import { createUserService } from "../../services/users";
 import { capturedLogger, testAppDeps } from "../../testing";
 
 let database: DbHandle;
 let privy: FakePrivy;
+let solana: FakeSolana;
 
 beforeAll(async () => {
   database = await createTestDb("api");
@@ -23,6 +27,7 @@ afterAll(async () => {
 beforeEach(async () => {
   await database.db.delete(users);
   privy = createFakePrivy();
+  solana = createFakeSolana();
 });
 
 function testApp(logger: Logger = capturedLogger().logger) {
@@ -32,6 +37,7 @@ function testApp(logger: Logger = capturedLogger().logger) {
       privy,
       users: createUserService({ db: database.db, privy, logger }),
       usernames: createUsernameService({ db: database.db }),
+      balances: createBalanceService({ solana }),
     }),
   );
 }
@@ -218,5 +224,49 @@ describe("PATCH /v1/me", () => {
     expect(((await response.json()) as { walletAddress: string }).walletAddress).toBe(
       String(person.wallet),
     );
+  });
+});
+
+describe("GET /v1/me/balances", () => {
+  const getBalances = (app: ReturnType<typeof testApp>, token?: string) =>
+    app.request(
+      "/v1/me/balances",
+      token === undefined ? {} : { headers: { authorization: `Bearer ${token}` } },
+    );
+
+  test("answers 401 without a token", async () => {
+    await expectError(await getBalances(testApp()), 401, "UNAUTHORIZED");
+  });
+
+  test("gives USDC and SOL for the person's own wallet, as exact strings", async () => {
+    const person = privy.signIn();
+    const wallet = String(person.wallet);
+    solana.setToken(wallet, USDC.mint, 50_000_000n);
+    solana.setSol(wallet, 20_000_000n);
+    const response = await getBalances(testApp(), person.token);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const body = (await response.json()) as { balances: unknown[]; updatedAt: string };
+    expect(body.balances).toEqual([
+      { token: { mint: USDC.mint, symbol: "USDC", decimals: 6 }, amountRaw: "50000000" },
+      { token: { mint: SOL.mint, symbol: "SOL", decimals: 9 }, amountRaw: "20000000" },
+    ]);
+    expect(new Date(body.updatedAt).toISOString()).toBe(body.updatedAt);
+  });
+
+  test("never shows someone else's wallet", async () => {
+    const [maya, kiran] = [privy.signIn(), privy.signIn()];
+    solana.setSol(String(maya.wallet), 7n);
+    const response = await getBalances(testApp(), kiran.token);
+    const body = (await response.json()) as { balances: { amountRaw: string }[] };
+
+    expect(body.balances.map((balance) => balance.amountRaw)).toEqual(["0", "0"]);
+  });
+
+  test("answers 500 with the generic message when Solana can't be read", async () => {
+    const person = privy.signIn();
+    solana.fail(new Error("RPC down"));
+    await expectError(await getBalances(testApp(), person.token), 500, "INTERNAL");
   });
 });

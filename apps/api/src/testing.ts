@@ -18,6 +18,7 @@ export function testAppDeps(overrides: Partial<AppDeps> = {}): AppDeps {
       change: () => Promise.reject(new Error("This test has no username service")),
       changeableAt: () => null,
     },
+    balances: { forWallet: () => Promise.reject(new Error("This test has no balance service")) },
     ...overrides,
   };
 }
