@@ -41,7 +41,7 @@ const hub = createHub({
   logger,
 });
 const heartbeat = setInterval(hub.heartbeat, WS_PING_INTERVAL_MS);
-const stopListening = await forwardBalanceChanges({ listen: database.listen, hub, logger });
+const forwarding = forwardBalanceChanges({ listen: database.listen, hub, logger });
 const server = Bun.serve(serveOptions({ app, hub, port: env.PORT }));
 logger.info({ port: server.port }, "API started");
 
@@ -51,7 +51,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   logger.info({ signal }, "API stopping");
   clearInterval(heartbeat);
   hub.closeAll();
-  await stopListening();
+  await forwarding.stop();
   await server.stop();
   await database.close();
   process.exit(0);
