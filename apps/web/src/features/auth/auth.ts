@@ -19,6 +19,11 @@ export type Auth = {
   /** Leaves the page for Google or GitHub, which send the person back signed in. */
   signInWithOAuth(provider: OAuthProvider): Promise<void>;
   signOut(): Promise<void>;
+  /**
+   * Opens Privy's own window, where the person can copy their wallet's private key. The key
+   * loads on Privy's domain, so this app never sees it.
+   */
+  exportWallet(address: string): Promise<void>;
   /** A fresh access token for the API, or null when nobody is signed in. */
   getAccessToken(): Promise<string | null>;
 };

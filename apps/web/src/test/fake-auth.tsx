@@ -11,7 +11,13 @@ type State = { status: AuthStatus; oauthFailed: boolean };
 
 export type FakeAuth = {
   Provider: (props: { children: ReactNode }) => ReactNode;
-  calls: { emails: string[]; codes: string[]; oauth: OAuthProvider[]; signOuts: number };
+  calls: {
+    emails: string[];
+    codes: string[];
+    oauth: OAuthProvider[];
+    signOuts: number;
+    exports: string[];
+  };
   getAccessToken: () => Promise<string | null>;
   setState: (next: Partial<State>) => void;
 };
@@ -21,6 +27,7 @@ type FakeAuthOptions = {
   oauthFailed?: boolean;
   sendCodeFails?: boolean;
   oauthFails?: boolean;
+  exportFails?: boolean;
 };
 
 // An auth that behaves like Privy's: codes, sign-in, sign-out, tokens. No network.
@@ -29,8 +36,9 @@ export function createFakeAuth({
   oauthFailed = false,
   sendCodeFails = false,
   oauthFails = false,
+  exportFails = false,
 }: FakeAuthOptions = {}): FakeAuth {
-  const calls: FakeAuth["calls"] = { emails: [], codes: [], oauth: [], signOuts: 0 };
+  const calls: FakeAuth["calls"] = { emails: [], codes: [], oauth: [], signOuts: 0, exports: [] };
   let state: State = { status, oauthFailed };
   let render: (next: State) => void = () => {};
   const update = (next: Partial<State>) => {
@@ -66,6 +74,12 @@ export function createFakeAuth({
         signOut: async () => {
           calls.signOuts += 1;
           update({ status: "signed-out" });
+        },
+        exportWallet: async (address) => {
+          calls.exports.push(address);
+          if (exportFails) {
+            throw new Error("fake: export window didn't open");
+          }
         },
         getAccessToken: async () => (state.status === "signed-in" ? FAKE_TOKEN : null),
       }),

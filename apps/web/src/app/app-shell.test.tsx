@@ -12,6 +12,7 @@ const HEADINGS: Record<NavItem["to"], string> = {
   "/alerts": "Alerts",
   "/deposit": "Add funds",
   "/settings": "Settings",
+  "/onboarding": "Set up your account",
 };
 
 // Both navigations are in the page: CSS shows the rail from 1024 px and the tabs below that.

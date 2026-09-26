@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as DepositRouteImport } from './routes/deposit'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as SettingsRouteImport } from './routes/settings'
 
@@ -36,6 +37,11 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/deposit': typeof DepositRoute
   '/explore': typeof ExploreRoute
+  '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/deposit': typeof DepositRoute
   '/explore': typeof ExploreRoute
+  '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
 }
@@ -69,21 +77,36 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/deposit': typeof DepositRoute
   '/explore': typeof ExploreRoute
+  '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/alerts' | '/deposit' | '/explore' | '/portfolio' | '/settings'
+    | '/'
+    | '/alerts'
+    | '/deposit'
+    | '/explore'
+    | '/onboarding'
+    | '/portfolio'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alerts' | '/deposit' | '/explore' | '/portfolio' | '/settings'
+  to:
+    | '/'
+    | '/alerts'
+    | '/deposit'
+    | '/explore'
+    | '/onboarding'
+    | '/portfolio'
+    | '/settings'
   id:
     | '__root__'
     | '/'
     | '/alerts'
     | '/deposit'
     | '/explore'
+    | '/onboarding'
     | '/portfolio'
     | '/settings'
   fileRoutesById: FileRoutesById
@@ -93,6 +116,7 @@ export interface RootRouteChildren {
   AlertsRoute: typeof AlertsRoute
   DepositRoute: typeof DepositRoute
   ExploreRoute: typeof ExploreRoute
+  OnboardingRoute: typeof OnboardingRoute
   PortfolioRoute: typeof PortfolioRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -127,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portfolio': {
       id: '/portfolio'
       path: '/portfolio'
@@ -149,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsRoute: AlertsRoute,
   DepositRoute: DepositRoute,
   ExploreRoute: ExploreRoute,
+  OnboardingRoute: OnboardingRoute,
   PortfolioRoute: PortfolioRoute,
   SettingsRoute: SettingsRoute,
 }

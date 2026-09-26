@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { OfflineBanner } from "../components/common/offline-banner";
 import { useAuth } from "../features/auth/auth-context";
 import { SignInProvider, useSignIn } from "../features/auth/sign-in";
+import { OnboardingRedirect } from "../features/onboarding/onboarding-redirect";
 import { type NavItem, RAIL_FOOT_ITEMS, RAIL_ITEMS, TAB_ITEMS } from "./navigation";
 
 // Hidden until focused, so the first Tab on any page reaches it.
@@ -22,6 +23,7 @@ const tabLinkClass =
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <SignInProvider>
+      <OnboardingRedirect />
       <ShellFrame>{children}</ShellFrame>
     </SignInProvider>
   );
