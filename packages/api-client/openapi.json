@@ -6,6 +6,13 @@
     "description": "Every response has an x-request-id header, and every error uses the Error shape. Amounts are strings, and times are ISO 8601 in UTC."
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A Privy access token, sent as `Authorization: Bearer <token>`. The web and mobile apps get one when the person signs in."
+      }
+    },
     "schemas": {
       "Error": {
         "type": "object",
@@ -70,6 +77,38 @@
           "status",
           "checks"
         ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Your account id.",
+            "example": "0192b6f0-7c1e-7a3b-9d7e-3f5c1a2b4d6e"
+          },
+          "username": {
+            "type": "string",
+            "description": "Your public name. New accounts get a random one, such as calm_otter_42.",
+            "example": "calm_otter_42"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your Solana wallet address, where you add funds. It comes from your sign-in on the server, never from the request."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the account was created.",
+            "example": "2026-09-26T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "walletAddress",
+          "createdAt"
+        ]
       }
     },
     "parameters": {}
@@ -99,6 +138,52 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get your account",
+        "description": "The first call creates your account: it reads your Solana wallet from your sign-in and gives you a random username. Later calls return the same account.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`: the access token is missing, expired or not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`WALLET_NOT_READY`: your wallet is still being created right after sign-in. Try again in a moment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }

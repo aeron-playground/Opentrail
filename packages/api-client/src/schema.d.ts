@@ -52,6 +52,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get your account
+         * @description The first call creates your account: it reads your Solana wallet from your sign-in and gives you a random username. Later calls return the same account.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Your account. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Me"];
+                    };
+                };
+                /** @description `UNAUTHORIZED`: the access token is missing, expired or not valid. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `WALLET_NOT_READY`: your wallet is still being created right after sign-in. Try again in a moment. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -82,6 +139,27 @@ export interface components {
                 /** @enum {string} */
                 database: "ok" | "down";
             };
+        };
+        Me: {
+            /**
+             * Format: uuid
+             * @description Your account id.
+             * @example 0192b6f0-7c1e-7a3b-9d7e-3f5c1a2b4d6e
+             */
+            id: string;
+            /**
+             * @description Your public name. New accounts get a random one, such as calm_otter_42.
+             * @example calm_otter_42
+             */
+            username: string;
+            /** @description Your Solana wallet address, where you add funds. It comes from your sign-in on the server, never from the request. */
+            walletAddress: string;
+            /**
+             * Format: date-time
+             * @description When the account was created.
+             * @example 2026-09-26T10:00:00.000Z
+             */
+            createdAt: string;
         };
     };
     responses: never;

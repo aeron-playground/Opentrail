@@ -5,11 +5,13 @@ import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { renderOpenApi, SNAPSHOT_PATH } from "./openapi";
 
-// The document only describes the routes, so it needs no database and no settings.
+// The document only describes the routes, so it needs no database, no Privy and no settings.
 const app = createApp({
   logger: createLogger("silent"),
   corsOrigins: [],
   checkDatabase: async () => {},
+  privy: { verifyAccessToken: async () => null },
+  users: { getOrCreate: () => Promise.reject(new Error("Not available here")) },
 });
 
 await Bun.write(SNAPSHOT_PATH, await renderOpenApi(app));

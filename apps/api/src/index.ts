@@ -3,6 +3,8 @@ import { createDb } from "@repo/db";
 import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { type ApiEnv, readApiEnv } from "./env";
+import { createPrivy } from "./providers/privy/privy";
+import { createUserService } from "./services/users";
 
 let env: ApiEnv;
 try {
@@ -15,10 +17,13 @@ try {
 
 const logger = createLogger(env.LOG_LEVEL);
 const database = createDb(env.DATABASE_URL);
+const privy = createPrivy({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET });
 const app = createApp({
   logger,
   corsOrigins: env.CORS_ORIGINS,
   checkDatabase: database.ping,
+  privy,
+  users: createUserService({ db: database.db, privy, logger }),
 });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
 logger.info({ port: server.port }, "API started");

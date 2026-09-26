@@ -3,6 +3,7 @@ import { connectTestDb } from "@repo/db/testing";
 import { createLogger, requestId } from "@repo/server";
 import { createApp } from "../../app";
 import { createRouter } from "../../lib/router";
+import { capturedLogger, testAppDeps } from "../../testing";
 import { healthRoutes } from "./health";
 
 const database = connectTestDb();
@@ -11,23 +12,9 @@ afterAll(async () => {
   await database.close();
 });
 
-function capturedLogger() {
-  const lines: Record<string, unknown>[] = [];
-  const logger = createLogger("info", {
-    write: (line) => {
-      lines.push(JSON.parse(line));
-    },
-  });
-  return { logger, lines };
-}
-
 describe("GET /v1/health", () => {
   test("answers 200 when the database answers", async () => {
-    const app = createApp({
-      logger: createLogger("silent"),
-      corsOrigins: [],
-      checkDatabase: database.ping,
-    });
+    const app = createApp(testAppDeps({ checkDatabase: database.ping }));
     const response = await app.request("/v1/health");
 
     expect(response.status).toBe(200);
@@ -37,11 +24,12 @@ describe("GET /v1/health", () => {
 
   test("answers 503 and logs a warning when the database fails", async () => {
     const { logger, lines } = capturedLogger();
-    const app = createApp({
-      logger,
-      corsOrigins: [],
-      checkDatabase: () => Promise.reject(new Error("connection refused")),
-    });
+    const app = createApp(
+      testAppDeps({
+        logger,
+        checkDatabase: () => Promise.reject(new Error("connection refused")),
+      }),
+    );
     const response = await app.request("/v1/health");
 
     expect(response.status).toBe(503);

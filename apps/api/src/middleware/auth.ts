@@ -10,6 +10,17 @@ export type AuthEnv = AppEnv & {
   };
 };
 
+// The name of the sign-in scheme in the API contract. Routes behind requireAuth list it.
+export const BEARER_AUTH = "bearerAuth";
+
+export const BEARER_AUTH_SCHEME = {
+  type: "http",
+  scheme: "bearer",
+  description:
+    "A Privy access token, sent as `Authorization: Bearer <token>`. The web and mobile apps " +
+    "get one when the person signs in.",
+} as const;
+
 // Privy's access tokens are a few hundred characters. Anything far longer isn't one, so it's
 // refused before any signature work.
 const MAX_TOKEN_LENGTH = 4096;

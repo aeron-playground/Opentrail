@@ -12,8 +12,12 @@ import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { ErrorBodySchema } from "./lib/errors";
 import { createRouter } from "./lib/router";
+import { BEARER_AUTH, BEARER_AUTH_SCHEME } from "./middleware/auth";
 import { OPENAPI_CONFIG, OPENAPI_PATH } from "./openapi";
+import type { PrivyProvider } from "./providers/privy/types";
 import { healthRoutes } from "./routes/v1/health";
+import { meRoutes } from "./routes/v1/me";
+import type { UserService } from "./services/users";
 
 export const MAX_BODY_BYTES = 64 * 1024;
 
@@ -23,13 +27,16 @@ export type AppDeps = {
   corsOrigins: string[];
   // Resolves when the database answers, rejects when it doesn't.
   checkDatabase: () => Promise<void>;
+  // Checks the sign-in token on protected routes.
+  privy: Pick<PrivyProvider, "verifyAccessToken">;
+  users: UserService;
 };
 
 export type App = ReturnType<typeof createApp>;
 
 // Builds the app from its dependencies and reads no settings itself, so tests can build one
 // with fakes.
-export function createApp({ logger, corsOrigins, checkDatabase }: AppDeps) {
+export function createApp({ logger, corsOrigins, checkDatabase, privy, users }: AppDeps) {
   const app = createRouter();
 
   app.use(
@@ -57,9 +64,11 @@ export function createApp({ logger, corsOrigins, checkDatabase }: AppDeps) {
   );
 
   app.route("/v1", healthRoutes({ checkDatabase, logger }));
+  app.route("/v1", meRoutes({ privy, users }));
 
-  // Listed on its own because no route declares it yet, and clients need the shared shape.
+  // Listed first: every error on every route uses this shape.
   app.openAPIRegistry.register("Error", ErrorBodySchema);
+  app.openAPIRegistry.registerComponent("securitySchemes", BEARER_AUTH, BEARER_AUTH_SCHEME);
   app.doc31(OPENAPI_PATH, OPENAPI_CONFIG);
 
   app.notFound(notFound);

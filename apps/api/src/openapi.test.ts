@@ -1,14 +1,10 @@
 import { expect, test } from "bun:test";
-import { createLogger } from "@repo/server";
 import { APP_NAME } from "@repo/shared";
 import { createApp } from "./app";
 import { OPENAPI_PATH, renderOpenApi, SNAPSHOT_PATH } from "./openapi";
+import { testAppDeps } from "./testing";
 
-const app = createApp({
-  logger: createLogger("silent"),
-  corsOrigins: [],
-  checkDatabase: async () => {},
-});
+const app = createApp(testAppDeps());
 
 test("serves an OpenAPI 3.1 document with every route and the shared error shape", async () => {
   const response = await app.request(OPENAPI_PATH);
@@ -18,12 +14,15 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
     openapi: string;
     info: { title: string; version: string };
     paths: Record<string, unknown>;
-    components: { schemas: Record<string, unknown> };
+    components: { schemas: Record<string, unknown>; securitySchemes: Record<string, unknown> };
   };
   expect(document.openapi).toBe("3.1.0");
   expect(document.info).toMatchObject({ title: `${APP_NAME} API`, version: "1" });
-  expect(Object.keys(document.paths)).toEqual(["/v1/health"]);
-  expect(Object.keys(document.components.schemas).sort()).toEqual(["Error", "Health"]);
+  expect(Object.keys(document.paths)).toEqual(["/v1/health", "/v1/me"]);
+  expect(Object.keys(document.components.schemas).sort()).toEqual(["Error", "Health", "Me"]);
+  expect(document.components.securitySchemes).toMatchObject({
+    bearerAuth: { type: "http", scheme: "bearer" },
+  });
 });
 
 test("the committed snapshot is up to date (if not, run `bun run openapi`)", async () => {
