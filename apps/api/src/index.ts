@@ -4,6 +4,7 @@ import { createLogger } from "@repo/server";
 import { createApp } from "./app";
 import { type ApiEnv, readApiEnv } from "./env";
 import { createPrivy } from "./providers/privy/privy";
+import { createUsernameService } from "./services/usernames";
 import { createUserService } from "./services/users";
 
 let env: ApiEnv;
@@ -24,6 +25,7 @@ const app = createApp({
   checkDatabase: database.ping,
   privy,
   users: createUserService({ db: database.db, privy, logger }),
+  usernames: createUsernameService({ db: database.db }),
 });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
 logger.info({ port: server.port }, "API started");

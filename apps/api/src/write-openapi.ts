@@ -12,6 +12,12 @@ const app = createApp({
   checkDatabase: async () => {},
   privy: { verifyAccessToken: async () => null },
   users: { getOrCreate: () => Promise.reject(new Error("Not available here")) },
+  usernames: {
+    availability: () => Promise.reject(new Error("Not available here")),
+    suggest: () => Promise.reject(new Error("Not available here")),
+    change: () => Promise.reject(new Error("Not available here")),
+    changeableAt: () => null,
+  },
 });
 
 await Bun.write(SNAPSHOT_PATH, await renderOpenApi(app));

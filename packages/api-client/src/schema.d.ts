@@ -106,6 +106,160 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /**
+         * Change your username
+         * @description Choosing a name, or keeping the random one, counts as a change: the next one is allowed 30 days later. Sending the name you already chose changes nothing.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MeUpdate"];
+                };
+            };
+            responses: {
+                /** @description Your account, with the new name. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Me"];
+                    };
+                };
+                /** @description `VALIDATION_FAILED`: the name breaks the format. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `UNAUTHORIZED`: the access token is missing, expired or not valid. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `USERNAME_TAKEN`: someone has the name. `USERNAME_RESERVED`: the name is blocked, or too close to a blocked name. `WALLET_NOT_READY`: see GET /v1/me. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `USERNAME_CHANGE_TOO_SOON`: you changed it less than 30 days ago. `usernameChangeableAt` on GET /v1/me says when you can change it again. */
+                429: {
+                    headers: {
+                        /** @description Seconds until you can change your username again. */
+                        "Retry-After": string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/v1/usernames/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggest a username
+         * @description A random `adjective_animal_NN` name that nobody has. No sign-in needed.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A free name. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UsernameSuggestion"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/usernames/{name}/available": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check whether a username is free
+         * @description Usernames are 3–20 characters: a–z, 0–9 and _, starting with a letter. Case doesn't matter. No sign-in needed.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Whether the name is free. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UsernameAvailability"];
+                    };
+                };
+                /** @description `VALIDATION_FAILED`: the name is longer than 64 characters. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -152,6 +306,17 @@ export interface components {
              * @example calm_otter_42
              */
             username: string;
+            /**
+             * @description False until you choose a name or keep the random one, for example during onboarding.
+             * @example false
+             */
+            usernameChosen: boolean;
+            /**
+             * Format: date-time
+             * @description When you can change your username again (once every 30 days), or null if you can change it now.
+             * @example null
+             */
+            usernameChangeableAt: string | null;
             /** @description Your Solana wallet address, where you add funds. It comes from your sign-in on the server, never from the request. */
             walletAddress: string;
             /**
@@ -160,6 +325,33 @@ export interface components {
              * @example 2026-09-26T10:00:00.000Z
              */
             createdAt: string;
+        };
+        MeUpdate: {
+            /**
+             * @description Your new username: 3–20 characters, a–z, 0–9 and _, starting with a letter. It's saved in lowercase. Send your current name to keep it.
+             * @example maya
+             */
+            username: string;
+        };
+        UsernameSuggestion: {
+            /**
+             * @description A random name that nobody has right now.
+             * @example calm_otter_42
+             */
+            username: string;
+        };
+        UsernameAvailability: {
+            /**
+             * @description The name as it would be saved: in lowercase.
+             * @example maya
+             */
+            username: string;
+            available: boolean;
+            /**
+             * @description Why the name isn't available: `taken` (someone has it, maybe you), `reserved` (blocked, or too close to a blocked name) or `invalid` (breaks the format). Treat any other value as not available.
+             * @example taken
+             */
+            reason?: string;
         };
     };
     responses: never;

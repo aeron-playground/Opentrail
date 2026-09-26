@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { sql } from "drizzle-orm";
-import { assertTestDatabaseUrl, createTestDb, postgresErrorCode, testDatabaseUrl } from "./testing";
+import { assertTestDatabaseUrl, createTestDb, testDatabaseUrl } from "./testing";
 
 describe("assertTestDatabaseUrl", () => {
   const cases: { name: string; url: string; allowed: boolean }[] = [
@@ -21,26 +21,6 @@ describe("assertTestDatabaseUrl", () => {
       }
     });
   }
-});
-
-describe("postgresErrorCode", () => {
-  const withCode = (code: string, cause?: unknown) =>
-    Object.assign(new Error("driver error", { cause }), { code });
-
-  test("reads the code from the error itself", () => {
-    expect(postgresErrorCode(withCode("23505"))).toBe("23505");
-  });
-
-  test("reads the code from a wrapped cause", () => {
-    expect(postgresErrorCode(new Error("query failed", { cause: withCode("23514") }))).toBe(
-      "23514",
-    );
-  });
-
-  test("returns undefined when there is no code", () => {
-    expect(postgresErrorCode(new Error("no code"))).toBeUndefined();
-    expect(postgresErrorCode("not an error")).toBeUndefined();
-  });
 });
 
 describe("testDatabaseUrl", () => {

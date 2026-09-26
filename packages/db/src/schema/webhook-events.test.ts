@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { sql } from "drizzle-orm";
 import type { DbHandle } from "../client";
-import { createTestDb, postgresErrorCode } from "../testing";
+import { postgresErrorCode } from "../errors";
+import { createTestDb } from "../testing";
 import { type NewWebhookEvent, webhookEvents } from "./webhook-events";
 
 const UNIQUE_VIOLATION = "23505";

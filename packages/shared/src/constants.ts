@@ -17,3 +17,6 @@ export const FEE_BPS = 10n;
  * without case, so check the lowercased name.
  */
 export const USERNAME_PATTERN = /^[a-z][a-z0-9_]{2,19}$/;
+
+/** A username can change once in this many days. Choosing it the first time counts as a change. */
+export const USERNAME_CHANGE_DAYS = 30;

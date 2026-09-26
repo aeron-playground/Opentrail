@@ -15,17 +15,25 @@ export type ErrorBody = {
   };
 };
 
+export type AppErrorOptions = ErrorOptions & {
+  // How long until the same request can succeed, such as the wait before the next username
+  // change. The answer carries it as the Retry-After header.
+  retryAfterSeconds?: number;
+};
+
 // Throw this for any failure the client should see. The code decides the HTTP status and the
 // message, so the same problem looks the same on every route.
 export class AppError extends Error {
   readonly code: ErrorCode;
   readonly status: ErrorStatus;
+  readonly retryAfterSeconds: number | undefined;
 
-  constructor(code: ErrorCode, options?: ErrorOptions) {
+  constructor(code: ErrorCode, options?: AppErrorOptions) {
     super(ERRORS[code].message, options);
     this.name = "AppError";
     this.code = code;
     this.status = ERRORS[code].status;
+    this.retryAfterSeconds = options?.retryAfterSeconds;
   }
 }
 
@@ -49,6 +57,10 @@ export const notFound: NotFoundHandler<RequestIdEnv> = (c) => errorResponse(c, "
 export function errorHandler(logger: Logger): ErrorHandler<RequestIdEnv> {
   return (error, c) => {
     const code = errorCode(error);
+    if (error instanceof AppError && error.retryAfterSeconds !== undefined) {
+      // Whole seconds, and at least one, as HTTP expects.
+      c.header("Retry-After", String(Math.max(1, Math.ceil(error.retryAfterSeconds))));
+    }
     if (ERRORS[code].status >= 500) {
       // The details go to our logs only. The client gets the generic message and the request id.
       logger.error({ err: error, requestId: c.var.requestId }, "request failed");

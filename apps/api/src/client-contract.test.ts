@@ -29,22 +29,28 @@ test("gets the typed body of a 503 as the error", async () => {
   expect(error?.checks.database).toBe("down");
 });
 
-test("reads the signed-in account through the typed client", async () => {
-  const privy = createFakePrivy();
-  const person = privy.signIn();
-  const createdAt = new Date("2026-09-26T10:00:00.000Z");
-  const user: User = {
+const CREATED_AT = new Date("2026-09-26T10:00:00.000Z");
+
+function fakeUser(privyDid: string, overrides: Partial<User> = {}): User {
+  return {
     id: Bun.randomUUIDv7(),
-    privyDid: person.privyDid,
+    privyDid,
     walletAddress: fakeSolanaAddress(),
     username: "calm_otter_42",
     usernameChangedAt: null,
     status: "active",
     webhookRegisteredAt: null,
-    createdAt,
-    updatedAt: createdAt,
+    createdAt: CREATED_AT,
+    updatedAt: CREATED_AT,
     deletedAt: null,
+    ...overrides,
   };
+}
+
+test("reads the signed-in account through the typed client", async () => {
+  const privy = createFakePrivy();
+  const person = privy.signIn();
+  const user = fakeUser(person.privyDid);
   const client = clientFor({ privy, users: { getOrCreate: async () => user } });
 
   const { data, response } = await client.GET("/v1/me", {
@@ -54,9 +60,54 @@ test("reads the signed-in account through the typed client", async () => {
   expect(data).toEqual({
     id: user.id,
     username: "calm_otter_42",
+    usernameChosen: false,
+    usernameChangeableAt: null,
     walletAddress: user.walletAddress,
     createdAt: "2026-09-26T10:00:00.000Z",
   });
+});
+
+test("changes the username through the typed client", async () => {
+  const privy = createFakePrivy();
+  const person = privy.signIn();
+  const user = fakeUser(person.privyDid);
+  const changeableAt = new Date("2026-10-26T10:00:00.000Z");
+  const client = clientFor({
+    privy,
+    users: { getOrCreate: async () => user },
+    usernames: {
+      ...testAppDeps().usernames,
+      change: async (current, username) => ({
+        ...current,
+        username,
+        usernameChangedAt: CREATED_AT,
+      }),
+      changeableAt: () => changeableAt,
+    },
+  });
+
+  const { data, response } = await client.PATCH("/v1/me", {
+    headers: { Authorization: `Bearer ${person.token}` },
+    body: { username: "maya" },
+  });
+  expect(response.status).toBe(200);
+  expect(data?.username).toBe("maya");
+  expect(data?.usernameChosen).toBe(true);
+  expect(data?.usernameChangeableAt).toBe("2026-10-26T10:00:00.000Z");
+});
+
+test("checks a username through the typed client", async () => {
+  const client = clientFor({
+    usernames: {
+      ...testAppDeps().usernames,
+      availability: async () => ({ available: false, reason: "taken" }),
+    },
+  });
+
+  const { data } = await client.GET("/v1/usernames/{name}/available", {
+    params: { path: { name: "Maya" } },
+  });
+  expect(data).toEqual({ username: "maya", available: false, reason: "taken" });
 });
 
 test("gets a missing sign-in as a typed error", async () => {
