@@ -1,6 +1,105 @@
 ---
 title: Live updates
-description: The WebSocket messages the API sends for live trades and prices.
+description: The WebSocket the API offers for live events, such as money arriving in your wallet.
 ---
 
-This page isn't written yet. It will be written once live updates work.
+The API sends live events over a WebSocket at `/v1/ws`, for example the moment money arrives in
+your wallet. The %APP_NAME% web app and mobile app use it, and so can you.
+
+Like the HTTP API, the protocol is a public contract. New message types, fields and channels may
+be added; nothing that has shipped changes or goes away. So ignore message types and fields you
+don't know. The messages are defined in `packages/shared/src/ws.ts`.
+
+## Connect
+
+Open a WebSocket to the API's address with `wss://`, or `ws://localhost:3001/v1/ws` for a local
+API. Never put your access token in the address: sign in with a message after connecting.
+
+Every message, both ways, is JSON text.
+
+## Sign in and subscribe
+
+Send these two messages once the connection is open:
+
+```json
+{ "type": "auth", "token": "<your Privy access token>" }
+{ "type": "subscribe", "channel": "me" }
+```
+
+- Send `auth` within 10 seconds. A connection with neither `auth` nor a subscription after 10
+  seconds is closed.
+- You can send `subscribe` right after `auth`: the server handles your messages in order.
+- Send `auth` again when your access token is refreshed.
+- The server confirms each subscription with `subscribed`.
+
+| Channel | What it sends                          | Needs `auth` |
+| ------- | -------------------------------------- | ------------ |
+| `me`    | Events about you, like `balance.changed` | Yes        |
+
+More channels, such as prices, will follow.
+
+## Server messages
+
+Every server message has `"v": 1`, the protocol version, and a `type`.
+
+| Type              | Fields            | What it means                                                         |
+| ----------------- | ----------------- | --------------------------------------------------------------------- |
+| `subscribed`      | `channel`         | The subscription works                                                |
+| `balance.changed` | none              | Your balances changed. Read them again with [Get your balances](/developers/api/account/get-me-balances) |
+| `error`           | `code`, `message` | A message of yours failed. The connection stays open, unless noted below |
+
+```json
+{ "v": 1, "type": "balance.changed" }
+```
+
+Error codes are the same as the HTTP API's, so check `code`, never `message`:
+
+| Code                   | Why                                                                   |
+| ---------------------- | --------------------------------------------------------------------- |
+| `VALIDATION_FAILED`    | The message isn't one this page describes                             |
+| `UNAUTHORIZED`         | The token isn't valid, or you subscribed to `me` before signing in     |
+| `WALLET_NOT_READY`     | Your wallet is still being created. Send `auth` again in a moment      |
+| `TOO_MANY_CONNECTIONS` | Your account already has 5 live connections. The server closes this one |
+| `INTERNAL`             | Something went wrong on our side. Try again                           |
+
+## Staying connected
+
+The server pings every 25 seconds, and drops a connection that didn't answer the last ping.
+Browsers and most WebSocket libraries answer pings by themselves.
+
+When a connection drops, connect again:
+
+1. Wait about 1 second, and double the wait after each failed try, up to 30 seconds. Pick each
+   wait at random between half and all of it, so clients cut off together don't all come back
+   together. After close code 4029, wait the full 30 seconds.
+2. Sign in and subscribe again.
+3. Read your data again, since events sent while you were away aren't repeated.
+
+| Close code | What it means                                   | What to do                  |
+| ---------- | ----------------------------------------------- | --------------------------- |
+| 1001       | The server is restarting                        | Connect again               |
+| 4000       | No `auth` and no subscription within 10 seconds | Sign in sooner              |
+| 4029       | Too many live connections for your account      | Wait 30 seconds, then retry |
+
+## Limits
+
+- 5 live connections per account.
+- 16 KB per message you send. A larger message closes the connection.
+
+## Example
+
+```ts
+const socket = new WebSocket("ws://localhost:3001/v1/ws");
+
+socket.addEventListener("open", () => {
+  socket.send(JSON.stringify({ type: "auth", token: accessToken }));
+  socket.send(JSON.stringify({ type: "subscribe", channel: "me" }));
+});
+
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === "balance.changed") {
+    // Read GET /v1/me/balances again.
+  }
+});
+```
