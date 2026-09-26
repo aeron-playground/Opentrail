@@ -27,5 +27,5 @@ export async function renderRoute(
       </AppProviders>
     </auth.Provider>,
   );
-  return { ...result, router, auth, api };
+  return { ...result, router, auth, api, queryClient };
 }

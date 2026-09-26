@@ -17,6 +17,8 @@ export const TOKEN_NAMES = {
     "caution",
     "caution-bg",
     "scrim",
+    "qr-ink",
+    "qr-paper",
   ],
   text: ["hero", "hero-lg", "title", "section", "row", "body", "meta", "fine"],
   font: ["sans", "condensed", "mono"],
