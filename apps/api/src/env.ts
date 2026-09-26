@@ -30,6 +30,9 @@ const apiEnvSchema = z.object({
         )
         .min(1, { error: "needs at least one origin" }),
     ),
+  // From the Privy dashboard. The app id is public; the secret must stay on the server.
+  PRIVY_APP_ID: z.string().min(1),
+  PRIVY_APP_SECRET: z.string().min(1),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
   LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
 });

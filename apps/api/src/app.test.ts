@@ -1,16 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { createLogger, REQUEST_ID_HEADER } from "@repo/server";
+import { REQUEST_ID_HEADER } from "@repo/server";
 import { ERRORS } from "@repo/shared";
 import { createApp, MAX_BODY_BYTES } from "./app";
+import { testAppDeps } from "./testing";
 
 const WEB_ORIGIN = "http://localhost:5173";
 const OTHER_ORIGIN = "https://evil.example";
 
-const app = createApp({
-  logger: createLogger("silent"),
-  corsOrigins: [WEB_ORIGIN],
-  checkDatabase: async () => {},
-});
+const app = createApp(testAppDeps({ corsOrigins: [WEB_ORIGIN] }));
 
 describe("errors", () => {
   test("an unknown route answers 404 in the shared error shape", async () => {

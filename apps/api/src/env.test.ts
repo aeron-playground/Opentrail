@@ -1,12 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { readApiEnv } from "./env";
 
-const DATABASE_URL = "postgres://app:app@localhost:5432/app";
+const REQUIRED = {
+  DATABASE_URL: "postgres://app:app@localhost:5432/app",
+  PRIVY_APP_ID: "test-app-id",
+  PRIVY_APP_SECRET: "test-app-secret",
+};
 
 describe("readApiEnv", () => {
-  test("uses local defaults for everything but the database", () => {
-    expect(readApiEnv({ DATABASE_URL })).toEqual({
-      DATABASE_URL,
+  test("uses local defaults for everything but the database and Privy", () => {
+    expect(readApiEnv(REQUIRED)).toEqual({
+      ...REQUIRED,
       CORS_ORIGINS: ["http://localhost:5173"],
       PORT: 3001,
       LOG_LEVEL: "info",
@@ -36,13 +40,17 @@ describe("readApiEnv", () => {
 
   for (const { name, env, expected } of valid) {
     test(`accepts ${name}`, () => {
-      expect(readApiEnv({ DATABASE_URL, ...env })).toMatchObject(expected);
+      expect(readApiEnv({ ...REQUIRED, ...env })).toMatchObject(expected);
     });
   }
 
   const invalid: { name: string; env: Record<string, string | undefined> }[] = [
     { name: "a missing database URL", env: { DATABASE_URL: undefined } },
     { name: "a non-Postgres database URL", env: { DATABASE_URL: "mysql://app@localhost/app" } },
+    { name: "a missing Privy app id", env: { PRIVY_APP_ID: undefined } },
+    { name: "an empty Privy app id", env: { PRIVY_APP_ID: "" } },
+    { name: "a missing Privy app secret", env: { PRIVY_APP_SECRET: undefined } },
+    { name: "an empty Privy app secret", env: { PRIVY_APP_SECRET: "" } },
     { name: "port 0", env: { PORT: "0" } },
     { name: "a port above 65535", env: { PORT: "65536" } },
     { name: "a port that isn't a number", env: { PORT: "abc" } },
@@ -60,14 +68,20 @@ describe("readApiEnv", () => {
 
   for (const { name, env } of invalid) {
     test(`rejects ${name}`, () => {
-      expect(() => readApiEnv({ DATABASE_URL, ...env })).toThrow("Invalid API settings");
+      expect(() => readApiEnv({ ...REQUIRED, ...env })).toThrow("Invalid API settings");
     });
   }
 
   test("names the variable but never shows its value", () => {
     const read = () =>
-      readApiEnv({ DATABASE_URL: "mysql://app:s3cret-pass@localhost/app", PORT: "s3cret-port" });
+      readApiEnv({
+        DATABASE_URL: "mysql://app:s3cret-pass@localhost/app",
+        PRIVY_APP_ID: "",
+        PORT: "s3cret-port",
+      });
     expect(read).toThrow("DATABASE_URL");
+    expect(read).toThrow("PRIVY_APP_ID");
+    expect(read).toThrow("PRIVY_APP_SECRET");
     expect(read).toThrow("PORT");
     expect(read).not.toThrow("s3cret");
   });

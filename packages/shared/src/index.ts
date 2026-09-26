@@ -7,3 +7,4 @@ export {
   USERNAME_PATTERN,
 } from "./constants";
 export { ERROR_CODES, ERRORS, type ErrorCode } from "./errors";
+export { type RandomInt, randomUsername } from "./usernames";

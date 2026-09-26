@@ -8,6 +8,9 @@ version 1 only ever gains new routes and fields. A change that would break a cli
 route or a new version instead.
 
 - Every response has an `x-request-id` header. Include it when you report a problem.
+- Routes about your own account need you to be signed in. Send the Privy access token that the
+  app got at sign-in as `Authorization: Bearer <token>`. Without a valid token, these routes
+  answer `401` with the code `UNAUTHORIZED`.
 - Every error has the same shape: `{ "error": { "code", "message", "requestId" } }`. The message
   says what happened, and never includes internal details.
 - Amounts of money and token amounts are strings, so no precision is lost. Times are ISO 8601

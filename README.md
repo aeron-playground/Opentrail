@@ -69,7 +69,8 @@ docker build -f apps/api/Dockerfile -t opentrail-api .
 
 # Apply the database migrations, then start the API
 docker run --rm -e DATABASE_URL=postgres://... opentrail-api packages/db/src/migrate.ts
-docker run -p 3001:3001 -e DATABASE_URL=postgres://... -e CORS_ORIGINS=https://example.com opentrail-api
+docker run -p 3001:3001 -e DATABASE_URL=postgres://... -e CORS_ORIGINS=https://example.com \
+  -e PRIVY_APP_ID=... -e PRIVY_APP_SECRET=... opentrail-api
 
 # Check that a published image was built by this repository's CI
 gh attestation verify oci://ghcr.io/aeron-playground/opentrail-api:0.0.2 -R aeron-playground/Opentrail
