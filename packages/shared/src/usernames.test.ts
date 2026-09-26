@@ -1,6 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { USERNAME_PATTERN } from "./constants";
-import { ADJECTIVES, ANIMALS, randomUsername, secureRandomInt } from "./usernames";
+import {
+  ADJECTIVES,
+  ANIMALS,
+  normalizeUsername,
+  RESERVED_USERNAMES,
+  randomUsername,
+  secureRandomInt,
+  usernameProblem,
+} from "./usernames";
 
 describe("word lists", () => {
   for (const [name, words] of [
@@ -79,5 +87,88 @@ describe("secureRandomInt", () => {
 
   test.each([0, -1, 1.5, 2 ** 31 + 1, Number.NaN])("refuses %p as the limit", (max) => {
     expect(() => secureRandomInt(max)).toThrow(RangeError);
+  });
+});
+
+describe("normalizeUsername", () => {
+  test("lowercases the name, the form it's saved and compared in", () => {
+    expect(normalizeUsername("Maya_K")).toBe("maya_k");
+  });
+});
+
+describe("usernameProblem", () => {
+  test.each([
+    "maya",
+    "kiran_2",
+    "calm_otter_42",
+    "badminton",
+    "apple_pie",
+    "helpful_hen",
+    "teammate",
+    "supporter",
+    "application",
+    "mood_ring",
+    "rootbeer",
+    "model_x",
+    "open_door",
+    "trail_runner",
+  ])("allows %s", (name) => {
+    expect(usernameProblem(name)).toBeNull();
+  });
+
+  test.each([
+    ["ab", "too short"],
+    ["a".repeat(21), "too long"],
+    ["2maya", "starts with a digit"],
+    ["Maya", "not normalized"],
+    ["maya-k", "has a hyphen"],
+    ["", "empty"],
+  ])("calls %s invalid (%s)", (name) => {
+    expect(usernameProblem(name)).toBe("invalid");
+  });
+
+  test.each([...RESERVED_USERNAMES])("reserves %s", (name) => {
+    expect(usernameProblem(name)).toBe("reserved");
+  });
+
+  test.each([
+    ["adm1n", "a digit for a letter"],
+    ["supp0rt", "a zero for an o"],
+    ["offic1al", "a one for an i"],
+    ["heip", "an i for an l"],
+    ["t34m", "several digits"],
+    ["s0lana", "a zero in a partner's name"],
+    ["pr1vy", "a one in a partner's name"],
+    ["adrnin", "rn for m"],
+    ["vvallet", "vv for w"],
+    ["suppor7", "a digit for a letter at the end"],
+    ["admin42", "digits after the word"],
+    ["admin_42", "digits as their own part"],
+    ["fees_2026", "a year as its own part"],
+    ["admin_team", "two reserved parts"],
+    ["maya_support", "a reserved part after a name"],
+    ["the_official", "a reserved part at the end"],
+    ["a_d_m_i_n", "underscores between letters"],
+    ["sup_port", "an underscore inside the word"],
+    ["opentrail", "the product name"],
+    ["opentrails", "the product name with more after it"],
+    ["opentrail_fan", "the product name as a part"],
+    ["open_trail", "the product name split in two"],
+    ["the_0pentrai1", "the product name with look-alikes"],
+    ["my_opentrail_42", "the product name in the middle"],
+  ])("reserves %s (%s)", (name) => {
+    expect(usernameProblem(name)).toBe("reserved");
+  });
+
+  test("allows every random name", () => {
+    for (const adjective of ADJECTIVES) {
+      for (const animal of ANIMALS) {
+        expect(usernameProblem(`${adjective}_${animal}_42`)).toBeNull();
+      }
+    }
+    for (let number = 0; number < 100; number += 1) {
+      const name = randomUsername((max) => (max === 100 ? number : 0));
+      expect(usernameProblem(name)).toBeNull();
+    }
   });
 });

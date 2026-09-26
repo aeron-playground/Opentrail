@@ -1,6 +1,8 @@
 // Error codes the API returns. Codes and statuses are part of the public /v1 contract: add new
 // codes freely, but never change or remove one that has shipped. Messages are for people and
 // may be reworded, so clients must never branch on them.
+import { USERNAME_CHANGE_DAYS } from "./constants";
+
 export const ERRORS = {
   VALIDATION_FAILED: { status: 400, message: "Check the highlighted fields." },
   UNAUTHORIZED: { status: 401, message: "Sign in again to continue." },
@@ -10,7 +12,14 @@ export const ERRORS = {
     status: 409,
     message: "Your wallet is still being set up. Try again in a moment.",
   },
+  USERNAME_TAKEN: { status: 409, message: "That username is taken." },
+  USERNAME_RESERVED: { status: 409, message: "That username isn't available." },
   PAYLOAD_TOO_LARGE: { status: 413, message: "This request is too large. Send less data." },
+  // The date of the next allowed change is on GET /v1/me, so the message stays one sentence.
+  USERNAME_CHANGE_TOO_SOON: {
+    status: 429,
+    message: `You can change your username once every ${USERNAME_CHANGE_DAYS} days.`,
+  },
   INTERNAL: { status: 500, message: "Something went wrong on our side. Try again." },
 } as const satisfies Record<string, { status: number; message: string }>;
 
