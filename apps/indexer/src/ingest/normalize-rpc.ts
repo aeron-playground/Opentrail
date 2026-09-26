@@ -59,7 +59,12 @@ const RpcTransactionSchema = z.object({
 });
 
 export function normalizeRpcTransaction(input: unknown): NormalizedTx {
-  const { slot, blockTime, meta, transaction } = RpcTransactionSchema.parse(input);
+  const parsed = RpcTransactionSchema.safeParse(input);
+  if (!parsed.success) {
+    // prettifyError names each field and the problem in a line, which reads well in last_error.
+    throw new Error(`Not a transaction in the RPC shape:\n${z.prettifyError(parsed.error)}`);
+  }
+  const { slot, blockTime, meta, transaction } = parsed.data;
   const [signature] = transaction.signatures;
   const [feePayer] = transaction.message.accountKeys;
   if (blockTime === null) {

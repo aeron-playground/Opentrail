@@ -14,8 +14,8 @@ export type HealthDeps = {
   timeoutMs?: number;
 };
 
-// Monitors call this. It reports the inbox backlog too. An old backlog doesn't fail the check
-// yet: nothing processes the inbox until the processing job exists.
+// Monitors call this. It reports the inbox backlog and the events set aside, for a person to
+// look at; neither fails the check, which only says whether the database answers.
 export function healthRoute({ inbox, logger, timeoutMs = DATABASE_TIMEOUT_MS }: HealthDeps) {
   const app = new Hono<RequestIdEnv>();
   app.get("/health", async (c) => {

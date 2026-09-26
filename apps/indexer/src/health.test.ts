@@ -34,7 +34,7 @@ describe("GET /health", () => {
     expect(await response.json()).toEqual({
       status: "ok",
       checks: { database: "ok" },
-      inbox: { pending: 0, oldestPendingSeconds: null },
+      inbox: { pending: 0, oldestPendingSeconds: null, setAside: 0 },
     });
   });
 

@@ -148,7 +148,11 @@ describe("normalizeRpcTransaction", () => {
       rpcTransaction({ meta: { preBalances: [1.5, 0], postBalances: [95, 0] } }),
       "whole number",
     ],
-    ["something that isn't a transaction", { hello: "world" }, ""],
+    [
+      "something that isn't a transaction",
+      { hello: "world" },
+      "Not a transaction in the RPC shape",
+    ],
   ])("refuses %s", (_, input, message) => {
     expect(() => normalizeRpcTransaction(input)).toThrow(message);
   });
