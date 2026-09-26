@@ -18,8 +18,20 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
   };
   expect(document.openapi).toBe("3.1.0");
   expect(document.info).toMatchObject({ title: `${APP_NAME} API`, version: "1" });
-  expect(Object.keys(document.paths)).toEqual(["/v1/health", "/v1/me"]);
-  expect(Object.keys(document.components.schemas).sort()).toEqual(["Error", "Health", "Me"]);
+  expect(Object.keys(document.paths)).toEqual([
+    "/v1/health",
+    "/v1/me",
+    "/v1/usernames/suggest",
+    "/v1/usernames/{name}/available",
+  ]);
+  expect(Object.keys(document.components.schemas).sort()).toEqual([
+    "Error",
+    "Health",
+    "Me",
+    "MeUpdate",
+    "UsernameAvailability",
+    "UsernameSuggestion",
+  ]);
   expect(document.components.securitySchemes).toMatchObject({
     bearerAuth: { type: "http", scheme: "bearer" },
   });

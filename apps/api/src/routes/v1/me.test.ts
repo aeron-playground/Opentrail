@@ -5,6 +5,7 @@ import { type Logger, REQUEST_ID_HEADER } from "@repo/server";
 import { ERRORS, USERNAME_PATTERN } from "@repo/shared";
 import { createApp } from "../../app";
 import { createFakePrivy, type FakePrivy } from "../../providers/privy/fake";
+import { createUsernameService } from "../../services/usernames";
 import { createUserService } from "../../services/users";
 import { capturedLogger, testAppDeps } from "../../testing";
 
@@ -30,9 +31,17 @@ function testApp(logger: Logger = capturedLogger().logger) {
       logger,
       privy,
       users: createUserService({ db: database.db, privy, logger }),
+      usernames: createUsernameService({ db: database.db }),
     }),
   );
 }
+
+const patchMe = (app: ReturnType<typeof testApp>, token: string, body: unknown) =>
+  app.request("/v1/me", {
+    method: "PATCH",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
 
 const getMe = (app: ReturnType<typeof testApp>, token?: string) =>
   app.request(
@@ -67,9 +76,18 @@ describe("GET /v1/me", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    const body = (await response.json()) as Record<string, string>;
-    expect(Object.keys(body).sort()).toEqual(["createdAt", "id", "username", "walletAddress"]);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(Object.keys(body).sort()).toEqual([
+      "createdAt",
+      "id",
+      "username",
+      "usernameChangeableAt",
+      "usernameChosen",
+      "walletAddress",
+    ]);
     expect(body.walletAddress).toBe(String(person.wallet));
+    expect(body.usernameChosen).toBe(false);
+    expect(body.usernameChangeableAt).toBeNull();
     expect(body.username).toMatch(USERNAME_PATTERN);
     expect(new Date(String(body.createdAt)).toISOString()).toBe(String(body.createdAt));
 
@@ -112,5 +130,93 @@ describe("GET /v1/me", () => {
     expect(lines.filter((line) => line.msg === "request")).toHaveLength(2);
     expect(logged).not.toContain(person.token);
     expect(logged).not.toContain("fake-token-that-is-not-valid");
+  });
+});
+
+describe("PATCH /v1/me", () => {
+  type Me = { username: string; usernameChosen: boolean; usernameChangeableAt: string | null };
+
+  test("answers 401 without a valid token", async () => {
+    await expectError(
+      await patchMe(testApp(), "fake-token-unknown", { username: "maya" }),
+      401,
+      "UNAUTHORIZED",
+    );
+  });
+
+  test("changes the name, marks it chosen and says when it can change again", async () => {
+    const person = privy.signIn();
+    const app = testApp();
+    const before = Date.now();
+    const response = await patchMe(app, person.token, { username: "Maya" });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const me = (await response.json()) as Me;
+    expect(me.username).toBe("maya");
+    expect(me.usernameChosen).toBe(true);
+    const wait = new Date(String(me.usernameChangeableAt)).getTime() - before;
+    expect(wait).toBeGreaterThanOrEqual(30 * 24 * 60 * 60 * 1000);
+    expect(wait).toBeLessThan(30 * 24 * 60 * 60 * 1000 + 60_000);
+
+    expect(await (await getMe(app, person.token)).json()).toEqual(me);
+  });
+
+  test("keeping the random name marks it chosen", async () => {
+    const person = privy.signIn();
+    const app = testApp();
+    const { username } = (await (await getMe(app, person.token)).json()) as Me;
+    const me = (await (await patchMe(app, person.token, { username })).json()) as Me;
+
+    expect(me.username).toBe(username);
+    expect(me.usernameChosen).toBe(true);
+  });
+
+  test("answers 429 with Retry-After for a second change within 30 days", async () => {
+    const person = privy.signIn();
+    const app = testApp();
+    await patchMe(app, person.token, { username: "maya" });
+    const response = await patchMe(app, person.token, { username: "kiran" });
+
+    const retryAfter = Number(response.headers.get("retry-after"));
+    expect(retryAfter).toBeGreaterThan(30 * 24 * 60 * 60 - 60);
+    expect(retryAfter).toBeLessThanOrEqual(30 * 24 * 60 * 60);
+    await expectError(response, 429, "USERNAME_CHANGE_TOO_SOON");
+  });
+
+  test("answers 409 USERNAME_TAKEN for someone else's name", async () => {
+    const [maya, kiran] = [privy.signIn(), privy.signIn()];
+    const app = testApp();
+    await patchMe(app, maya.token, { username: "maya" });
+    await expectError(await patchMe(app, kiran.token, { username: "maya" }), 409, "USERNAME_TAKEN");
+  });
+
+  test("answers 409 USERNAME_RESERVED for a blocked name or a look-alike", async () => {
+    const person = privy.signIn();
+    await expectError(
+      await patchMe(testApp(), person.token, { username: "adm1n" }),
+      409,
+      "USERNAME_RESERVED",
+    );
+  });
+
+  test.each([
+    ["a name that breaks the format", { username: "no spaces" }],
+    ["a missing name", {}],
+    ["a name that isn't text", { username: 42 }],
+  ])("answers 400 for %s", async (_, body) => {
+    const person = privy.signIn();
+    await expectError(await patchMe(testApp(), person.token, body), 400, "VALIDATION_FAILED");
+  });
+
+  test("ignores a wallet address sent by the client", async () => {
+    const person = privy.signIn();
+    const response = await patchMe(testApp(), person.token, {
+      username: "maya",
+      walletAddress: "SomeoneElsesWallet1111111111111111111111111",
+    });
+    expect(((await response.json()) as { walletAddress: string }).walletAddress).toBe(
+      String(person.wallet),
+    );
   });
 });

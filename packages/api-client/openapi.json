@@ -92,6 +92,20 @@
             "description": "Your public name. New accounts get a random one, such as calm_otter_42.",
             "example": "calm_otter_42"
           },
+          "usernameChosen": {
+            "type": "boolean",
+            "description": "False until you choose a name or keep the random one, for example during onboarding.",
+            "example": false
+          },
+          "usernameChangeableAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When you can change your username again (once every 30 days), or null if you can change it now.",
+            "example": null
+          },
           "walletAddress": {
             "type": "string",
             "description": "Your Solana wallet address, where you add funds. It comes from your sign-in on the server, never from the request."
@@ -106,8 +120,60 @@
         "required": [
           "id",
           "username",
+          "usernameChosen",
+          "usernameChangeableAt",
           "walletAddress",
           "createdAt"
+        ]
+      },
+      "MeUpdate": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Your new username: 3–20 characters, a–z, 0–9 and _, starting with a letter. It's saved in lowercase. Send your current name to keep it.",
+            "example": "maya"
+          }
+        },
+        "required": [
+          "username"
+        ]
+      },
+      "UsernameSuggestion": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "A random name that nobody has right now.",
+            "example": "calm_otter_42"
+          }
+        },
+        "required": [
+          "username"
+        ]
+      },
+      "UsernameAvailability": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The name as it would be saved: in lowercase.",
+            "example": "maya"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the name isn't available: `taken` (someone has it, maybe you), `reserved` (blocked, or too close to a blocked name) or `invalid` (breaks the format). Treat any other value as not available.",
+            "example": "taken"
+          }
+        },
+        "required": [
+          "username",
+          "available"
         ]
       }
     },
@@ -180,6 +246,156 @@
           },
           "409": {
             "description": "`WALLET_NOT_READY`: your wallet is still being created right after sign-in. Try again in a moment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Change your username",
+        "description": "Choosing a name, or keeping the random one, counts as a change: the next one is allowed 30 days later. Sending the name you already chose changes nothing.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Your account, with the new name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: the name breaks the format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`UNAUTHORIZED`: the access token is missing, expired or not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`USERNAME_TAKEN`: someone has the name. `USERNAME_RESERVED`: the name is blocked, or too close to a blocked name. `WALLET_NOT_READY`: see GET /v1/me.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`USERNAME_CHANGE_TOO_SOON`: you changed it less than 30 days ago. `usernameChangeableAt` on GET /v1/me says when you can change it again.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds until you can change your username again.",
+                  "example": "86400"
+                },
+                "required": true,
+                "description": "Seconds until you can change your username again."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/usernames/suggest": {
+      "get": {
+        "tags": [
+          "Usernames"
+        ],
+        "summary": "Suggest a username",
+        "description": "A random `adjective_animal_NN` name that nobody has. No sign-in needed.",
+        "responses": {
+          "200": {
+            "description": "A free name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsernameSuggestion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/usernames/{name}/available": {
+      "get": {
+        "tags": [
+          "Usernames"
+        ],
+        "summary": "Check whether a username is free",
+        "description": "Usernames are 3–20 characters: a–z, 0–9 and _, starting with a letter. Case doesn't matter. No sign-in needed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "example": "maya"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whether the name is free.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsernameAvailability"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: the name is longer than 64 characters.",
             "content": {
               "application/json": {
                 "schema": {

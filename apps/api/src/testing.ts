@@ -12,6 +12,12 @@ export function testAppDeps(overrides: Partial<AppDeps> = {}): AppDeps {
     checkDatabase: async () => {},
     privy: createFakePrivy(),
     users: { getOrCreate: () => Promise.reject(new Error("This test has no user service")) },
+    usernames: {
+      availability: () => Promise.reject(new Error("This test has no username service")),
+      suggest: () => Promise.reject(new Error("This test has no username service")),
+      change: () => Promise.reject(new Error("This test has no username service")),
+      changeableAt: () => null,
+    },
     ...overrides,
   };
 }

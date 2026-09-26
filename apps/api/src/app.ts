@@ -17,6 +17,8 @@ import { OPENAPI_CONFIG, OPENAPI_PATH } from "./openapi";
 import type { PrivyProvider } from "./providers/privy/types";
 import { healthRoutes } from "./routes/v1/health";
 import { meRoutes } from "./routes/v1/me";
+import { usernameRoutes } from "./routes/v1/usernames";
+import type { UsernameService } from "./services/usernames";
 import type { UserService } from "./services/users";
 
 export const MAX_BODY_BYTES = 64 * 1024;
@@ -30,13 +32,21 @@ export type AppDeps = {
   // Checks the sign-in token on protected routes.
   privy: Pick<PrivyProvider, "verifyAccessToken">;
   users: UserService;
+  usernames: UsernameService;
 };
 
 export type App = ReturnType<typeof createApp>;
 
 // Builds the app from its dependencies and reads no settings itself, so tests can build one
 // with fakes.
-export function createApp({ logger, corsOrigins, checkDatabase, privy, users }: AppDeps) {
+export function createApp({
+  logger,
+  corsOrigins,
+  checkDatabase,
+  privy,
+  users,
+  usernames,
+}: AppDeps) {
   const app = createRouter();
 
   app.use(
@@ -64,7 +74,8 @@ export function createApp({ logger, corsOrigins, checkDatabase, privy, users }: 
   );
 
   app.route("/v1", healthRoutes({ checkDatabase, logger }));
-  app.route("/v1", meRoutes({ privy, users }));
+  app.route("/v1", meRoutes({ privy, users, usernames }));
+  app.route("/v1", usernameRoutes({ usernames }));
 
   // Listed first: every error on every route uses this shape.
   app.openAPIRegistry.register("Error", ErrorBodySchema);
