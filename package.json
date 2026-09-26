@@ -33,6 +33,7 @@
     "typescript": "6.0.3"
   },
   "overrides": {
-    "undici": "7.29.1"
+    "undici": "7.29.1",
+    "ws": "8.21.3"
   }
 }
