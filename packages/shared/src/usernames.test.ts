@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { USERNAME_PATTERN } from "./constants";
-import { ADJECTIVES, ANIMALS, randomUsername } from "./usernames";
+import { ADJECTIVES, ANIMALS, randomUsername, secureRandomInt } from "./usernames";
 
 describe("word lists", () => {
   for (const [name, words] of [
@@ -59,5 +59,25 @@ describe("randomUsername", () => {
       expect(USERNAME_PATTERN.test(name)).toBe(true);
     }
     expect(new Set(names).size).toBeGreaterThan(150);
+  });
+});
+
+describe("secureRandomInt", () => {
+  test.each([1, 2, 3, 53, 100, 2 ** 31])("draws whole numbers below %p", (max) => {
+    for (let draw = 0; draw < 500; draw += 1) {
+      const value = secureRandomInt(max);
+      expect(Number.isInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThan(max);
+    }
+  });
+
+  test("reaches every value", () => {
+    const seen = new Set(Array.from({ length: 300 }, () => secureRandomInt(3)));
+    expect([...seen].sort()).toEqual([0, 1, 2]);
+  });
+
+  test.each([0, -1, 1.5, 2 ** 31 + 1, Number.NaN])("refuses %p as the limit", (max) => {
+    expect(() => secureRandomInt(max)).toThrow(RangeError);
   });
 });

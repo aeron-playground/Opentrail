@@ -122,12 +122,29 @@ const TWO_DIGITS = Array.from({ length: 100 }, (_, n) => String(n).padStart(2, "
 /** Returns a whole number from 0 up to, but not including, `max`. */
 export type RandomInt = (max: number) => number;
 
-// Modulo of a 32-bit value: the bias for lists this short is below one in ten million.
-const cryptoRandomInt: RandomInt = (max) =>
-  (crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) % max;
+/**
+ * A secure random whole number below `max`, with every value equally likely: it keeps only the
+ * bits a number below `max` needs, and draws again when the result is too large. (Modulo would
+ * make the smaller numbers slightly more likely.)
+ */
+export const secureRandomInt: RandomInt = (max) => {
+  // The mask works on 31 bits, and zero or a fraction would never end the loop.
+  if (!Number.isInteger(max) || max < 1 || max > 2 ** 31) {
+    throw new RangeError(`max must be a whole number from 1 to 2^31, not ${max}`);
+  }
+  const mask = 2 ** Math.ceil(Math.log2(max)) - 1;
+  const values = new Uint32Array(1);
+  for (;;) {
+    crypto.getRandomValues(values);
+    const value = (values[0] ?? 0) & mask;
+    if (value < max) {
+      return value;
+    }
+  }
+};
 
 /** A random `adjective_animal_NN` username, such as `calm_otter_42`. It always fits the rules. */
-export function randomUsername(randomInt: RandomInt = cryptoRandomInt): string {
+export function randomUsername(randomInt: RandomInt = secureRandomInt): string {
   return [ADJECTIVES, ANIMALS, TWO_DIGITS].map((words) => pick(words, randomInt)).join("_");
 }
 
