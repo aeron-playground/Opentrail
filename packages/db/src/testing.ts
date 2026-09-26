@@ -2,6 +2,7 @@
 import { sql } from "drizzle-orm";
 import { createDb, type DbHandle } from "./client";
 import { readTestDbEnv } from "./env";
+import { postgresErrorCode } from "./errors";
 import { applyMigrations } from "./migrations";
 
 const DUPLICATE_DATABASE = "42P04";
@@ -56,16 +57,6 @@ export async function createTestDb(name?: string): Promise<DbHandle> {
   await handle.db.execute(sql`create schema public`);
   await applyMigrations(handle.db);
   return handle;
-}
-
-// Drizzle wraps driver errors, so the Postgres error code can sit on `cause`.
-export function postgresErrorCode(error: unknown): string | undefined {
-  for (let current = error; current instanceof Error; current = current.cause) {
-    if ("code" in current && typeof current.code === "string") {
-      return current.code;
-    }
-  }
-  return undefined;
 }
 
 function databaseName(url: string): string {
