@@ -154,6 +154,8 @@ function SignInForm() {
             <Input
               id={codeId}
               name="code"
+              // The sheet is already open when this step appears, so focus moves here by hand.
+              autoFocus
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}

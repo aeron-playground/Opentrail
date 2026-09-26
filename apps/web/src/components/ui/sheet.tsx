@@ -43,6 +43,8 @@ export function Sheet({ open, onClose, labelledBy, children }: SheetProps) {
       className="mx-0 mt-auto mb-0 max-h-[90dvh] w-full max-w-full overflow-y-auto rounded-t-sheet bg-paper p-0 text-ink shadow-float backdrop:bg-scrim sm:m-auto sm:max-w-md sm:rounded-sheet"
     >
       <div className="relative px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        {children}
+        {/* Last in the page order, so opening the sheet focuses its first field, not Close. */}
         <Button
           variant="ghost"
           size="icon"
@@ -52,7 +54,6 @@ export function Sheet({ open, onClose, labelledBy, children }: SheetProps) {
         >
           <XIcon size={20} aria-hidden="true" />
         </Button>
-        {children}
       </div>
     </dialog>
   );
