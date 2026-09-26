@@ -176,6 +176,17 @@
         "@types/bun": "1.4.2",
       },
     },
+    "packages/solana": {
+      "name": "@repo/solana",
+      "version": "0.0.0",
+      "dependencies": {
+        "@solana/kit": "8.3.0",
+      },
+      "devDependencies": {
+        "@repo/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
+      },
+    },
     "packages/tsconfig": {
       "name": "@repo/tsconfig",
       "version": "0.0.0",
@@ -667,6 +678,8 @@
     "@repo/server": ["@repo/server@workspace:packages/server"],
 
     "@repo/shared": ["@repo/shared@workspace:packages/shared"],
+
+    "@repo/solana": ["@repo/solana@workspace:packages/solana"],
 
     "@repo/tsconfig": ["@repo/tsconfig@workspace:packages/tsconfig"],
 
