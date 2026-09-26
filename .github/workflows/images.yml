@@ -81,6 +81,8 @@ jobs:
           docker run --detach --name smoke --publish "$PORT:$PORT" \
             --env DATABASE_URL=postgres://smoke:smoke@127.0.0.1:1/smoke \
             --env HELIUS_WEBHOOK_SECRET=smoke-test-secret-that-is-long-enough \
+            --env PRIVY_APP_ID=smoke-test-app-id \
+            --env PRIVY_APP_SECRET=smoke-test-app-secret \
             "$APP:test"
           status=000
           for attempt in $(seq 1 30); do
