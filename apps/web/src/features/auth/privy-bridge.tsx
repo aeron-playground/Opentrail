@@ -1,24 +1,37 @@
 import {
   type PrivyClientConfig,
   PrivyProvider,
+  type User,
   useLoginWithEmail,
   useLoginWithOAuth,
   usePrivy,
 } from "@privy-io/react-auth";
+import { useCreateWallet } from "@privy-io/react-auth/solana";
 import { memo, useEffect, useRef } from "react";
 import type { Auth } from "./auth";
 
-// Our own screens do the talking. Privy creates each person's Solana wallet without asking,
-// never shows its wallet windows, and makes no Ethereum wallets.
+// Our own screens do the talking: Privy never shows its wallet windows, and makes no Ethereum
+// wallets. Its "create on login" setting only works inside Privy's own sign-in screens, so the
+// Solana wallet is created below, right after sign-in.
 const PRIVY_CONFIG: PrivyClientConfig = {
   loginMethods: ["email", "google", "github"],
   appearance: { walletChainType: "solana-only" },
   embeddedWallets: {
     ethereum: { createOnLogin: "off" },
-    solana: { createOnLogin: "users-without-wallets" },
+    solana: { createOnLogin: "off" },
     showWalletUIs: false,
   },
 };
+
+// The wallet Privy keeps for this person on Solana. External wallets don't count.
+function hasSolanaWallet(user: User): boolean {
+  return user.linkedAccounts.some(
+    (account) =>
+      account.type === "wallet" &&
+      account.chainType === "solana" &&
+      account.walletClientType === "privy",
+  );
+}
 
 type BridgeProps = {
   appId: string;
@@ -39,13 +52,29 @@ function Bridge({ onChange }: Pick<BridgeProps, "onChange">) {
   const privy = usePrivy();
   const email = useLoginWithEmail();
   const oauth = useLoginWithOAuth();
+  const wallet = useCreateWallet();
 
   // The hooks hand out new functions on every render. The Auth passed up calls the latest
   // ones, so it only has to change when the status does.
-  const latest = useRef({ privy, email, oauth });
+  const latest = useRef({ privy, email, oauth, wallet });
   useEffect(() => {
-    latest.current = { privy, email, oauth };
+    latest.current = { privy, email, oauth, wallet };
   });
+
+  // Every account needs its Solana wallet. Until it exists the API answers WALLET_NOT_READY,
+  // which the app waits out. If creating fails, the next visit tries again.
+  const needsWallet =
+    privy.ready && privy.authenticated && privy.user !== null && !hasSolanaWallet(privy.user);
+  const creatingWallet = useRef(false);
+  useEffect(() => {
+    if (!needsWallet || creatingWallet.current) {
+      return;
+    }
+    creatingWallet.current = true;
+    latest.current.wallet.createWallet().catch(() => {
+      creatingWallet.current = false;
+    });
+  }, [needsWallet]);
 
   const status = !privy.ready ? "loading" : privy.authenticated ? "signed-in" : "signed-out";
   const oauthFailed = oauth.state.status === "error";
