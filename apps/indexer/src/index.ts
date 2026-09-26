@@ -5,7 +5,11 @@ import { createApp } from "./app";
 import { type IndexerEnv, readIndexerEnv } from "./env";
 import { createInbox } from "./inbox";
 import { cleanupJob } from "./jobs/cleanup";
-import { createScheduler } from "./jobs/scheduler";
+import { processInboxJob } from "./jobs/process-inbox";
+import { createScheduler, type Job } from "./jobs/scheduler";
+import { syncWebhookAddressesJob } from "./jobs/sync-webhook-addresses";
+import { createHeliusWebhooks } from "./providers/helius/helius";
+import { createWatchList } from "./watch-list";
 
 let env: IndexerEnv;
 try {
@@ -21,7 +25,18 @@ const database = createDb(env.DATABASE_URL);
 const inbox = createInbox(database.db);
 const app = createApp({ logger, inbox, webhookSecret: env.HELIUS_WEBHOOK_SECRET });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
-const scheduler = createScheduler([cleanupJob({ inbox, logger })], logger);
+const jobs: Job[] = [cleanupJob({ inbox, logger }), processInboxJob({ inbox, logger })];
+if (env.HELIUS_API_KEY !== undefined && env.HELIUS_WEBHOOK_ID !== undefined) {
+  const helius = createHeliusWebhooks({
+    apiKey: env.HELIUS_API_KEY,
+    webhookId: env.HELIUS_WEBHOOK_ID,
+  });
+  jobs.push(syncWebhookAddressesJob({ watchList: createWatchList(database.db), helius, logger }));
+} else {
+  // Fine locally: Helius can't reach this computer anyway.
+  logger.info("Helius address sync is off: HELIUS_API_KEY and HELIUS_WEBHOOK_ID aren't set");
+}
+const scheduler = createScheduler(jobs, logger);
 scheduler.start();
 logger.info({ port: server.port }, "indexer started");
 

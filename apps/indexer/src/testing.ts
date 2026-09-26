@@ -1,4 +1,6 @@
 // Helpers for this app's tests. Never import this from app code.
+import { join } from "node:path";
+import { type Database, users } from "@repo/db";
 import { createLogger, type Logger } from "@repo/server";
 import type { Inbox } from "./inbox";
 
@@ -39,8 +41,29 @@ export function fakeRawTransaction(signature = fakeSignature()) {
 export function fakeInbox(overrides: Partial<Inbox> = {}): Inbox {
   return {
     save: async (_provider, events) => events.length,
-    stats: async () => ({ pending: 0, oldestPendingSeconds: null }),
+    nextPending: async () => [],
+    complete: async () => true,
+    fail: async () => 1,
+    stats: async () => ({ pending: 0, oldestPendingSeconds: null, setAside: 0 }),
     deleteProcessedBefore: async () => 0,
     ...overrides,
   };
+}
+
+// A real mainnet transaction from test/fixtures, as Helius would deliver it.
+export async function loadFixture(name: string): Promise<Record<string, unknown>> {
+  return Bun.file(join(import.meta.dir, "..", "test", "fixtures", `${name}.json`)).json();
+}
+
+// A user who owns `walletAddress`, with made-up sign-in details. Resolves to the user's id.
+export async function insertUser(db: Database, walletAddress: string): Promise<string> {
+  const suffix = crypto.randomUUID().slice(0, 8);
+  const [user] = await db
+    .insert(users)
+    .values({ privyDid: `did:privy:test-${suffix}`, walletAddress, username: `test_${suffix}` })
+    .returning({ id: users.id });
+  if (user === undefined) {
+    throw new Error("The test user wasn't saved");
+  }
+  return user.id;
 }

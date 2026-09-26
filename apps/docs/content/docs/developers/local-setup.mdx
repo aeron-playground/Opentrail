@@ -36,6 +36,11 @@ Signing in needs a Privy app. Create a free one at [dashboard.privy.io](https://
 `apps/api/.env`, and its app id in `apps/web/.env` (copy `apps/web/.env.example`). Without
 them everything else works, and the website says sign-in isn't available.
 
+The indexer learns about deposits from a [Helius](https://www.helius.dev) webhook of type "raw".
+Helius can't reach `localhost`, so locally the indexer only processes deliveries you replay to
+it. On a server, set `HELIUS_API_KEY` and `HELIUS_WEBHOOK_ID` in `apps/indexer/.env`: the
+indexer then adds each new user's wallet to the webhook every 30 seconds.
+
 To run one app only, filter by its package name:
 
 ```bash

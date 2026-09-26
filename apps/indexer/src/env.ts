@@ -1,13 +1,27 @@
 import { LOG_LEVELS } from "@repo/server";
 import { z } from "zod";
 
-const indexerEnvSchema = z.object({
-  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
-  // Helius sends this value, unchanged, in the Authorization header of every delivery.
-  HELIUS_WEBHOOK_SECRET: z.string().min(32, { error: "must be at least 32 characters" }),
-  PORT: z.coerce.number().int().min(1).max(65_535).default(3002),
-  LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
-});
+// Empty counts as unset, so a blank line in .env (HELIUS_API_KEY=) leaves the setting off.
+const optional = z
+  .string()
+  .optional()
+  .transform((value) => (value === "" ? undefined : value));
+
+const indexerEnvSchema = z
+  .object({
+    DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+    // Helius sends this value, unchanged, in the Authorization header of every delivery.
+    HELIUS_WEBHOOK_SECRET: z.string().min(32, { error: "must be at least 32 characters" }),
+    // With both, new users' wallets are added to the webhook. The key is a secret.
+    HELIUS_API_KEY: optional,
+    HELIUS_WEBHOOK_ID: optional,
+    PORT: z.coerce.number().int().min(1).max(65_535).default(3002),
+    LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
+  })
+  .refine((env) => (env.HELIUS_API_KEY === undefined) === (env.HELIUS_WEBHOOK_ID === undefined), {
+    error: "set both HELIUS_API_KEY and HELIUS_WEBHOOK_ID, or neither",
+    path: ["HELIUS_WEBHOOK_ID"],
+  });
 
 export type IndexerEnv = z.infer<typeof indexerEnvSchema>;
 
