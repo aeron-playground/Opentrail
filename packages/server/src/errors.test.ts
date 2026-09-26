@@ -20,6 +20,11 @@ function testApp() {
   app.get("/app-error", () => {
     throw new AppError("PAYLOAD_TOO_LARGE");
   });
+  app.get("/wait/:seconds", (c) => {
+    throw new AppError("USERNAME_CHANGE_TOO_SOON", {
+      retryAfterSeconds: Number(c.req.param("seconds")),
+    });
+  });
   app.get("/crash", () => {
     throw new Error("password=hunter2 in the connection string");
   });
@@ -47,6 +52,23 @@ describe("errorHandler", () => {
       message: ERRORS.PAYLOAD_TOO_LARGE.message,
       requestId: String(response.headers.get(REQUEST_ID_HEADER)),
     });
+  });
+
+  test("sends no Retry-After unless the error has a wait", async () => {
+    const response = await testApp().app.request("/app-error");
+    expect(response.headers.get("retry-after")).toBeNull();
+  });
+
+  test.each([
+    ["86400", "86400"],
+    ["90.2", "91"],
+    ["0.3", "1"],
+    ["0", "1"],
+  ])("sends a wait of %s seconds as Retry-After: %s", async (seconds, header) => {
+    const response = await testApp().app.request(`/wait/${seconds}`);
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe(header);
+    expect((await errorOf(response)).code).toBe("USERNAME_CHANGE_TOO_SOON");
   });
 
   test("answers an unexpected error with INTERNAL and keeps the details in the log", async () => {
