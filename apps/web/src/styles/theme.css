@@ -18,6 +18,8 @@
   --caution: #9a5b00;
   --caution-bg: #fff4db;
   --shadow-float-color: rgb(21 24 29 / 0.12);
+  /* Dims the page behind a sheet or dialog. */
+  --scrim: rgb(21 24 29 / 0.4);
 }
 
 :root[data-theme="dark"] {
@@ -33,6 +35,7 @@
   --caution: #f2b34b;
   --caution-bg: #2b2414;
   --shadow-float-color: rgb(0 0 0 / 0.4);
+  --scrim: rgb(0 0 0 / 0.6);
 }
 
 /* Settings → PnL colors → Colorblind: blue for gains, orange for losses. */
@@ -66,6 +69,7 @@
   --color-loss: var(--loss);
   --color-caution: var(--caution);
   --color-caution-bg: var(--caution-bg);
+  --color-scrim: var(--scrim);
 
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-condensed: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;

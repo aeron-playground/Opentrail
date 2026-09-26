@@ -13,9 +13,7 @@ export function PortfolioPage() {
         </Link>
       }
     >
-      <p className="mt-3 text-ink-2">
-        Your holdings, cash and results will show here once you've signed in.
-      </p>
+      <p className="mt-3 text-ink-2">Your holdings, cash and results will show here.</p>
     </Page>
   );
 }
