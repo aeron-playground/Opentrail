@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.3](https://github.com/aeron-playground/Opentrail/compare/v0.0.2...v0.0.3) (2026-09-26)
+
+
+### Features
+
+* **api:** check privy sign-in and add get /v1/me ([#48](https://github.com/aeron-playground/Opentrail/issues/48)) ([e85422c](https://github.com/aeron-playground/Opentrail/commit/e85422c3b76d09604f440a2a3c45d10b7a1dccf2))
+* **api:** let people choose a username ([#51](https://github.com/aeron-playground/Opentrail/issues/51)) ([bdd647d](https://github.com/aeron-playground/Opentrail/commit/bdd647d4846543d806163f1ed7da90b0cd483301))
+* **api:** show balances and a qr code on add funds ([#57](https://github.com/aeron-playground/Opentrail/issues/57)) ([3174363](https://github.com/aeron-playground/Opentrail/commit/3174363f2c2ef39d692c29524ca158febdf95ed9))
+* **web:** add onboarding and username and wallet settings ([#55](https://github.com/aeron-playground/Opentrail/issues/55)) ([3033005](https://github.com/aeron-playground/Opentrail/commit/30330059296a50c37642cb596ac2f5b56ffe6665))
+* **web:** sign in and sign out with privy ([#53](https://github.com/aeron-playground/Opentrail/issues/53)) ([c98828f](https://github.com/aeron-playground/Opentrail/commit/c98828fb5c31f94b630209a8e9b2ce9015987fe3))
+
 ## [0.0.2](https://github.com/aeron-playground/Opentrail/compare/v0.0.1...v0.0.2) (2026-09-25)
 
 
