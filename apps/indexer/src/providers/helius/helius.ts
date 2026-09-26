@@ -6,12 +6,13 @@ const BASE_URL = "https://mainnet.helius-rpc.com/v0/webhooks";
 export const MAX_WEBHOOK_ADDRESSES = 100_000;
 const TIMEOUT_MS = 10_000;
 
-// The settings an edit can carry. An edit sends back every one of them as it was read, with only
-// the addresses changed: Helius's docs don't promise that a setting left out is kept, and losing
-// the auth header would make every delivery fail our secret check.
 // Helius may answer null for a setting that was never set; sending null back could clear it. As
 // undefined, JSON leaves it out instead.
 const orUndefined = <T>(value: T | null | undefined): T | undefined => value ?? undefined;
+
+// The settings an edit can carry. An edit sends back every one of them as it was read, with only
+// the addresses changed: Helius's docs don't promise that a setting left out is kept, and losing
+// the auth header would make every delivery fail our secret check.
 const WebhookSchema = z.object({
   webhookURL: z.string(),
   webhookType: z.string(),
