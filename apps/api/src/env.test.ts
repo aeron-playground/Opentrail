@@ -12,6 +12,7 @@ describe("readApiEnv", () => {
     expect(readApiEnv(REQUIRED)).toEqual({
       ...REQUIRED,
       CORS_ORIGINS: ["http://localhost:5173"],
+      SOLANA_RPC_URL: "https://api.mainnet-beta.solana.com",
       PORT: 3001,
       LOG_LEVEL: "info",
     });
@@ -20,6 +21,11 @@ describe("readApiEnv", () => {
   const valid: { name: string; env: Record<string, string>; expected: Record<string, unknown> }[] =
     [
       { name: "a port", env: { PORT: "8080" }, expected: { PORT: 8080 } },
+      {
+        name: "a Solana RPC provider URL",
+        env: { SOLANA_RPC_URL: "https://rpc.example.com/?api-key=abc" },
+        expected: { SOLANA_RPC_URL: "https://rpc.example.com/?api-key=abc" },
+      },
       { name: "a log level", env: { LOG_LEVEL: "debug" }, expected: { LOG_LEVEL: "debug" } },
       {
         name: "several origins with spaces",
@@ -51,6 +57,8 @@ describe("readApiEnv", () => {
     { name: "an empty Privy app id", env: { PRIVY_APP_ID: "" } },
     { name: "a missing Privy app secret", env: { PRIVY_APP_SECRET: undefined } },
     { name: "an empty Privy app secret", env: { PRIVY_APP_SECRET: "" } },
+    { name: "a Solana RPC URL that isn't http", env: { SOLANA_RPC_URL: "wss://rpc.example.com" } },
+    { name: "a Solana RPC URL that isn't a URL", env: { SOLANA_RPC_URL: "rpc.example.com" } },
     { name: "port 0", env: { PORT: "0" } },
     { name: "a port above 65535", env: { PORT: "65536" } },
     { name: "a port that isn't a number", env: { PORT: "abc" } },

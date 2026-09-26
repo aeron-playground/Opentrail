@@ -18,6 +18,7 @@ import type { PrivyProvider } from "./providers/privy/types";
 import { healthRoutes } from "./routes/v1/health";
 import { meRoutes } from "./routes/v1/me";
 import { usernameRoutes } from "./routes/v1/usernames";
+import type { BalanceService } from "./services/balances";
 import type { UsernameService } from "./services/usernames";
 import type { UserService } from "./services/users";
 
@@ -33,6 +34,7 @@ export type AppDeps = {
   privy: Pick<PrivyProvider, "verifyAccessToken">;
   users: UserService;
   usernames: UsernameService;
+  balances: BalanceService;
 };
 
 export type App = ReturnType<typeof createApp>;
@@ -46,6 +48,7 @@ export function createApp({
   privy,
   users,
   usernames,
+  balances,
 }: AppDeps) {
   const app = createRouter();
 
@@ -74,7 +77,7 @@ export function createApp({
   );
 
   app.route("/v1", healthRoutes({ checkDatabase, logger }));
-  app.route("/v1", meRoutes({ privy, users, usernames }));
+  app.route("/v1", meRoutes({ privy, users, usernames, balances }));
   app.route("/v1", usernameRoutes({ usernames }));
 
   // Listed first: every error on every route uses this shape.

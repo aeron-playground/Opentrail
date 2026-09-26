@@ -1,7 +1,9 @@
 import { CopyIcon } from "@phosphor-icons/react/Copy";
 import { WarningIcon } from "@phosphor-icons/react/Warning";
+import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+import { DepositStatus } from "./deposit-status";
 
 type CopyState = "idle" | "copied" | "failed";
 
@@ -29,25 +31,40 @@ export function AddFundsDetails({ address }: { address: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <p className="font-medium">Your Solana address</p>
-        <p className="select-all break-all rounded-control bg-paper-2 px-3 py-3 font-mono text-body">
-          {address}
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="secondary" onClick={copyAddress}>
-            <CopyIcon size={20} aria-hidden="true" />
-            Copy address
-          </Button>
-          <span role="status" className="text-ink-2 text-meta">
-            {copy === "copied"
-              ? "Copied."
-              : copy === "failed"
-                ? "Couldn't copy. Select the address and copy it yourself."
-                : ""}
-          </span>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div className="self-start rounded-control bg-qr-paper p-3 text-qr-ink">
+          <QRCodeSVG
+            value={address}
+            size={160}
+            level="M"
+            marginSize={0}
+            bgColor="transparent"
+            fgColor="currentColor"
+            role="img"
+            aria-label="QR code of your Solana address"
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <p className="font-medium">Your Solana address</p>
+          <p className="select-all break-all rounded-control bg-paper-2 px-3 py-3 font-mono text-body">
+            {address}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="secondary" onClick={copyAddress}>
+              <CopyIcon size={20} aria-hidden="true" />
+              Copy address
+            </Button>
+            <span role="status" className="text-ink-2 text-meta">
+              {copy === "copied"
+                ? "Copied."
+                : copy === "failed"
+                  ? "Couldn't copy. Select the address and copy it yourself."
+                  : ""}
+            </span>
+          </div>
         </div>
       </div>
+      <p>Send from any Solana wallet or exchange, such as Backpack or Phantom.</p>
       <ul className="flex flex-col gap-1">
         <li>
           <span className="font-medium">USDC</span>: for trading
@@ -60,6 +77,7 @@ export function AddFundsDetails({ address }: { address: string }) {
         <WarningIcon size={20} aria-hidden="true" className="mt-px shrink-0" />
         Send only on the Solana network.
       </p>
+      <DepositStatus />
     </div>
   );
 }

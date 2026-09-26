@@ -56,6 +56,8 @@ const TEXT_PAIRS: [text: string, background: string][] = [
   ["loss", "paper"],
   ["loss", "paper-2"],
   ["caution", "caution-bg"],
+  // QR codes: the same dark-on-light in every palette.
+  ["qr-ink", "qr-paper"],
   // Button labels: primary, Buy and Sell.
   ["paper", "ink"],
   ["paper", "gain"],

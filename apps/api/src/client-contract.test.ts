@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { createApiClient } from "@repo/api-client";
 import type { User } from "@repo/db";
+import { SOL, USDC } from "@repo/solana";
 import { type AppDeps, createApp } from "./app";
 import { createFakePrivy, fakeSolanaAddress } from "./providers/privy/fake";
 import { testAppDeps } from "./testing";
@@ -114,4 +115,31 @@ test("gets a missing sign-in as a typed error", async () => {
   const { error, response } = await clientFor({}).GET("/v1/me");
   expect(response.status).toBe(401);
   expect(error?.error.code).toBe("UNAUTHORIZED");
+});
+
+test("reads balances through the typed client, with exact string amounts", async () => {
+  const privy = createFakePrivy();
+  const person = privy.signIn();
+  const user = fakeUser(person.privyDid);
+  const client = clientFor({
+    privy,
+    users: { getOrCreate: async () => user },
+    balances: {
+      forWallet: async () => ({
+        balances: [
+          { token: USDC, amountRaw: 50_000_000n },
+          { token: SOL, amountRaw: 9_007_199_254_740_993n },
+        ],
+        updatedAt: CREATED_AT,
+      }),
+    },
+  });
+
+  const { data } = await client.GET("/v1/me/balances", {
+    headers: { Authorization: `Bearer ${person.token}` },
+  });
+  expect(data?.balances.map((balance) => [balance.token.symbol, balance.amountRaw])).toEqual([
+    ["USDC", "50000000"],
+    ["SOL", "9007199254740993"],
+  ]);
 });

@@ -18,6 +18,7 @@ const app = createApp({
     change: () => Promise.reject(new Error("Not available here")),
     changeableAt: () => null,
   },
+  balances: { forWallet: () => Promise.reject(new Error("Not available here")) },
 });
 
 await Bun.write(SNAPSHOT_PATH, await renderOpenApi(app));

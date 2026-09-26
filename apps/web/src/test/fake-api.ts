@@ -1,4 +1,5 @@
 import { normalizeUsername, USERNAME_CHANGE_DAYS, usernameProblem } from "@repo/shared";
+import { SOL, USDC } from "@repo/solana";
 import type { Me } from "../features/account/use-me";
 import { FAKE_TOKEN } from "./fake-auth";
 
@@ -22,6 +23,8 @@ export type FakeApi = {
   fetch: (request: Request) => Promise<Response>;
   requests: Request[];
   me: () => Me;
+  /** What the wallet holds from now on, in raw units. */
+  setBalances: (balances: { usdc?: bigint; sol?: bigint }) => void;
 };
 
 type FakeApiOptions = {
@@ -34,6 +37,8 @@ type FakeApiOptions = {
   // What Shuffle suggests, in order.
   suggestions?: string[];
   suggestFails?: boolean;
+  balances?: { usdc?: bigint; sol?: bigint };
+  balancesFail?: boolean;
 };
 
 // Answers like the real API, for the routes the web app calls. No network.
@@ -44,7 +49,10 @@ export function createFakeApi({
   taken = [],
   suggestions = ["brave_heron_07", "keen_lynx_11"],
   suggestFails = false,
+  balances: initialBalances = {},
+  balancesFail = false,
 }: FakeApiOptions = {}): FakeApi {
+  let wallet = { usdc: 0n, sol: 0n, ...initialBalances };
   let me = initialMe;
   let notReady = walletNotReadyTimes;
   const nextSuggestions = [...suggestions];
@@ -106,6 +114,9 @@ export function createFakeApi({
   return {
     requests,
     me: () => me,
+    setBalances: (next) => {
+      wallet = { ...wallet, ...next };
+    },
     fetch: async (request) => {
       requests.push(request);
       const { pathname } = new URL(request.url);
@@ -121,6 +132,21 @@ export function createFakeApi({
           : Response.json({ username });
       }
 
+      if (request.method === "GET" && pathname === "/v1/me/balances") {
+        if (request.headers.get("authorization") !== `Bearer ${FAKE_TOKEN}`) {
+          return errorResponse(401, "UNAUTHORIZED");
+        }
+        if (balancesFail) {
+          return errorResponse(500, "INTERNAL");
+        }
+        return Response.json({
+          balances: [
+            { token: USDC, amountRaw: wallet.usdc.toString() },
+            { token: SOL, amountRaw: wallet.sol.toString() },
+          ],
+          updatedAt: new Date().toISOString(),
+        });
+      }
       if (pathname !== "/v1/me") {
         return errorResponse(404, "NOT_FOUND");
       }
