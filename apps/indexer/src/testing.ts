@@ -1,4 +1,5 @@
 // Helpers for this app's tests. Never import this from app code.
+import { join } from "node:path";
 import { createLogger, type Logger } from "@repo/server";
 import type { Inbox } from "./inbox";
 
@@ -43,4 +44,9 @@ export function fakeInbox(overrides: Partial<Inbox> = {}): Inbox {
     deleteProcessedBefore: async () => 0,
     ...overrides,
   };
+}
+
+// A real mainnet transaction from test/fixtures, as Helius would deliver it.
+export async function loadFixture(name: string): Promise<Record<string, unknown>> {
+  return Bun.file(join(import.meta.dir, "..", "test", "fixtures", `${name}.json`)).json();
 }
