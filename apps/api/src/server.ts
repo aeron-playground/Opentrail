@@ -1,5 +1,5 @@
 // Bun's server options: the WebSocket at /v1/ws goes to the hub, everything else to the Hono app.
-import { WS_MAX_MESSAGE_BYTES, WS_PATH } from "@repo/shared";
+import { WS_MAX_MESSAGE_BYTES, WS_PATH } from "@repo/shared/ws";
 import type { Server } from "bun";
 import type { App } from "./app";
 import type { Hub } from "./ws/hub";

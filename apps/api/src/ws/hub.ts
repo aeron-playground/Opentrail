@@ -1,9 +1,8 @@
 // The live connections on /v1/ws: who is signed in on each, what each subscribed to, and the
 // heartbeat. It knows nothing about Bun, so tests drive it with fake connections.
 import { AppError, type Logger } from "@repo/server";
+import { ERRORS, type ErrorCode } from "@repo/shared";
 import {
-  ERRORS,
-  type ErrorCode,
   parseWsClientMessage,
   WS_AUTH_WINDOW_MS,
   WS_CLOSE_CODES,
@@ -11,7 +10,7 @@ import {
   WS_PROTOCOL_VERSION,
   type WsChannel,
   type WsServerMessage,
-} from "@repo/shared";
+} from "@repo/shared/ws";
 import type { PrivyProvider } from "../providers/privy/types";
 
 /** One connection, as the hub needs it. Bun's ServerWebSocket fits this shape. */

@@ -1,7 +1,7 @@
 // Starts the API: `bun run dev` locally, `bun run start` in production.
 import { createDb } from "@repo/db";
 import { createLogger } from "@repo/server";
-import { WS_PING_INTERVAL_MS } from "@repo/shared";
+import { WS_PING_INTERVAL_MS } from "@repo/shared/ws";
 import { createApp } from "./app";
 import { type ApiEnv, readApiEnv } from "./env";
 import { createPrivy } from "./providers/privy/privy";

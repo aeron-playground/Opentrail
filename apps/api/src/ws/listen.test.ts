@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { BALANCE_CHANGED_CHANNEL, type DbHandle } from "@repo/db";
 import { connectTestDb } from "@repo/db/testing";
-import type { WsServerMessage } from "@repo/shared";
+import type { WsServerMessage } from "@repo/shared/ws";
 import { sql } from "drizzle-orm";
 import { capturedLogger } from "../testing";
 import { forwardBalanceChanges } from "./listen";

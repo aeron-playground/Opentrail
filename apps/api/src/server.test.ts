@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { createLogger } from "@repo/server";
-import { WS_MAX_MESSAGE_BYTES, WS_PATH } from "@repo/shared";
+import { WS_MAX_MESSAGE_BYTES, WS_PATH } from "@repo/shared/ws";
 import { createApp } from "./app";
 import { createFakePrivy } from "./providers/privy/fake";
 import { serveOptions } from "./server";

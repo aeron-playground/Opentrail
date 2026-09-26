@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { AppError } from "@repo/server";
-import { WS_CLOSE_CODES, WS_MAX_CONNECTIONS_PER_USER, type WsServerMessage } from "@repo/shared";
+import { WS_CLOSE_CODES, WS_MAX_CONNECTIONS_PER_USER, type WsServerMessage } from "@repo/shared/ws";
 import { createFakePrivy } from "../providers/privy/fake";
 import { capturedLogger } from "../testing";
 import { createHub, type HubDeps, type Peer } from "./hub";

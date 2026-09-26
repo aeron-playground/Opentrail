@@ -2,9 +2,11 @@
 // app and outside developers: add message types, fields and channels freely, but never change or
 // remove one that has shipped. Documented in developers/websocket-protocol.mdx.
 // zod/mini keeps these rules small enough to ship to browsers.
+// Import it from "@repo/shared/ws": the main entry leaves it out, so a web page that doesn't use
+// live updates never loads zod.
 import * as z from "zod/mini";
 
-export const WS_PATH = "/v1/ws";
+export { WS_PATH } from "./constants";
 
 /** Every server message carries it as `v`, so a client can tell a newer format apart. */
 export const WS_PROTOCOL_VERSION = 1;

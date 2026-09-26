@@ -20,3 +20,6 @@ export const USERNAME_PATTERN = /^[a-z][a-z0-9_]{2,19}$/;
 
 /** A username can change once in this many days. Choosing it the first time counts as a change. */
 export const USERNAME_CHANGE_DAYS = 30;
+
+/** Where the API's live updates WebSocket answers. The protocol is in `@repo/shared/ws`. */
+export const WS_PATH = "/v1/ws";

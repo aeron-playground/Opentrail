@@ -1,7 +1,7 @@
 // Turns the indexer's Postgres notifications into messages for the connected users.
 import { BALANCE_CHANGED_CHANNEL, type DbHandle } from "@repo/db";
 import type { Logger } from "@repo/server";
-import { WS_PROTOCOL_VERSION } from "@repo/shared";
+import { WS_PROTOCOL_VERSION } from "@repo/shared/ws";
 import { z } from "zod";
 import type { Hub } from "./hub";
 
