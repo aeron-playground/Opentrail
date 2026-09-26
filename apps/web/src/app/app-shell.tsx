@@ -1,7 +1,10 @@
+import { SignInIcon } from "@phosphor-icons/react/SignIn";
 import { APP_NAME } from "@repo/shared";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { OfflineBanner } from "../components/common/offline-banner";
+import { useAuth } from "../features/auth/auth-context";
+import { SignInProvider, useSignIn } from "../features/auth/sign-in";
 import { type NavItem, RAIL_FOOT_ITEMS, RAIL_ITEMS, TAB_ITEMS } from "./navigation";
 
 // Hidden until focused, so the first Tab on any page reaches it.
@@ -17,6 +20,14 @@ const tabLinkClass =
 
 // The frame around every page: a rail on the left from 1024 px, tabs at the bottom below that.
 export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <SignInProvider>
+      <ShellFrame>{children}</ShellFrame>
+    </SignInProvider>
+  );
+}
+
+function ShellFrame({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh">
       <a href="#content" className={skipLinkClass}>
@@ -61,8 +72,27 @@ function NavRail() {
             <NavLink item={item} className={railLinkClass} />
           </li>
         ))}
+        <RailSignIn />
       </ul>
     </nav>
+  );
+}
+
+// Visitors get a way to sign in from every page. Phones reach sign-in from the pages that
+// need it, since the tabs are full.
+function RailSignIn() {
+  const { status } = useAuth();
+  const { openSignIn } = useSignIn();
+  if (status !== "signed-out") {
+    return null;
+  }
+  return (
+    <li>
+      <button type="button" onClick={openSignIn} className={`w-full ${railLinkClass}`}>
+        <SignInIcon size={20} aria-hidden="true" />
+        Sign in
+      </button>
+    </li>
   );
 }
 

@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { fireEvent, screen, within } from "@testing-library/react";
+import { createFakeAuth } from "../test/fake-auth";
 import { renderRoute } from "../test/render-route";
 
 const PAGES: { path: string; title: string }[] = [
@@ -24,13 +25,13 @@ test("the landing page leads to Explore", async () => {
 });
 
 test("the Portfolio page leads to Add funds, which has no phone tab of its own", async () => {
-  await renderRoute("/portfolio");
+  await renderRoute("/portfolio", { auth: createFakeAuth({ status: "signed-in" }) });
   const main = await screen.findByRole("main");
   fireEvent.click(within(main).getByRole("link", { name: "Add funds" }));
   expect(await screen.findByRole("heading", { level: 1, name: "Add funds" })).toBeDefined();
 });
 
 test("the Settings page has the theme switch", async () => {
-  await renderRoute("/settings");
+  await renderRoute("/settings", { auth: createFakeAuth({ status: "signed-in" }) });
   expect(await screen.findByRole("group", { name: "Theme" })).toBeDefined();
 });
