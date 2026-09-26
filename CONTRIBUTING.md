@@ -49,6 +49,10 @@ bun run dev                                        # web on port 5173, API on 30
 Open the web app at http://localhost:5173. Check that the services are up at
 http://localhost:3001/v1/health and http://localhost:3002/health.
 
+Signing in needs a Privy app. Create a free one at https://dashboard.privy.io,
+then put its app id and app secret in `apps/api/.env`. Without them everything else works, and
+every sign-in is refused.
+
 | Command               | What it does                                 |
 | --------------------- | -------------------------------------------- |
 | `bun run dev`         | Start every app in development mode          |

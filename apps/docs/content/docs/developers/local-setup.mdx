@@ -31,6 +31,10 @@ bun run dev                                    # every app, see the ports below
 | Indexer | `http://localhost:3002` |
 | Docs    | `http://localhost:3000` |
 
+Signing in needs a Privy app. Create a free one at [dashboard.privy.io](https://dashboard.privy.io),
+then put its app id and app secret in `apps/api/.env`. Without them everything else works, and
+every sign-in is refused.
+
 To run one app only, filter by its package name:
 
 ```bash
