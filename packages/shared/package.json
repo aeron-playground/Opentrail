@@ -11,6 +11,9 @@
     "typecheck": "tsc",
     "test": "bun test"
   },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
     "@types/bun": "1.4.2"

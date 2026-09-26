@@ -15,6 +15,11 @@ export const ERRORS = {
   USERNAME_TAKEN: { status: 409, message: "That username is taken." },
   USERNAME_RESERVED: { status: 409, message: "That username isn't available." },
   PAYLOAD_TOO_LARGE: { status: 413, message: "This request is too large. Send less data." },
+  // Only on the WebSocket: the user already has the most live connections allowed.
+  TOO_MANY_CONNECTIONS: {
+    status: 429,
+    message: "Live updates are open in too many windows. Close one to get them here.",
+  },
   // The date of the next allowed change is on GET /v1/me, so the message stays one sentence.
   USERNAME_CHANGE_TOO_SOON: {
     status: 429,
