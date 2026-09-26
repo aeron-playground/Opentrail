@@ -4,11 +4,11 @@
 // It's public on-chain data, shaped like one transaction in a Helius "raw" webhook delivery
 // (an RPC getTransaction result). Set SOLANA_RPC_URL to use a provider instead of the public server.
 import { join } from "node:path";
-import { SIGNATURE, unsafeNumberPath } from "./lib/capture";
+import { fixtureFileName, unsafeNumberPath } from "./lib/capture";
 
 const signature = process.argv[2] ?? "";
-const name = process.argv[3] ?? signature;
-if (!SIGNATURE.test(signature) || !/^[a-z0-9-]+$|^[1-9A-HJ-NP-Za-km-z]+$/.test(name)) {
+const fileName = fixtureFileName(signature, process.argv[3]);
+if (fileName === null) {
   console.error(
     "Usage: bun scripts/capture-tx.ts <transaction signature> [name, like deposit-usdc]",
   );
@@ -40,14 +40,6 @@ if (unsafe) {
   process.exit(1);
 }
 
-const path = join(
-  import.meta.dir,
-  "..",
-  "apps",
-  "indexer",
-  "test",
-  "fixtures",
-  `${signature}.json`,
-);
+const path = join(import.meta.dir, "..", "apps", "indexer", "test", "fixtures", fileName);
 await Bun.write(path, `${JSON.stringify(body.result, null, 2)}\n`);
 console.log(`Saved ${path}`);
