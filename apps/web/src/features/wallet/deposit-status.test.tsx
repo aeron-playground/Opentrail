@@ -3,7 +3,8 @@ import { act, screen, within } from "@testing-library/react";
 import { createFakeApi } from "../../test/fake-api";
 import { createFakeAuth } from "../../test/fake-auth";
 import { renderRoute } from "../../test/render-route";
-import { BALANCE_POLL_MS, BALANCES_QUERY_KEY } from "./use-balances";
+import { BALANCES_QUERY_KEY } from "./query-keys";
+import { BALANCE_POLL_MS } from "./use-balances";
 
 async function depositPage(api = createFakeApi()) {
   const rendered = await renderRoute("/deposit", {

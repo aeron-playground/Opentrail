@@ -3,10 +3,9 @@ import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { unwrap } from "../../lib/api";
 import { useApi } from "../../lib/api-context";
 import { useAuth } from "../auth/auth-context";
+import { BALANCES_QUERY_KEY } from "./query-keys";
 
 export type Balances = components["schemas"]["Balances"];
-
-export const BALANCES_QUERY_KEY = ["me", "balances"] as const;
 
 // While Add funds is open, ask every 5 seconds: the API serves the same answer for that long.
 export const BALANCE_POLL_MS = 5_000;

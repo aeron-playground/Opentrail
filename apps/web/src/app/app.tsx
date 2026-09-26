@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { WebEnv } from "../env";
 import { useAuth } from "../features/auth/auth-context";
 import { PrivyAuthProvider } from "../features/auth/privy-auth-provider";
+import { LiveUpdates } from "../features/live/live-updates";
 import { type ApiClient, createWebApi } from "../lib/api";
 import { ApiProvider } from "../lib/api-context";
 import { createQueryClient } from "./query-client";
@@ -12,12 +13,12 @@ import { createAppRouter } from "./router";
 export function App({ env }: { env: WebEnv }) {
   return (
     <PrivyAuthProvider appId={env.privyAppId}>
-      <LiveApp apiUrl={env.apiUrl} />
+      <LiveApp apiUrl={env.apiUrl} wsUrl={env.wsUrl} />
     </PrivyAuthProvider>
   );
 }
 
-function LiveApp({ apiUrl }: { apiUrl: string }) {
+function LiveApp({ apiUrl, wsUrl }: { apiUrl: string; wsUrl: string }) {
   const auth = useAuth();
   // The API client lives as long as the app, and asks the current auth for each token.
   const authRef = useRef(auth);
@@ -29,6 +30,7 @@ function LiveApp({ apiUrl }: { apiUrl: string }) {
   const [router] = useState(() => createAppRouter({ queryClient }));
   return (
     <AppProviders queryClient={queryClient} api={api}>
+      <LiveUpdates url={wsUrl} />
       <RouterProvider router={router} />
     </AppProviders>
   );
