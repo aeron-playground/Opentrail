@@ -21,6 +21,7 @@ export function placeholderAuth(status: "loading" | "unavailable"): Auth {
     signInWithEmailCode: refuse,
     signInWithOAuth: refuse,
     signOut: async () => {},
+    exportWallet: refuse,
     getAccessToken: async () => null,
   };
 }

@@ -6,8 +6,9 @@ import {
   useLoginWithOAuth,
   usePrivy,
 } from "@privy-io/react-auth";
-import { useCreateWallet } from "@privy-io/react-auth/solana";
+import { useCreateWallet, useExportWallet, useWallets } from "@privy-io/react-auth/solana";
 import { memo, useEffect, useRef } from "react";
+import { waitUntil } from "../../lib/wait-until";
 import type { Auth } from "./auth";
 
 // Our own screens do the talking: Privy never shows its wallet windows, and makes no Ethereum
@@ -22,6 +23,9 @@ const PRIVY_CONFIG: PrivyClientConfig = {
     showWalletUIs: false,
   },
 };
+
+// Privy's wallet frame needs a moment after each page load; export fails until it's ready.
+const WALLET_READY_WAIT_MS = 10_000;
 
 // The wallet Privy keeps for this person on Solana. External wallets don't count.
 function hasSolanaWallet(user: User): boolean {
@@ -53,12 +57,14 @@ function Bridge({ onChange }: Pick<BridgeProps, "onChange">) {
   const email = useLoginWithEmail();
   const oauth = useLoginWithOAuth();
   const wallet = useCreateWallet();
+  const exporter = useExportWallet();
+  const solanaWallets = useWallets();
 
   // The hooks hand out new functions on every render. The Auth passed up calls the latest
   // ones, so it only has to change when the status does.
-  const latest = useRef({ privy, email, oauth, wallet });
+  const latest = useRef({ privy, email, oauth, wallet, exporter, solanaWallets });
   useEffect(() => {
-    latest.current = { privy, email, oauth, wallet };
+    latest.current = { privy, email, oauth, wallet, exporter, solanaWallets };
   });
 
   // Every account needs its Solana wallet. Until it exists the API answers WALLET_NOT_READY,
@@ -87,6 +93,12 @@ function Bridge({ onChange }: Pick<BridgeProps, "onChange">) {
       signInWithEmailCode: (code) => latest.current.email.loginWithCode({ code }),
       signInWithOAuth: (provider) => latest.current.oauth.initOAuth({ provider }),
       signOut: () => latest.current.privy.logout(),
+      exportWallet: async (address) => {
+        await waitUntil(() => latest.current.solanaWallets.ready, {
+          timeoutMs: WALLET_READY_WAIT_MS,
+        });
+        await latest.current.exporter.exportWallet({ address });
+      },
       getAccessToken: () => latest.current.privy.getAccessToken(),
     });
   }, [status, oauthFailed, onChange]);
