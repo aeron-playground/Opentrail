@@ -5,11 +5,15 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ws": "./src/ws.ts"
   },
   "scripts": {
     "typecheck": "tsc",
     "test": "bun test"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",

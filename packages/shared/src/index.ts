@@ -6,6 +6,7 @@ export {
   MIN_TRADE_MICRO_USDC,
   USERNAME_CHANGE_DAYS,
   USERNAME_PATTERN,
+  WS_PATH,
 } from "./constants";
 export { ERROR_CODES, ERRORS, type ErrorCode } from "./errors";
 export {
