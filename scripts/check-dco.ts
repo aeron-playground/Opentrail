@@ -1,7 +1,13 @@
 // Checks DCO sign-offs.
 //   --message-file <path>    commit-msg hook: the commit being made
 //   --range <base>..<head>   CI: every non-merge commit in a pull request
-import { findUnsignedCommits, GIT_LOG_FORMAT, isSignedOffBy, parseGitLog } from "./lib/dco";
+import {
+  botCommitEmail,
+  findUnsignedCommits,
+  GIT_LOG_FORMAT,
+  isSignedOffBy,
+  parseGitLog,
+} from "./lib/dco";
 
 const USAGE = "Usage: bun scripts/check-dco.ts --message-file <path> | --range <base>..<head>";
 const DCO_URL = "https://developercertificate.org";
@@ -35,7 +41,13 @@ async function checkMessageFile(path: string): Promise<void> {
 
 function checkRange(range: string): void {
   const commits = parseGitLog(git(["log", "--no-merges", GIT_LOG_FORMAT, range]));
-  const unsigned = findUnsignedCommits(commits);
+  // CI passes who GitHub says opened the pull request; elsewhere these are unset.
+  const botEmail = botCommitEmail({
+    type: process.env.PR_OPENER_TYPE ?? "",
+    id: process.env.PR_OPENER_ID ?? "",
+    login: process.env.PR_OPENER_LOGIN ?? "",
+  });
+  const unsigned = findUnsignedCommits(commits, botEmail);
   if (unsigned.length === 0) {
     console.log(`All ${commits.length} commits are signed off.`);
     return;
