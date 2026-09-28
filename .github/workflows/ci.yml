@@ -117,6 +117,11 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # Who GitHub says opened the pull request: a bot's own commits carry the bot's sign-off
+          # instead of one matching their author (see scripts/lib/dco.ts).
+          PR_OPENER_TYPE: ${{ github.event.pull_request.user.type }}
+          PR_OPENER_ID: ${{ github.event.pull_request.user.id }}
+          PR_OPENER_LOGIN: ${{ github.event.pull_request.user.login }}
 
   dependency-review:
     if: github.event_name == 'pull_request'

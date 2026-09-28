@@ -45,6 +45,29 @@ export function parseGitLog(output: string): Commit[] {
     });
 }
 
-export function findUnsignedCommits(commits: Commit[]): Commit[] {
-  return commits.filter((commit) => !isSignedOffBy(commit.message, commit.authorEmail));
+// Who GitHub says opened a pull request, as its event carries it.
+export type PullRequestOpener = { type: string; id: string; login: string };
+
+// Bots sign off with their own address (Dependabot: support@github.com), not the GitHub address
+// their commits are written with, so their sign-off never matches the author. When GitHub says a
+// bot opened the pull request, this is that bot's commit address; otherwise null. Nobody can open
+// a pull request as a bot, so typing a bot's email into a commit gains a person nothing.
+export function botCommitEmail({ type, id, login }: PullRequestOpener): string | null {
+  if (type !== "Bot" || !/^\d+$/.test(id) || !/^[a-z0-9-]+\[bot\]$/i.test(login)) {
+    return null;
+  }
+  return `${id}+${login}@users.noreply.github.com`;
+}
+
+// A commit is signed off by its author, or, in a pull request a bot opened, it is that bot's own
+// commit and carries a sign-off.
+export function findUnsignedCommits(commits: Commit[], botEmail: string | null = null): Commit[] {
+  const bot = botEmail?.toLowerCase();
+  return commits.filter((commit) => {
+    if (isSignedOffBy(commit.message, commit.authorEmail)) {
+      return false;
+    }
+    const byBot = bot !== undefined && commit.authorEmail.trim().toLowerCase() === bot;
+    return !(byBot && parseSignOffs(commit.message).length > 0);
+  });
 }
