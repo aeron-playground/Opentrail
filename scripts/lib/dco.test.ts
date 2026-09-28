@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { findUnsignedCommits, isSignedOffBy, parseGitLog, parseSignOffs } from "./dco";
+import {
+  botCommitEmail,
+  type Commit,
+  findUnsignedCommits,
+  isSignedOffBy,
+  parseGitLog,
+  parseSignOffs,
+} from "./dco";
 
 const AUTHOR = "ada@example.com";
 
@@ -141,5 +148,63 @@ describe("findUnsignedCommits", () => {
       ]),
     );
     expect(findUnsignedCommits(commits)).toEqual([]);
+  });
+});
+
+// Dependabot's public GitHub identity, as a pull request event and its commits carry it.
+const DEPENDABOT = { type: "Bot", id: "49699333", login: "dependabot[bot]" };
+const DEPENDABOT_EMAIL = "49699333+dependabot[bot]@users.noreply.github.com";
+const DEPENDABOT_SIGN_OFF = "Signed-off-by: dependabot[bot] <support@github.com>";
+
+describe("botCommitEmail", () => {
+  test("is the address a bot writes its commits with, when a bot opened the pull request", () => {
+    expect(botCommitEmail(DEPENDABOT)).toBe(DEPENDABOT_EMAIL);
+  });
+
+  test.each([
+    ["a person", { type: "User", id: "12345", login: "ada" }],
+    ["nobody, outside a pull request", { type: "", id: "", login: "" }],
+    ["an id that isn't a number", { ...DEPENDABOT, id: "4969x" }],
+    ["a login that isn't a bot's", { ...DEPENDABOT, login: "dependabot" }],
+  ])("is null when the pull request was opened by %s", (_, opener) => {
+    expect(botCommitEmail(opener)).toBeNull();
+  });
+});
+
+describe("findUnsignedCommits in a pull request a bot opened", () => {
+  const botCommit: Commit = {
+    sha: "ddd444",
+    authorEmail: DEPENDABOT_EMAIL,
+    message: `ci(deps): bump the actions group\n\n${DEPENDABOT_SIGN_OFF}\n`,
+  };
+
+  test("accepts the bot's commit with the bot's own sign-off", () => {
+    expect(findUnsignedCommits([botCommit], DEPENDABOT_EMAIL)).toEqual([]);
+  });
+
+  test("compares the bot's address without case", () => {
+    const shouted = { ...botCommit, authorEmail: DEPENDABOT_EMAIL.toUpperCase() };
+    expect(findUnsignedCommits([shouted], DEPENDABOT_EMAIL)).toEqual([]);
+  });
+
+  test("still wants a sign-off line from the bot", () => {
+    const unsigned = { ...botCommit, message: "ci(deps): bump the actions group\n" };
+    expect(findUnsignedCommits([unsigned], DEPENDABOT_EMAIL)).toEqual([unsigned]);
+  });
+
+  test("refuses the bot's address in a pull request a person opened", () => {
+    expect(findUnsignedCommits([botCommit])).toEqual([botCommit]);
+    expect(findUnsignedCommits([botCommit], null)).toEqual([botCommit]);
+  });
+
+  test("still wants a person's own sign-off for their commit in the bot's pull request", () => {
+    const personCommit: Commit = {
+      sha: "eee555",
+      authorEmail: "ada@example.com",
+      message: `fix(ci): adjust\n\n${DEPENDABOT_SIGN_OFF}\n`,
+    };
+    expect(findUnsignedCommits([botCommit, personCommit], DEPENDABOT_EMAIL)).toEqual([
+      personCommit,
+    ]);
   });
 });
