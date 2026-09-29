@@ -17,7 +17,7 @@ describe.each([
 });
 
 describe("token programs", () => {
-  test.each(TOKEN_PROGRAM_NAMES)("%s has a valid program address", (name) => {
+  test.each([...TOKEN_PROGRAM_NAMES])("%s has a valid program address", (name) => {
     expect(isSolanaAddress(TOKEN_PROGRAMS[name])).toBe(true);
   });
 

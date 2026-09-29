@@ -29,6 +29,13 @@
       "when": 1790455935519,
       "tag": "0003_create-transfers",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790684417937,
+      "tag": "0004_create-tokens",
+      "breakpoints": true
     }
   ]
 }
