@@ -20,3 +20,20 @@ export const SOL: KnownToken = {
   symbol: "SOL",
   decimals: 9,
 };
+
+// The two programs that own token mints: the original SPL Token program and Token-2022. Each was
+// checked on mainnet: an executable program run by the upgradeable loader. Our tables use the
+// short names.
+export const TOKEN_PROGRAMS = {
+  "spl-token": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "token-2022": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+} as const;
+
+export type TokenProgram = keyof typeof TOKEN_PROGRAMS;
+
+export const TOKEN_PROGRAM_NAMES = Object.keys(TOKEN_PROGRAMS) as TokenProgram[];
+
+/** The short name of the program at `address`, or null when it isn't a token program. */
+export function tokenProgramAt(address: string): TokenProgram | null {
+  return TOKEN_PROGRAM_NAMES.find((name) => TOKEN_PROGRAMS[name] === address) ?? null;
+}
