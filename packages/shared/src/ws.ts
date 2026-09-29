@@ -40,9 +40,18 @@ export const WS_CLOSE_CODES = {
   TOO_MANY_CONNECTIONS: 4029,
 } as const;
 
-/** `me`: events about the signed-in user, such as `balance.changed`. Needs auth. */
-export const WS_CHANNELS = ["me"] as const;
+/**
+ * `me`: events about the signed-in user, such as `balance.changed`; needs auth.
+ * `prices`: live prices of the listed tokens; open to everyone.
+ */
+export const WS_CHANNELS = ["me", "prices"] as const;
 export type WsChannel = (typeof WS_CHANNELS)[number];
+
+/** The channels a connection has to sign in for. */
+export const WS_SIGNED_IN_CHANNELS: readonly WsChannel[] = ["me"];
+
+/** The server sends at most one `price` message this often, with every change since the last. */
+export const WS_PRICE_INTERVAL_MS = 5_000;
 
 const channel = z.enum(WS_CHANNELS);
 
@@ -63,6 +72,19 @@ export const WsServerMessageSchema = z.discriminatedUnion("type", [
   z.looseObject({ v, type: z.literal("subscribed"), channel }),
   // No data: the client reads its balances again.
   z.looseObject({ v, type: z.literal("balance.changed") }),
+  // The tokens whose price changed. Numbers are decimal strings, so no digit is lost:
+  // priceUsd in dollars per whole token, change24hPct in percent (null when unknown).
+  z.looseObject({
+    v,
+    type: z.literal("price"),
+    items: z.array(
+      z.looseObject({
+        mint: z.string(),
+        priceUsd: z.string(),
+        change24hPct: z.nullable(z.string()),
+      }),
+    ),
+  }),
   // One of the API's error codes. A string, not a list, so a new code never breaks a client.
   z.looseObject({ v, type: z.literal("error"), code: z.string(), message: z.string() }),
 ]);
