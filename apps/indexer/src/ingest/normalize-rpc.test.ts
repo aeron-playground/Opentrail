@@ -38,11 +38,12 @@ describe("normalizeRpcTransaction", () => {
       signature:
         "3AeyuLVPMr53xVWnf1jLsnFCCAtRTUBCtF9yQMAK5iTTxBXZAXeg345HnGutQs6asRs7d1d9BaQrjnsH71ZAUrs4",
       slot: 450_787_941n,
-      blockTime: new Date(1_790_456_075_000),
       failed: false,
       feePayer: RELAYER,
       networkFeeLamports: 69_686n,
     });
+    // On its own: Bun's toMatchObject treats any two dates as equal.
+    expect(tx.blockTime).toEqual(new Date(1_790_456_075_000));
     expect(tx.tokenDeltas).toHaveLength(2);
     expect(tx.tokenDeltas).toContainEqual({
       owner: USDC_SENDER,

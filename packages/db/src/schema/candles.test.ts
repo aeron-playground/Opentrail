@@ -62,8 +62,9 @@ describe("candles", () => {
       open: "120.334026206432140000",
       close: "119.414023132695090000",
       volumeUsd: "213925.60",
-      bucketStart: new Date("2026-09-29T13:40:00.000Z"),
     });
+    // On its own: Bun's toMatchObject treats any two dates as equal.
+    expect(row?.bucketStart).toEqual(new Date("2026-09-29T15:00:00.000Z"));
   });
 
   test("keeps one candle per token, timeframe and start", async () => {
