@@ -37,3 +37,37 @@ export function parseDecimal(text: string): Decimal {
   const fraction = match[2] ?? "";
   return { digits: BigInt(whole + fraction), scale: fraction.length };
 }
+
+const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
+// Far beyond any price or percent; a larger exponent would only build a huge string.
+const MAX_EXPONENT = 100;
+
+/**
+ * Writes a number's text, such as "1e-9" or "-1.5E+3" from an outside JSON answer, as a plain
+ * decimal: "0.000000001", "-1500". It moves the point in the text, so no digit is lost, and drops
+ * leading and trailing zeros.
+ */
+export function plainDecimal(text: string): string {
+  const match = JSON_NUMBER.exec(text);
+  if (!match) {
+    throw new RangeError(`Not a number: "${text}".`);
+  }
+  const [, sign = "", whole = "", fraction = "", exponentText = "0"] = match;
+  const exponent = Number(exponentText);
+  if (Math.abs(exponent) > MAX_EXPONENT) {
+    throw new RangeError(`The exponent of "${text}" is out of range.`);
+  }
+  const digits = whole + fraction;
+  const point = whole.length + exponent;
+  const padded =
+    point <= 0
+      ? `0.${"0".repeat(-point)}${digits}`
+      : point >= digits.length
+        ? digits + "0".repeat(point - digits.length)
+        : `${digits.slice(0, point)}.${digits.slice(point)}`;
+  const [integer = "", decimals = ""] = padded.split(".");
+  const tidyInteger = integer.replace(/^0+(?=\d)/, "");
+  const tidyDecimals = decimals.replace(/0+$/, "");
+  const plain = tidyDecimals === "" ? tidyInteger : `${tidyInteger}.${tidyDecimals}`;
+  return plain === "0" ? plain : sign + plain;
+}

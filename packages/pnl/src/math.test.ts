@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mulDiv, parseDecimal, pow10 } from "./math";
+import { mulDiv, parseDecimal, plainDecimal, pow10 } from "./math";
 
 describe("mulDiv", () => {
   const cases = [
@@ -69,4 +69,47 @@ describe("parseDecimal", () => {
       expect(() => parseDecimal(text)).toThrow(RangeError);
     },
   );
+});
+
+describe("plainDecimal", () => {
+  test.each([
+    // Plain decimals, as Jupiter sends most prices.
+    ["0.0000037264429947363744", "0.0000037264429947363744"],
+    ["120.83457314202052", "120.83457314202052"],
+    ["-4.821237250067719", "-4.821237250067719"],
+    ["42", "42"],
+    // Exponents move the point, in either direction.
+    ["1e-9", "0.000000001"],
+    ["2.5e-7", "0.00000025"],
+    ["-0.5e-2", "-0.005"],
+    ["1.5E+3", "1500"],
+    ["12.5e1", "125"],
+    ["1e21", "1000000000000000000000"],
+    ["3.14e0", "3.14"],
+    // Leading and trailing zeros go.
+    ["0.05e2", "5"],
+    ["1.500", "1.5"],
+    ["007.10", "7.1"],
+    // Zero has no sign.
+    ["0", "0"],
+    ["-0", "0"],
+    ["-0.000e5", "0"],
+  ])("writes %s as %s", (text, expected) => {
+    expect(plainDecimal(text)).toBe(expected);
+  });
+
+  test.each(["", "abc", "1.", ".5", "+1", "1e", "0x10", "1,5", " 1"])("refuses %p", (text) => {
+    expect(() => plainDecimal(text)).toThrow(RangeError);
+  });
+
+  test.each(["1e101", "1e-101", "1e999999999"])(
+    "refuses %s, whose exponent is too large",
+    (text) => {
+      expect(() => plainDecimal(text)).toThrow("out of range");
+    },
+  );
+
+  test("keeps the limit itself", () => {
+    expect(plainDecimal("1e-100")).toBe(`0.${"0".repeat(99)}1`);
+  });
 });
