@@ -12,9 +12,11 @@
     "typecheck": "tsc",
     "test": "bun test",
     "generate": "drizzle-kit generate",
-    "migrate": "bun src/migrate.ts"
+    "migrate": "bun src/migrate.ts",
+    "seed": "bun src/seed.ts"
   },
   "dependencies": {
+    "@repo/solana": "workspace:*",
     "drizzle-orm": "0.45.3",
     "postgres": "3.4.9",
     "zod": "4.6.5"

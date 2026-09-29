@@ -134,6 +134,7 @@
       "name": "@repo/db",
       "version": "0.0.0",
       "dependencies": {
+        "@repo/solana": "workspace:*",
         "drizzle-orm": "0.45.3",
         "postgres": "3.4.9",
         "zod": "4.6.5",
@@ -202,6 +203,10 @@
     "scripts": {
       "name": "@repo/scripts",
       "version": "0.0.0",
+      "dependencies": {
+        "@repo/solana": "workspace:*",
+        "zod": "4.6.5",
+      },
       "devDependencies": {
         "@repo/tsconfig": "workspace:*",
         "@types/bun": "1.4.2",

@@ -1,0 +1,91 @@
+[
+  {
+    "id": "So11111111111111111111111111111111111111112",
+    "name": "Wrapped SOL",
+    "symbol": "SOL",
+    "icon": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+    "decimals": 9,
+    "circSupply": 587852430.7921078,
+    "totalSupply": 634918516.4006435,
+    "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "holderCount": 3820662,
+    "fdv": 76217615979.57654,
+    "mcap": 70567655006.77412,
+    "usdPrice": 120.04314571207439,
+    "priceBlockId": 451640539,
+    "liquidity": 957740759.7627194,
+    "stats5m": {
+      "priceChange": -0.23683436017751264,
+      "liquidityChange": -0.05062827483751441,
+      "volumeChange": 8.89385025525246,
+      "buyVolume": 8294039.658518075,
+      "sellVolume": 8485392.89477941,
+      "buyOrganicVolume": 152140.9469946227,
+      "sellOrganicVolume": 77683.41005488994,
+      "numBuys": 46478,
+      "numSells": 63646,
+      "numTraders": 29659,
+      "numOrganicBuyers": 477,
+      "numNetBuyers": 4520
+    },
+    "stats1h": {
+      "priceChange": 0.6190881864820389,
+      "liquidityChange": 0.2093084212695803,
+      "volumeChange": 22.053321404436485,
+      "buyVolume": 76566867.54547021,
+      "sellVolume": 76121890.2438278,
+      "buyOrganicVolume": 1125881.795425764,
+      "sellOrganicVolume": 1063769.673445208,
+      "numBuys": 477269,
+      "numSells": 678750,
+      "numTraders": 132234,
+      "numOrganicBuyers": 1188,
+      "numNetBuyers": 11791
+    },
+    "stats6h": {
+      "priceChange": 0.9738988972882892,
+      "liquidityChange": 0.5195656157647177,
+      "volumeChange": -23.631203622275027,
+      "buyVolume": 427325217.2502981,
+      "sellVolume": 421735096.44110477,
+      "buyOrganicVolume": 6622689.927251836,
+      "sellOrganicVolume": 6839492.025761902,
+      "numBuys": 2446574,
+      "numSells": 3616605,
+      "numTraders": 307981,
+      "numOrganicBuyers": 3691,
+      "numNetBuyers": 46296
+    },
+    "stats24h": {
+      "priceChange": 0.49133184867549484,
+      "liquidityChange": -0.24293785406591298,
+      "volumeChange": 0.7053100048401286,
+      "buyVolume": 2113776859.086276,
+      "sellVolume": 2130872299.5819855,
+      "buyOrganicVolume": 37595735.55693925,
+      "sellOrganicVolume": 37692203.51865076,
+      "numBuys": 14691154,
+      "numSells": 20847760,
+      "numTraders": 1115839,
+      "numOrganicBuyers": 11447,
+      "numNetBuyers": 83361
+    },
+    "firstPool": {
+      "id": "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+      "createdAt": "2021-03-29T10:05:48Z"
+    },
+    "apy": { "jupEarn": 3.8625321400776125 },
+    "audit": {
+      "mintAuthorityDisabled": true,
+      "freezeAuthorityDisabled": true,
+      "topHoldersPercentage": 0.5802928762753378,
+      "devMints": 1
+    },
+    "organicScore": 99.2842294625694,
+    "organicScoreLabel": "high",
+    "isVerified": true,
+    "tags": ["major", "community", "moonshot-verified", "strict", "verified"],
+    "createdAt": "2024-06-05T08:55:25.527Z",
+    "updatedAt": "2026-09-29T12:22:27.432315848Z"
+  }
+]
