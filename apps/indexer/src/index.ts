@@ -6,9 +6,13 @@ import { type IndexerEnv, readIndexerEnv } from "./env";
 import { createInbox } from "./inbox";
 import { cleanupJob } from "./jobs/cleanup";
 import { processInboxJob } from "./jobs/process-inbox";
+import { refreshPricesJob } from "./jobs/refresh-prices";
 import { createScheduler, type Job } from "./jobs/scheduler";
 import { syncWebhookAddressesJob } from "./jobs/sync-webhook-addresses";
+import { createRateLimit } from "./lib/rate-limit";
+import { createPriceBook } from "./price-book";
 import { createHeliusWebhooks } from "./providers/helius/helius";
+import { createJupiterPrices } from "./providers/jupiter/jupiter";
 import { createWatchList } from "./watch-list";
 
 let env: IndexerEnv;
@@ -25,7 +29,17 @@ const database = createDb(env.DATABASE_URL);
 const inbox = createInbox(database.db);
 const app = createApp({ logger, inbox, webhookSecret: env.HELIUS_WEBHOOK_SECRET });
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
-const jobs: Job[] = [cleanupJob({ inbox, logger }), processInboxJob({ inbox, logger })];
+// Jupiter's free plan allows one request a second, across every Jupiter call we make.
+const jupiterRateLimit = createRateLimit(1_000);
+const jupiter = createJupiterPrices({ apiKey: env.JUPITER_API_KEY, rateLimit: jupiterRateLimit });
+if (env.JUPITER_API_KEY === undefined) {
+  logger.info("Prices come from Jupiter's keyless address: set JUPITER_API_KEY for production");
+}
+const jobs: Job[] = [
+  cleanupJob({ inbox, logger }),
+  processInboxJob({ inbox, logger }),
+  refreshPricesJob({ priceBook: createPriceBook(database.db), jupiter, logger }),
+];
 if (env.HELIUS_API_KEY !== undefined && env.HELIUS_WEBHOOK_ID !== undefined) {
   const helius = createHeliusWebhooks({
     apiKey: env.HELIUS_API_KEY,
