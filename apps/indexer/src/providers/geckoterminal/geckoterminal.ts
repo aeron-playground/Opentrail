@@ -1,5 +1,5 @@
 import type { CandleTimeframe } from "@repo/db";
-import { parseDecimal, plainDecimal } from "@repo/pnl";
+import { compareDecimals, parseDecimal, plainDecimal } from "@repo/pnl";
 import { z } from "zod";
 import { parseJsonKeepingNumbers } from "../../lib/json";
 import type { RateLimit } from "../../lib/rate-limit";
@@ -133,7 +133,7 @@ function toCandle([start, ...numbers]: readonly string[]): CandleQuote | null {
   if (volumeUsd.startsWith("-") || [open, high, low, close].some((price) => !isPositive(price))) {
     return null;
   }
-  if (compare(high, low) < 0) {
+  if (compareDecimals(high, low) < 0) {
     return null;
   }
   return { bucketStart: new Date(Number(start) * 1000), open, high, low, close, volumeUsd };
@@ -152,13 +152,3 @@ function decimalOrNull(text: string | null | undefined): string | null {
 
 const isPositive = (decimal: string) =>
   !decimal.startsWith("-") && parseDecimal(decimal).digits > 0n;
-
-// Compares two non-negative plain decimals exactly.
-function compare(a: string, b: string): number {
-  const x = parseDecimal(a);
-  const y = parseDecimal(b);
-  const scale = Math.max(x.scale, y.scale);
-  const left = x.digits * 10n ** BigInt(scale - x.scale);
-  const right = y.digits * 10n ** BigInt(scale - y.scale);
-  return left === right ? 0 : left > right ? 1 : -1;
-}
