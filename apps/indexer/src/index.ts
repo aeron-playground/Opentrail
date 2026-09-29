@@ -7,7 +7,7 @@ import { type IndexerEnv, readIndexerEnv } from "./env";
 import { createInbox } from "./inbox";
 import { cleanupJob } from "./jobs/cleanup";
 import { processInboxJob } from "./jobs/process-inbox";
-import { refreshCandlesJob } from "./jobs/refresh-candles";
+import { CANDLES_EVERY_MS, refreshCandlesJob } from "./jobs/refresh-candles";
 import { refreshPoolsJob } from "./jobs/refresh-pools";
 import { refreshPricesJob } from "./jobs/refresh-prices";
 import { createScheduler, type Job } from "./jobs/scheduler";
@@ -39,10 +39,10 @@ const jupiter = createJupiterPrices({ apiKey: env.JUPITER_API_KEY, rateLimit: ju
 if (env.JUPITER_API_KEY === undefined) {
   logger.info("Prices come from Jupiter's keyless address: set JUPITER_API_KEY for production");
 }
-// GeckoTerminal's free API allows about 10 calls a minute; one every 8 seconds stays under it.
+// GeckoTerminal's free API allows about 10 calls a minute, but it varies: one every 15 seconds.
 const gecko = createGeckoTerminal({
   baseUrl: env.GECKOTERMINAL_BASE_URL,
-  rateLimit: createRateLimit(8_000),
+  rateLimit: createRateLimit(CANDLES_EVERY_MS),
 });
 const chartBook = createChartBook(database.db);
 const jobs: Job[] = [

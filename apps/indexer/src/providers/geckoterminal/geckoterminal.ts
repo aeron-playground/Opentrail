@@ -116,9 +116,16 @@ export function createGeckoTerminal({
       if (!parsed.success) {
         throw new Error("GeckoTerminal answered candles in a shape we don't know");
       }
+      // GeckoTerminal has sent the same start twice in one answer, and one insert can't update a
+      // row twice, so only the first (newest in its order) is kept.
+      const seen = new Set<number>();
       return parsed.data.data.attributes.ohlcv_list.flatMap((row) => {
         const candle = toCandle(row);
-        return candle ? [candle] : [];
+        if (candle === null || seen.has(candle.bucketStart.getTime())) {
+          return [];
+        }
+        seen.add(candle.bucketStart.getTime());
+        return [candle];
       });
     },
   };

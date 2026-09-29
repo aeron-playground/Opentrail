@@ -4,8 +4,9 @@ import { choosePrimaryPool } from "../market/primary-pool";
 import { type GeckoTerminal, RateLimitedError } from "../providers/geckoterminal/types";
 import type { Job } from "./scheduler";
 
-// Runs hourly, so a check that failed is tried again soon, but checks each token once a day.
-export const POOLS_EVERY_MS = 60 * 60 * 1000;
+// Runs every 10 minutes, so a check stopped by a rate limit is tried again soon, but calls
+// GeckoTerminal only for tokens not checked in the last day.
+export const POOLS_EVERY_MS = 10 * 60 * 1000;
 export const POOL_RECHECK_MS = 24 * 60 * 60 * 1000;
 
 export type RefreshPoolsDeps = {
@@ -37,7 +38,7 @@ export function refreshPoolsJob({
           pools = await gecko.pools(token.mint);
         } catch (error) {
           if (error instanceof RateLimitedError) {
-            logger.warn("GeckoTerminal is rate limiting us; pools are checked again next hour");
+            logger.warn("GeckoTerminal is rate limiting us; pools are checked again in 10 minutes");
             return;
           }
           throw error;

@@ -7,8 +7,9 @@ import type { Job } from "./scheduler";
 
 const MINUTE_MS = 60 * 1000;
 
-// One GeckoTerminal call per run: about 7 a minute at most, under its free limit of about 10.
-export const CANDLES_EVERY_MS = 8_000;
+// One GeckoTerminal call per run, 4 a minute at most. Its free limit is about 10 a minute but it
+// varies: at 7.5 a minute a real run still got "too many requests" five times in seven minutes.
+export const CANDLES_EVERY_MS = 15_000;
 
 // How long each chart may go without a refresh.
 export const CANDLE_REFRESH_MS: Record<CandleTimeframe, number> = {

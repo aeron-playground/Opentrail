@@ -121,6 +121,22 @@ describe("candles", () => {
     expect(rateLimitedCalls()).toBe(1);
   });
 
+  test("keeps only the first of a start time GeckoTerminal sends twice", async () => {
+    // Seen in a real answer: 1,000 hourly candles with one hour in them twice.
+    const { gecko } = fakeServer([
+      ohlcv([
+        [1790694000, 1, 2, 0.5, 1.5, 10],
+        [1790690400, 1, 2, 0.5, 1.25, 10],
+        [1790690400, 1, 2, 0.5, 1.75, 10],
+      ]),
+    ]);
+    const candles = await gecko.candles("made-up-pool", SOL, "1h", 3);
+    expect(candles.map((candle) => [candle.bucketStart.getTime(), candle.close])).toEqual([
+      [1_790_694_000_000, "1.5"],
+      [1_790_690_400_000, "1.25"],
+    ]);
+  });
+
   test("writes exponents as plain decimals", async () => {
     const { gecko } = fakeServer([ohlcv([[1790694000, 3.7e-6, 3.8e-6, 3.6e-6, 3.75e-6, 1e3]])]);
     expect(await gecko.candles("made-up-pool", SOL, "1h", 1)).toEqual([
