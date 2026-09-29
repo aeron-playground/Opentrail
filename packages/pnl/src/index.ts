@@ -14,4 +14,11 @@ export {
   replay,
   unrealized,
 } from "./engine";
-export { type Decimal, mulDiv, parseDecimal, plainDecimal, pow10 } from "./math";
+export {
+  compareDecimals,
+  type Decimal,
+  mulDiv,
+  parseDecimal,
+  plainDecimal,
+  pow10,
+} from "./math";

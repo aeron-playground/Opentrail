@@ -38,6 +38,16 @@ export function parseDecimal(text: string): Decimal {
   return { digits: BigInt(whole + fraction), scale: fraction.length };
 }
 
+/** Compares two decimals of zero or more exactly: below 0 when a < b, 0 when equal, above 0 when a > b. */
+export function compareDecimals(a: string, b: string): number {
+  const x = parseDecimal(a);
+  const y = parseDecimal(b);
+  const scale = Math.max(x.scale, y.scale);
+  const left = x.digits * pow10(scale - x.scale);
+  const right = y.digits * pow10(scale - y.scale);
+  return left === right ? 0 : left > right ? 1 : -1;
+}
+
 const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
 // Far beyond any price or percent; more would only make a huge string out of outside data.
 const MAX_EXPONENT = 100;

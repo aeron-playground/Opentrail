@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mulDiv, parseDecimal, plainDecimal, pow10 } from "./math";
+import { compareDecimals, mulDiv, parseDecimal, plainDecimal, pow10 } from "./math";
 
 describe("mulDiv", () => {
   const cases = [
@@ -122,5 +122,22 @@ describe("plainDecimal", () => {
     const started = performance.now();
     expect(plainDecimal(`${"0".repeat(99)}1.${"0".repeat(98)}`)).toBe("1");
     expect(performance.now() - started).toBeLessThan(50);
+  });
+});
+
+describe("compareDecimals", () => {
+  test.each([
+    ["37848514.3069", "30996438.12", 1],
+    ["30996438.12", "37848514.3069", -1],
+    ["1.5", "1.50", 0],
+    ["0.000003726442994736", "0.0000037264429947363744", -1],
+    ["120", "119.999999999999999999", 1],
+    ["0", "0.0", 0],
+  ])("compares %s with %s as %i", (a, b, expected) => {
+    expect(compareDecimals(a, b)).toBe(expected);
+  });
+
+  test("refuses text that isn't a decimal of zero or more", () => {
+    expect(() => compareDecimals("-1", "1")).toThrow(RangeError);
   });
 });
