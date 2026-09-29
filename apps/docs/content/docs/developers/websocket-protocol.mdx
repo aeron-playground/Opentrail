@@ -32,11 +32,16 @@ Send these two messages once the connection is open:
 - Send `auth` again when your access token is refreshed.
 - The server confirms each subscription with `subscribed`.
 
-| Channel | What it sends                          | Needs `auth` |
-| ------- | -------------------------------------- | ------------ |
-| `me`    | Events about you, like `balance.changed` | Yes        |
+| Channel  | What it sends                                  | Needs `auth` |
+| -------- | ---------------------------------------------- | ------------ |
+| `me`     | Events about you, like `balance.changed`       | Yes          |
+| `prices` | Live prices of the tradable tokens, as `price` | No           |
 
-More channels, such as prices, will follow.
+To follow prices only, you don't need to sign in: subscribe to `prices` right away.
+
+```json
+{ "type": "subscribe", "channel": "prices" }
+```
 
 ## Server messages
 
@@ -46,10 +51,27 @@ Every server message has `"v": 1`, the protocol version, and a `type`.
 | ----------------- | ----------------- | --------------------------------------------------------------------- |
 | `subscribed`      | `channel`         | The subscription works                                                |
 | `balance.changed` | none              | Your balances changed. Read them again with [Get your balances](/developers/api/account/get-me-balances) |
+| `price`           | `items`           | Tokens whose price changed since the last `price` message, at most one message every 5 seconds |
 | `error`           | `code`, `message` | A message of yours failed. The connection stays open, unless noted below |
 
 ```json
 { "v": 1, "type": "balance.changed" }
+```
+
+In a `price` message, each item has the token's `mint`, `priceUsd` in dollars per whole token,
+and `change24hPct`, the change over 24 hours in percent (`null` when unknown). Both numbers are
+strings, so no digit is lost; tiny prices keep up to 18 decimal places. Prices refresh about every
+15 seconds, and a token whose price didn't change isn't sent.
+
+```json
+{
+  "v": 1,
+  "type": "price",
+  "items": [
+    { "mint": "So11111111111111111111111111111111111111112", "priceUsd": "120.83457314202052", "change24hPct": "0.9123" },
+    { "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", "priceUsd": "0.000003726442994736", "change24hPct": "5.5998" }
+  ]
+}
 ```
 
 Error codes are the same as the HTTP API's, so check `code`, never `message`:
