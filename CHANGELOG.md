@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.4](https://github.com/aeron-playground/Opentrail/compare/v0.0.3...v0.0.4) (2026-09-29)
+
+
+### Features
+
+* **db:** add the token registry ([#66](https://github.com/aeron-playground/Opentrail/issues/66)) ([75bcfe6](https://github.com/aeron-playground/Opentrail/commit/75bcfe6ff862e55509e6c8c84e6870c75e9107b1))
+* **indexer:** fetch price candles from geckoterminal ([#71](https://github.com/aeron-playground/Opentrail/issues/71)) ([5a50e3c](https://github.com/aeron-playground/Opentrail/commit/5a50e3c8867b1948ec5f15038c0e9a38163c66a5))
+* **indexer:** refresh token prices and push them live ([#69](https://github.com/aeron-playground/Opentrail/issues/69)) ([55a21e9](https://github.com/aeron-playground/Opentrail/commit/55a21e999fc490e4d977f9aa3d08a451000835a2))
+
 ## [0.0.3](https://github.com/aeron-playground/Opentrail/compare/v0.0.2...v0.0.3) (2026-09-28)
 
 
