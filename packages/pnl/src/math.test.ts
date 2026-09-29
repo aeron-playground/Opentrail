@@ -112,4 +112,15 @@ describe("plainDecimal", () => {
   test("keeps the limit itself", () => {
     expect(plainDecimal("1e-100")).toBe(`0.${"0".repeat(99)}1`);
   });
+
+  test("refuses text longer than 200 characters, and takes 200", () => {
+    expect(() => plainDecimal(`0.${"0".repeat(198)}1`)).toThrow("too long");
+    expect(plainDecimal(`0.${"0".repeat(197)}1`)).toBe(`0.${"0".repeat(197)}1`);
+  });
+
+  test("trims long runs of zeros quickly", () => {
+    const started = performance.now();
+    expect(plainDecimal(`${"0".repeat(99)}1.${"0".repeat(98)}`)).toBe("1");
+    expect(performance.now() - started).toBeLessThan(50);
+  });
 });

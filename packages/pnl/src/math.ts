@@ -39,8 +39,9 @@ export function parseDecimal(text: string): Decimal {
 }
 
 const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
-// Far beyond any price or percent; a larger exponent would only build a huge string.
+// Far beyond any price or percent; more would only make a huge string out of outside data.
 const MAX_EXPONENT = 100;
+const MAX_LENGTH = 200;
 
 /**
  * Writes a number's text, such as "1e-9" or "-1.5E+3" from an outside JSON answer, as a plain
@@ -48,6 +49,9 @@ const MAX_EXPONENT = 100;
  * leading and trailing zeros.
  */
 export function plainDecimal(text: string): string {
+  if (text.length > MAX_LENGTH) {
+    throw new RangeError(`A number of ${text.length} characters is too long.`);
+  }
   const match = JSON_NUMBER.exec(text);
   if (!match) {
     throw new RangeError(`Not a number: "${text}".`);
@@ -66,8 +70,26 @@ export function plainDecimal(text: string): string {
         ? digits + "0".repeat(point - digits.length)
         : `${digits.slice(0, point)}.${digits.slice(point)}`;
   const [integer = "", decimals = ""] = padded.split(".");
-  const tidyInteger = integer.replace(/^0+(?=\d)/, "");
-  const tidyDecimals = decimals.replace(/0+$/, "");
+  const tidyInteger = withoutLeadingZeros(integer);
+  const tidyDecimals = withoutTrailingZeros(decimals);
   const plain = tidyDecimals === "" ? tidyInteger : `${tidyInteger}.${tidyDecimals}`;
   return plain === "0" ? plain : sign + plain;
+}
+
+// Plain loops, not /^0+/ and /0+$/: a pattern like /0+$/ takes time that grows with the square
+// of a long run of zeros, which outside data could use to stall us.
+function withoutLeadingZeros(text: string): string {
+  let start = 0;
+  while (start < text.length - 1 && text[start] === "0") {
+    start += 1;
+  }
+  return text.slice(start);
+}
+
+function withoutTrailingZeros(text: string): string {
+  let end = text.length;
+  while (end > 0 && text[end - 1] === "0") {
+    end -= 1;
+  }
+  return text.slice(0, end);
 }
