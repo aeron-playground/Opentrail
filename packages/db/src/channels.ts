@@ -3,3 +3,6 @@
 
 // The indexer saw a user's balances change. Payload: the user's id.
 export const BALANCE_CHANGED_CHANNEL = "balance_changed";
+
+// The indexer saved new prices. Payload: the changed mints, joined by commas.
+export const PRICE_UPDATED_CHANNEL = "price_updated";
