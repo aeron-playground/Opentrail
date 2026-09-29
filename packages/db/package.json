@@ -12,7 +12,8 @@
     "typecheck": "tsc",
     "test": "bun test",
     "generate": "drizzle-kit generate",
-    "migrate": "bun src/migrate.ts"
+    "migrate": "bun src/migrate.ts",
+    "seed": "bun src/seed.ts"
   },
   "dependencies": {
     "@repo/solana": "workspace:*",
