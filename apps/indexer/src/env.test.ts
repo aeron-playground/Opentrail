@@ -12,6 +12,7 @@ describe("readIndexerEnv", () => {
       HELIUS_API_KEY: undefined,
       HELIUS_WEBHOOK_ID: undefined,
       JUPITER_API_KEY: undefined,
+      GECKOTERMINAL_BASE_URL: undefined,
       PORT: 3002,
       LOG_LEVEL: "info",
     });
@@ -38,6 +39,14 @@ describe("readIndexerEnv", () => {
     ).toBeUndefined();
   });
 
+  test("reads a GeckoTerminal address, and an empty one as unset", () => {
+    const read = (GECKOTERMINAL_BASE_URL: string) =>
+      readIndexerEnv({ DATABASE_URL, HELIUS_WEBHOOK_SECRET, GECKOTERMINAL_BASE_URL })
+        .GECKOTERMINAL_BASE_URL;
+    expect(read("https://example.com/api/v2")).toBe("https://example.com/api/v2");
+    expect(read("")).toBeUndefined();
+  });
+
   test("reads empty Helius settings as unset", () => {
     const env = readIndexerEnv({
       DATABASE_URL,
@@ -51,6 +60,10 @@ describe("readIndexerEnv", () => {
 
   const invalid: { name: string; env: Record<string, string | undefined> }[] = [
     { name: "a Helius API key without a webhook id", env: { HELIUS_API_KEY: "made-up-key" } },
+    {
+      name: "a GeckoTerminal address that isn't https",
+      env: { GECKOTERMINAL_BASE_URL: "http://example.com" },
+    },
     { name: "a Helius webhook id without an API key", env: { HELIUS_WEBHOOK_ID: "made-up-id" } },
     { name: "a missing database URL", env: { DATABASE_URL: undefined } },
     { name: "a non-Postgres database URL", env: { DATABASE_URL: "mysql://app@localhost/app" } },

@@ -2,15 +2,19 @@
 import { createDb } from "@repo/db";
 import { createLogger } from "@repo/server";
 import { createApp } from "./app";
+import { createChartBook } from "./chart-book";
 import { type IndexerEnv, readIndexerEnv } from "./env";
 import { createInbox } from "./inbox";
 import { cleanupJob } from "./jobs/cleanup";
 import { processInboxJob } from "./jobs/process-inbox";
+import { CANDLES_EVERY_MS, refreshCandlesJob } from "./jobs/refresh-candles";
+import { refreshPoolsJob } from "./jobs/refresh-pools";
 import { refreshPricesJob } from "./jobs/refresh-prices";
 import { createScheduler, type Job } from "./jobs/scheduler";
 import { syncWebhookAddressesJob } from "./jobs/sync-webhook-addresses";
 import { createRateLimit } from "./lib/rate-limit";
 import { createPriceBook } from "./price-book";
+import { createGeckoTerminal } from "./providers/geckoterminal/geckoterminal";
 import { createHeliusWebhooks } from "./providers/helius/helius";
 import { createJupiterPrices } from "./providers/jupiter/jupiter";
 import { createWatchList } from "./watch-list";
@@ -35,10 +39,18 @@ const jupiter = createJupiterPrices({ apiKey: env.JUPITER_API_KEY, rateLimit: ju
 if (env.JUPITER_API_KEY === undefined) {
   logger.info("Prices come from Jupiter's keyless address: set JUPITER_API_KEY for production");
 }
+// GeckoTerminal's free API allows about 10 calls a minute, but it varies: one every 15 seconds.
+const gecko = createGeckoTerminal({
+  baseUrl: env.GECKOTERMINAL_BASE_URL,
+  rateLimit: createRateLimit(CANDLES_EVERY_MS),
+});
+const chartBook = createChartBook(database.db);
 const jobs: Job[] = [
-  cleanupJob({ inbox, logger }),
+  cleanupJob({ inbox, chartBook, logger }),
   processInboxJob({ inbox, logger }),
   refreshPricesJob({ priceBook: createPriceBook(database.db), jupiter, logger }),
+  refreshPoolsJob({ chartBook, gecko, logger }),
+  refreshCandlesJob({ chartBook, gecko, logger }),
 ];
 if (env.HELIUS_API_KEY !== undefined && env.HELIUS_WEBHOOK_ID !== undefined) {
   const helius = createHeliusWebhooks({

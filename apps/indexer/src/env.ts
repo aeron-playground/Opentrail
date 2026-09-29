@@ -17,6 +17,8 @@ const indexerEnvSchema = z
     HELIUS_WEBHOOK_ID: optional,
     // A secret. Without it, prices come from Jupiter's keyless address, which it plans to retire.
     JUPITER_API_KEY: optional,
+    // Where GeckoTerminal answers; the public API when unset.
+    GECKOTERMINAL_BASE_URL: optional.pipe(z.url({ protocol: /^https$/ }).optional()),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3002),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
   })
