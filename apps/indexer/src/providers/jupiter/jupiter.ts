@@ -1,5 +1,6 @@
 import { parseDecimal, plainDecimal } from "@repo/pnl";
 import { z } from "zod";
+import { parseJsonKeepingNumbers } from "../../lib/json";
 import type { RateLimit } from "../../lib/rate-limit";
 import type { JupiterPrices, PriceQuote } from "./types";
 
@@ -52,7 +53,7 @@ export function createJupiterPrices({
     if (!response.ok) {
       throw new Error(`Jupiter prices answered ${response.status}`);
     }
-    return readJson(await response.text());
+    return parseJsonKeepingNumbers(await response.text());
   }
 
   return {
@@ -75,14 +76,6 @@ export function createJupiterPrices({
       return prices;
     },
   };
-}
-
-// JSON.parse hands the reviver each number's original text, so a price keeps every digit Jupiter
-// sent instead of becoming a float first.
-function readJson(text: string): unknown {
-  return JSON.parse(text, (_key, value: unknown, context?: { source?: string }) =>
-    typeof value === "number" && context?.source !== undefined ? context.source : value,
-  );
 }
 
 // A price that isn't a number above zero counts as no reliable price, like one Jupiter omits.
