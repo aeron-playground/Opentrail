@@ -1,3 +1,10 @@
+export {
+  CANDLE_TIMEFRAMES,
+  type Candle,
+  type CandleTimeframe,
+  candles,
+  type NewCandle,
+} from "./candles";
 export { citext } from "./columns";
 export { type NewTokenPrice, type TokenPrice, tokenPrices } from "./token-prices";
 export {
