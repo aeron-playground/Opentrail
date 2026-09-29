@@ -1,4 +1,5 @@
 export { citext } from "./columns";
+export { type NewTokenPrice, type TokenPrice, tokenPrices } from "./token-prices";
 export {
   type NewToken,
   SAFETY_LEVELS,

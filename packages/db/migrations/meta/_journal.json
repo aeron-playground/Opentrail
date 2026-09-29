@@ -36,6 +36,13 @@
       "when": 1790684417937,
       "tag": "0004_create-tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790687140612,
+      "tag": "0005_create-token-prices",
+      "breakpoints": true
     }
   ]
 }

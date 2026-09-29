@@ -1,0 +1,66 @@
+{
+  "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R": {
+    "createdAt": "2024-06-07T10:56:42.584Z",
+    "liquidity": 19018926.794208955,
+    "usdPrice": 1.9125516469008939,
+    "blockId": 451648120,
+    "decimals": 6,
+    "priceChange24h": -4.836798889303811
+  },
+  "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263": {
+    "createdAt": "2024-06-07T10:26:40.709Z",
+    "liquidity": 5480202.4465564685,
+    "usdPrice": 0.0000037264429947363744,
+    "blockId": 451649372,
+    "decimals": 5,
+    "priceChange24h": 5.599782143800134
+  },
+  "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm": {
+    "createdAt": "2024-06-07T10:51:21.979Z",
+    "liquidity": 7126155.994598281,
+    "usdPrice": 0.24080093842798017,
+    "blockId": 451649359,
+    "decimals": 6,
+    "priceChange24h": 2.0994047060427707
+  },
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+    "createdAt": "2024-06-05T08:55:25.527Z",
+    "liquidity": 471824727.57881784,
+    "usdPrice": 0.9999580751129743,
+    "blockId": 451649398,
+    "decimals": 6,
+    "priceChange24h": 0.010195498735442812
+  },
+  "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn": {
+    "createdAt": "2024-06-07T10:51:21.979Z",
+    "liquidity": 1255731143.0485706,
+    "usdPrice": 157.47258863355313,
+    "blockId": 451649372,
+    "decimals": 9,
+    "priceChange24h": 0.9996468413483622
+  },
+  "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN": {
+    "createdAt": "2024-06-07T10:56:42.584Z",
+    "liquidity": 5696404.80893169,
+    "usdPrice": 0.3290360488731354,
+    "blockId": 451648120,
+    "decimals": 6,
+    "priceChange24h": -4.821237250067719
+  },
+  "So11111111111111111111111111111111111111112": {
+    "createdAt": "2024-06-05T08:55:25.527Z",
+    "liquidity": 959547969.7194033,
+    "usdPrice": 120.83457314202052,
+    "blockId": 451649398,
+    "decimals": 9,
+    "priceChange24h": 0.9122531476838243
+  },
+  "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So": {
+    "createdAt": "2024-06-07T10:30:07.011Z",
+    "liquidity": 273433478.5926969,
+    "usdPrice": 169.477895896209,
+    "blockId": 451646963,
+    "decimals": 9,
+    "priceChange24h": 0.42927504437646885
+  }
+}

@@ -8,10 +8,12 @@ import { createPrivy } from "./providers/privy/privy";
 import { createSolanaReader } from "./providers/solana/rpc";
 import { serveOptions } from "./server";
 import { createBalanceService } from "./services/balances";
+import { createPriceReader } from "./services/prices";
 import { createUsernameService } from "./services/usernames";
 import { createUserService } from "./services/users";
 import { createHub } from "./ws/hub";
 import { forwardBalanceChanges } from "./ws/listen";
+import { forwardPriceChanges } from "./ws/prices";
 
 let env: ApiEnv;
 try {
@@ -41,7 +43,15 @@ const hub = createHub({
   logger,
 });
 const heartbeat = setInterval(hub.heartbeat, WS_PING_INTERVAL_MS);
-const forwarding = forwardBalanceChanges({ listen: database.listen, hub, logger });
+const forwarding = [
+  forwardBalanceChanges({ listen: database.listen, hub, logger }),
+  forwardPriceChanges({
+    listen: database.listen,
+    hub,
+    logger,
+    prices: createPriceReader(database.db),
+  }),
+];
 const server = Bun.serve(serveOptions({ app, hub, port: env.PORT }));
 logger.info({ port: server.port }, "API started");
 
@@ -51,7 +61,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   logger.info({ signal }, "API stopping");
   clearInterval(heartbeat);
   hub.closeAll();
-  await forwarding.stop();
+  await Promise.all(forwarding.map((listener) => listener.stop()));
   await server.stop();
   await database.close();
   process.exit(0);

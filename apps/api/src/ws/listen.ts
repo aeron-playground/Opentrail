@@ -8,12 +8,13 @@ import type { Hub } from "./hub";
 const UserId = z.uuid();
 const RETRY_MS = 5_000;
 
-export type ForwardDeps = {
+export type ListenDeps = {
   listen: DbHandle["listen"];
-  hub: Pick<Hub, "sendToUser">;
   logger: Logger;
   retryMs?: number;
 };
+
+export type ForwardDeps = ListenDeps & { hub: Pick<Hub, "sendToUser"> };
 
 export type Forwarding = {
   // Resolves once listening; it may take several tries.
@@ -21,33 +22,22 @@ export type Forwarding = {
   stop(): Promise<void>;
 };
 
-// Listens in the background and tries again every few seconds while Postgres doesn't answer, so
-// the API starts and serves HTTP even when the database is down. Once listening, the connection
-// reconnects by itself. A notification sent while it's down is lost; Add funds still checks
-// balances every 5 seconds for that case.
-export function forwardBalanceChanges({
-  listen,
-  hub,
-  logger,
-  retryMs = RETRY_MS,
-}: ForwardDeps): Forwarding {
+// Listens on `channel` in the background and tries again every few seconds while Postgres doesn't
+// answer, so the API starts and serves HTTP even when the database is down. Once listening, the
+// connection reconnects by itself. A notification sent while it's down is lost.
+export function listenInBackground(
+  channel: string,
+  onMessage: (payload: string) => void,
+  { listen, logger, retryMs = RETRY_MS }: ListenDeps,
+): Forwarding {
   let stopped = false;
   let unlisten: (() => Promise<void>) | null = null;
   let retry: ReturnType<typeof setTimeout> | undefined;
   const listening = Promise.withResolvers<void>();
 
-  const onMessage = (payload: string) => {
-    const userId = UserId.safeParse(payload);
-    if (!userId.success) {
-      logger.warn("balance_changed notification without a user id");
-      return;
-    }
-    hub.sendToUser(userId.data, { v: WS_PROTOCOL_VERSION, type: "balance.changed" });
-  };
-
   async function attempt() {
     try {
-      const stop = await listen(BALANCE_CHANGED_CHANNEL, onMessage);
+      const stop = await listen(channel, onMessage);
       if (stopped) {
         await stop();
         return;
@@ -58,7 +48,7 @@ export function forwardBalanceChanges({
       if (stopped) {
         return;
       }
-      logger.warn({ err: error }, "can't listen for balance changes yet; trying again");
+      logger.warn({ err: error, channel }, "can't listen to the database yet; trying again");
       retry = setTimeout(attempt, retryMs);
     }
   }
@@ -72,4 +62,20 @@ export function forwardBalanceChanges({
       await unlisten?.();
     },
   };
+}
+
+// Add funds still checks balances every 5 seconds, for a notification lost while listening was down.
+export function forwardBalanceChanges({ hub, ...deps }: ForwardDeps): Forwarding {
+  return listenInBackground(
+    BALANCE_CHANGED_CHANNEL,
+    (payload) => {
+      const userId = UserId.safeParse(payload);
+      if (!userId.success) {
+        deps.logger.warn("balance_changed notification without a user id");
+        return;
+      }
+      hub.sendToUser(userId.data, { v: WS_PROTOCOL_VERSION, type: "balance.changed" });
+    },
+    deps,
+  );
 }

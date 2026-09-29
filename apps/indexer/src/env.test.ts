@@ -11,6 +11,7 @@ describe("readIndexerEnv", () => {
       HELIUS_WEBHOOK_SECRET,
       HELIUS_API_KEY: undefined,
       HELIUS_WEBHOOK_ID: undefined,
+      JUPITER_API_KEY: undefined,
       PORT: 3002,
       LOG_LEVEL: "info",
     });
@@ -25,6 +26,16 @@ describe("readIndexerEnv", () => {
         HELIUS_WEBHOOK_ID: "made-up-webhook",
       }),
     ).toMatchObject({ HELIUS_API_KEY: "made-up-key", HELIUS_WEBHOOK_ID: "made-up-webhook" });
+  });
+
+  test("reads a Jupiter API key, and an empty one as unset", () => {
+    expect(
+      readIndexerEnv({ DATABASE_URL, HELIUS_WEBHOOK_SECRET, JUPITER_API_KEY: "made-up-key" })
+        .JUPITER_API_KEY,
+    ).toBe("made-up-key");
+    expect(
+      readIndexerEnv({ DATABASE_URL, HELIUS_WEBHOOK_SECRET, JUPITER_API_KEY: "" }).JUPITER_API_KEY,
+    ).toBeUndefined();
   });
 
   test("reads empty Helius settings as unset", () => {

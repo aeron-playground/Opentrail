@@ -8,6 +8,7 @@ import {
   WS_CLOSE_CODES,
   WS_MAX_CONNECTIONS_PER_USER,
   WS_PROTOCOL_VERSION,
+  WS_SIGNED_IN_CHANNELS,
   type WsChannel,
   type WsServerMessage,
 } from "@repo/shared/ws";
@@ -38,6 +39,10 @@ export type Hub = {
   close(peer: Peer): void;
   /** Sends to the user's connections that subscribed to `me`. Returns how many got it. */
   sendToUser(userId: string, message: WsServerMessage): number;
+  /** Sends to every connection subscribed to `channel`. Returns how many got it. */
+  broadcast(channel: WsChannel, message: WsServerMessage): number;
+  /** How many connections subscribed to `channel`. */
+  subscribers(channel: WsChannel): number;
   /** Closes connections that missed the last ping, and pings the rest. */
   heartbeat(): void;
   /** Closes every connection, as when the server restarts. */
@@ -136,8 +141,7 @@ export function createHub({
       await authenticate(peer, connection, message.token);
       return;
     }
-    // `me` is the only channel so far, and it needs a signed-in connection.
-    if (connection.userId === null) {
+    if (WS_SIGNED_IN_CHANNELS.includes(message.channel) && connection.userId === null) {
       sendError(peer, "UNAUTHORIZED");
       return;
     }
@@ -201,6 +205,29 @@ export function createHub({
         }
       }
       return sent;
+    },
+
+    broadcast(channel, message) {
+      // Written once, however many connections get it.
+      const text = JSON.stringify(message);
+      let sent = 0;
+      for (const [peer, connection] of connections) {
+        if (connection.channels.has(channel)) {
+          peer.send(text);
+          sent += 1;
+        }
+      }
+      return sent;
+    },
+
+    subscribers(channel) {
+      let count = 0;
+      for (const connection of connections.values()) {
+        if (connection.channels.has(channel)) {
+          count += 1;
+        }
+      }
+      return count;
     },
 
     heartbeat() {

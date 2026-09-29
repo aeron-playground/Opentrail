@@ -169,6 +169,54 @@ describe("auth and subscribe", () => {
   });
 });
 
+describe("the prices channel", () => {
+  const PRICE: WsServerMessage = {
+    v: 1,
+    type: "price",
+    items: [{ mint: "made-up-mint", priceUsd: "1.5", change24hPct: null }],
+  };
+
+  test("is open to a connection that never signed in", async () => {
+    const { hub } = setup();
+    const peer = fakePeer();
+    hub.open(peer);
+
+    await hub.message(peer, json({ type: "subscribe", channel: "prices" }));
+
+    expect(peer.received).toEqual([{ v: 1, type: "subscribed", channel: "prices" }]);
+    expect(hub.broadcast("prices", PRICE)).toBe(1);
+    expect(peer.received.at(-1)).toEqual(PRICE);
+  });
+
+  test("broadcasts only to its subscribers, and counts them", async () => {
+    const { hub, person, subscribed } = setup();
+    const onlyMe = await subscribed(person().token);
+    const pricesA = fakePeer();
+    const pricesB = fakePeer();
+    for (const peer of [pricesA, pricesB]) {
+      hub.open(peer);
+      await hub.message(peer, json({ type: "subscribe", channel: "prices" }));
+    }
+    hub.close(pricesB);
+
+    expect(hub.subscribers("prices")).toBe(1);
+    expect(hub.broadcast("prices", PRICE)).toBe(1);
+    expect(pricesA.received.at(-1)).toEqual(PRICE);
+    expect(onlyMe.received).not.toContainEqual(PRICE);
+  });
+
+  test("keeps a connection that only subscribed to prices past the sign-in window", async () => {
+    const { hub } = setup({ authWindowMs: 20 });
+    const peer = fakePeer();
+    hub.open(peer);
+    await hub.message(peer, json({ type: "subscribe", channel: "prices" }));
+
+    await Bun.sleep(40);
+
+    expect(peer.closedWith).toBeNull();
+  });
+});
+
 describe("sendToUser", () => {
   test("reaches only that user's subscribed connections", async () => {
     const { hub, person, subscribed } = setup();

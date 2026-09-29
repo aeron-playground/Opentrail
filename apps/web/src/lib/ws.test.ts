@@ -56,12 +56,18 @@ describe("startLiveConnection", () => {
 
   test("passes on the messages it knows, and skips the rest", () => {
     const { latest, received } = setup();
+    const price: WsServerMessage = {
+      v: 1,
+      type: "price",
+      items: [{ mint: "made-up-mint", priceUsd: "1.5", change24hPct: null }],
+    };
     latest().receive(JSON.stringify(BALANCE_CHANGED));
-    latest().receive(JSON.stringify({ v: 1, type: "price", items: [] }));
+    latest().receive(JSON.stringify(price));
+    latest().receive(JSON.stringify({ v: 1, type: "alert.trade", trade: {} }));
     latest().receive("not json");
     latest().receive(new Uint8Array([1]));
 
-    expect(received).toEqual([BALANCE_CHANGED]);
+    expect(received).toEqual([BALANCE_CHANGED, price]);
   });
 
   test.each([

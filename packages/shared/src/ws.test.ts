@@ -14,6 +14,7 @@ describe("parseWsClientMessage", () => {
   const accepted: [string, unknown][] = [
     ["auth", { type: "auth", token: "a-token" }],
     ["a subscribe to me", { type: "subscribe", channel: "me" }],
+    ["a subscribe to prices", { type: "subscribe", channel: "prices" }],
   ];
   test.each(accepted)("reads %s", (_, message) => {
     expect<unknown>(parseWsClientMessage(json(message))).toEqual(message);
@@ -47,6 +48,25 @@ describe("parseWsServerMessage", () => {
   const accepted: [string, unknown][] = [
     ["subscribed", { v: 1, type: "subscribed", channel: "me" }],
     ["balance.changed", { v: 1, type: "balance.changed" }],
+    [
+      "price",
+      {
+        v: 1,
+        type: "price",
+        items: [
+          {
+            mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+            priceUsd: "0.000003726442994736",
+            change24hPct: "5.5998",
+          },
+          {
+            mint: "So11111111111111111111111111111111111111112",
+            priceUsd: "120.83",
+            change24hPct: null,
+          },
+        ],
+      },
+    ],
     ["error", { v: 1, type: "error", code: "UNAUTHORIZED", message: "Sign in again to continue." }],
   ];
   test.each(accepted)("reads %s", (_, message) => {
@@ -67,7 +87,11 @@ describe("parseWsServerMessage", () => {
 
   const ignored: [string, string][] = [
     ["text that isn't JSON", "{"],
-    ["a type added later", json({ v: 1, type: "price", items: [] })],
+    ["a type added later", json({ v: 1, type: "alert.trade", trade: {} })],
+    [
+      "a price whose number isn't a string",
+      json({ v: 1, type: "price", items: [{ mint: "x", priceUsd: 1, change24hPct: null }] }),
+    ],
     ["another protocol version", json({ v: 2, type: "balance.changed" })],
     ["a message without a version", json({ type: "balance.changed" })],
   ];
