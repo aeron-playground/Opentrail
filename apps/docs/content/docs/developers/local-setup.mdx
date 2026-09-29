@@ -20,6 +20,7 @@ cp packages/db/.env.example packages/db/.env
 cp apps/api/.env.example apps/api/.env
 cp apps/indexer/.env.example apps/indexer/.env
 bun run db:migrate
+bun run db:seed                                # load the token list
 bun run check                                  # lint, typecheck and tests
 bun run dev                                    # every app, see the ports below
 ```
@@ -56,3 +57,21 @@ bunx turbo run dev --filter=@repo/docs
 | `bun run check`    | Lint, typecheck and test, as CI does |
 | `bun run lint:fix` | Fix lint and formatting problems     |
 | `bun run openapi`  | Update the API contract and types    |
+| `bun run db:seed`  | Load the token list; safe to run again |
+
+## Add a token
+
+The token list lives in `packages/db/src/seed/tokens.ts`. Never type an entry by hand: check the
+token first, by symbol or by mint address:
+
+```bash
+bun scripts/add-token.ts JUP
+```
+
+The script compares Jupiter's token data with the mint's own account on Solana. It refuses a token
+that Jupiter hasn't verified, that has less than $1M of liquidity, whose decimals or token program
+the two disagree on, or that has a Token-2022 extension able to move, tax, freeze or block
+holders' tokens. When a symbol belongs to more than one verified token, pass the mint instead.
+
+Copy the entry it prints into `LISTED_TOKENS`, where the order is the order people see, then run
+`bun run db:seed`. To stop trading a token, move its entry to `UNLISTED_TOKENS`; never delete one.
