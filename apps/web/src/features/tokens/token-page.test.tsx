@@ -70,10 +70,16 @@ describe("token page", () => {
     expect(await screen.findByTestId("chart")).toBeDefined();
     expect(candleRequests(api)).toEqual(["15m"]);
     expect(drawings.at(-1)).toMatchObject({ direction: "up", intraday: true });
-    expect(drawings.at(-1)?.points.map((point) => point.price)).toEqual(["110", "115", "118.9"]);
+    // The newest candle has closed, so the line goes on to the live price.
+    expect(drawings.at(-1)?.points.map((point) => point.price)).toEqual([
+      "110",
+      "115",
+      "118.9",
+      "118.92690462188556",
+    ]);
     expect(
       screen.getByRole("img", {
-        name: "Price chart, past 24 hours: from $110.00 to $118.90, high $118.90, low $110.00.",
+        name: "Price chart, past 24 hours: from $110.00 to $118.93, high $118.93, low $110.00.",
       }),
     ).toBeDefined();
   });
@@ -117,6 +123,9 @@ describe("token page", () => {
     const since = `since ${formatRelativeTime(new Date(start), new Date())}`;
     expect(await screen.findByText(since)).toBeDefined();
     expect(screen.getByText("+18.93%")).toBeDefined();
+    expect(
+      screen.getByRole("img", { name: new RegExp(`^Price chart, ${since}: from \\$100\\.00 `) }),
+    ).toBeDefined();
   });
 
   test("a live price moves the price and the newest point, which is still open", async () => {
@@ -260,9 +269,17 @@ describe("rangeChange", () => {
 describe("chartPoints", () => {
   const now = Date.parse("2026-09-30T12:00:00Z");
 
-  test("leaves a closed newest candle as it is", () => {
+  test("after a closed newest candle, adds the live price in the current slot", () => {
     const candles = [candle(now - 60 * MINUTE_MS, "1"), candle(now - 30 * MINUTE_MS, "2")];
-    expect(chartPoints(candles, "5", "1D", now).map((point) => point.price)).toEqual(["1", "2"]);
+    expect(chartPoints(candles, "5", "1D", now)).toEqual([
+      { start: candles[0]?.start ?? "", price: "1" },
+      { start: candles[1]?.start ?? "", price: "2" },
+      { start: "2026-09-30T12:00:00.000Z", price: "5" },
+    ]);
+  });
+
+  test("draws nothing from a live price alone", () => {
+    expect(chartPoints([], "5", "1D", now)).toEqual([]);
   });
 
   test("keeps the open candle's close without a live price", () => {

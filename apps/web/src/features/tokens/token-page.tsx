@@ -133,6 +133,7 @@ function TokenView({ token }: { token: TokenDetail }) {
           points={chartPoints(items, token.priceUsd, range, Date.now())}
           direction={direction}
           range={range}
+          words={change.words}
         />
         <figcaption className="mt-2 flex flex-col gap-1 text-fine text-ink-3">
           <span>Chart data: GeckoTerminal</span>
@@ -160,11 +161,14 @@ function ChartArea({
   points,
   direction,
   range,
+  words,
 }: {
   query: UseQueryResult<Candle[]>;
   points: ChartPoint[];
   direction: ChartDirection;
   range: ChartRange;
+  // The same words as the change above the chart, such as "past week" or "since Mar 31".
+  words: string;
 }) {
   const placeholder = <Skeleton className="h-60 w-full sm:h-72" />;
   if (query.data === undefined) {
@@ -180,12 +184,13 @@ function ChartArea({
       </div>
     );
   }
-  if (points.length < 2) {
+  // Counted in candles: the live price alone doesn't make a chart of the range.
+  if (query.data.length < 2) {
     return <EmptyState message="No chart for this range yet." />;
   }
   return (
     // The drawing is a canvas, which screen readers can't read; the label says what it shows.
-    <div role="img" aria-label={chartSummary(points, query.data, range)}>
+    <div role="img" aria-label={chartSummary(points, query.data, words)}>
       <Suspense fallback={placeholder}>
         <PriceChart
           points={points}
@@ -251,8 +256,8 @@ export function rangeChange(
   };
 }
 
-// The candles' closing prices. The newest candle is still open, so its point follows the live
-// price.
+// The candles' closing prices, ending at the live price: the newest candle is still open, so its
+// point follows the price; after a closed one, the price gets a point in the current slot.
 export function chartPoints(
   candles: readonly Candle[],
   livePrice: string | null,
@@ -261,25 +266,25 @@ export function chartPoints(
 ): ChartPoint[] {
   const points = candles.map((candle) => ({ start: candle.start, price: candle.close }));
   const last = points.at(-1);
-  const open =
-    last !== undefined && Date.parse(last.start) + CANDLE_MS[CHART_RANGES[range].timeframe] > now;
-  if (open && livePrice !== null) {
+  if (last === undefined || livePrice === null) {
+    return points;
+  }
+  const slot = CANDLE_MS[CHART_RANGES[range].timeframe];
+  if (Date.parse(last.start) + slot > now) {
     points[points.length - 1] = { start: last.start, price: livePrice };
+  } else {
+    points.push({ start: new Date(Math.floor(now / slot) * slot).toISOString(), price: livePrice });
   }
   return points;
 }
 
-function chartSummary(
-  points: readonly ChartPoint[],
-  candles: readonly Candle[],
-  range: ChartRange,
-) {
+function chartSummary(points: readonly ChartPoint[], candles: readonly Candle[], words: string) {
   const first = points[0]?.price ?? "0";
   const last = points.at(-1)?.price ?? "0";
   const high = candles.map((candle) => candle.high).reduce(maxOf, last);
   const low = candles.map((candle) => candle.low).reduce(minOf, last);
   return (
-    `Price chart, ${CHART_RANGES[range].words}: from ${formatPrice(first)} to ${formatPrice(last)}, ` +
+    `Price chart, ${words}: from ${formatPrice(first)} to ${formatPrice(last)}, ` +
     `high ${formatPrice(maxOf(high, last))}, low ${formatPrice(minOf(low, last))}.`
   );
 }
