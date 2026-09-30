@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { WebEnv } from "../env";
 import { useAuth } from "../features/auth/auth-context";
 import { PrivyAuthProvider } from "../features/auth/privy-auth-provider";
+import { LivePricesProvider } from "../features/live/live-prices";
 import { LiveUpdates } from "../features/live/live-updates";
 import { type ApiClient, createWebApi } from "../lib/api";
 import { ApiProvider } from "../lib/api-context";
@@ -55,7 +56,9 @@ export function AppProviders({
   }, [status, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
-      <ApiProvider client={api}>{children}</ApiProvider>
+      <ApiProvider client={api}>
+        <LivePricesProvider>{children}</LivePricesProvider>
+      </ApiProvider>
     </QueryClientProvider>
   );
 }

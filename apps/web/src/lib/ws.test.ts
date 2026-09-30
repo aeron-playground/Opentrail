@@ -25,6 +25,7 @@ function setup(overrides: Partial<LiveConnectionOptions> = {}) {
   const connection = startLiveConnection({
     url: URL,
     getToken: async () => "a-token",
+    channels: ["me"],
     onMessage: (message) => received.push(message),
     createSocket: fakes.create,
     // The longest wait each time, so the tests know exactly when a retry comes.
@@ -159,6 +160,77 @@ describe("startLiveConnection", () => {
     await settle();
 
     expect(latest().sent).toEqual([]);
+  });
+});
+
+describe("channels", () => {
+  test("signs in, then subscribes to every wanted channel", async () => {
+    const { latest } = setup({ channels: ["me", "prices"] });
+    latest().opened();
+    await settle();
+    expect(latest().sent).toEqual([
+      { type: "auth", token: "a-token" },
+      { type: "subscribe", channel: "me" },
+      { type: "subscribe", channel: "prices" },
+    ]);
+  });
+
+  test("without sign-in, subscribes to the public channels only", async () => {
+    const { latest } = setup({ getToken: async () => null, channels: ["me", "prices"] });
+    latest().opened();
+    await settle();
+    expect(latest().sent).toEqual([{ type: "subscribe", channel: "prices" }]);
+    expect(latest().closedWith).toBeNull();
+  });
+
+  test("adds a channel to an open connection at once, and once only", async () => {
+    const { connection, latest } = setup();
+    latest().opened();
+    await settle();
+
+    connection.subscribe("prices");
+    connection.subscribe("prices");
+    connection.subscribe("me");
+
+    expect(latest().sent).toEqual([
+      { type: "auth", token: "a-token" },
+      { type: "subscribe", channel: "me" },
+      { type: "subscribe", channel: "prices" },
+    ]);
+  });
+
+  test("keeps a channel added before the socket is ready for when it opens", async () => {
+    const { connection, latest } = setup({ getToken: async () => null, channels: [] });
+    connection.subscribe("prices");
+    latest().opened();
+    await settle();
+    expect(latest().sent).toEqual([{ type: "subscribe", channel: "prices" }]);
+  });
+
+  test("doesn't send a signed-in channel added to a connection without sign-in", async () => {
+    const { connection, latest } = setup({ getToken: async () => null, channels: ["prices"] });
+    latest().opened();
+    await settle();
+    connection.subscribe("me");
+    expect(latest().sent).toEqual([{ type: "subscribe", channel: "prices" }]);
+  });
+
+  test("subscribes to every channel again after a reconnect", async () => {
+    const { connection, latest } = setup();
+    latest().opened();
+    await settle();
+    connection.subscribe("prices");
+
+    latest().dropped();
+    jest.advanceTimersByTime(WS_RECONNECT_MIN_MS);
+    latest().opened();
+    await settle();
+
+    expect(latest().sent).toEqual([
+      { type: "auth", token: "a-token" },
+      { type: "subscribe", channel: "me" },
+      { type: "subscribe", channel: "prices" },
+    ]);
   });
 });
 
