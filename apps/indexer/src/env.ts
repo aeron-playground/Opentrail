@@ -7,6 +7,8 @@ const optional = z
   .optional()
   .transform((value) => (value === "" ? undefined : value));
 
+const PUBLIC_SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
+
 const indexerEnvSchema = z
   .object({
     DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
@@ -19,6 +21,11 @@ const indexerEnvSchema = z
     JUPITER_API_KEY: optional,
     // Where GeckoTerminal answers; the public API when unset.
     GECKOTERMINAL_BASE_URL: optional.pipe(z.url({ protocol: /^https$/ }).optional()),
+    // The Solana server the token safety job reads mint authorities from. Solana's public one is
+    // fine for development; a provider's address carries its key, so it's never logged.
+    SOLANA_RPC_URL: optional
+      .pipe(z.url({ protocol: /^https?$/ }).optional())
+      .transform((value) => value ?? PUBLIC_SOLANA_RPC_URL),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3002),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
   })

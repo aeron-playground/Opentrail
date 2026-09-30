@@ -13,6 +13,7 @@ describe("readIndexerEnv", () => {
       HELIUS_WEBHOOK_ID: undefined,
       JUPITER_API_KEY: undefined,
       GECKOTERMINAL_BASE_URL: undefined,
+      SOLANA_RPC_URL: "https://api.mainnet-beta.solana.com",
       PORT: 3002,
       LOG_LEVEL: "info",
     });
@@ -47,6 +48,15 @@ describe("readIndexerEnv", () => {
     expect(read("")).toBeUndefined();
   });
 
+  test("reads a Solana server address, and an empty one as Solana's public server", () => {
+    const read = (SOLANA_RPC_URL: string) =>
+      readIndexerEnv({ DATABASE_URL, HELIUS_WEBHOOK_SECRET, SOLANA_RPC_URL }).SOLANA_RPC_URL;
+    expect(read("https://rpc.example.com/?api-key=made-up")).toBe(
+      "https://rpc.example.com/?api-key=made-up",
+    );
+    expect(read("")).toBe("https://api.mainnet-beta.solana.com");
+  });
+
   test("reads empty Helius settings as unset", () => {
     const env = readIndexerEnv({
       DATABASE_URL,
@@ -65,6 +75,10 @@ describe("readIndexerEnv", () => {
       env: { GECKOTERMINAL_BASE_URL: "http://example.com" },
     },
     { name: "a Helius webhook id without an API key", env: { HELIUS_WEBHOOK_ID: "made-up-id" } },
+    {
+      name: "a Solana server address that isn't http",
+      env: { SOLANA_RPC_URL: "wss://example.com" },
+    },
     { name: "a missing database URL", env: { DATABASE_URL: undefined } },
     { name: "a non-Postgres database URL", env: { DATABASE_URL: "mysql://app@localhost/app" } },
     { name: "a missing webhook secret", env: { HELIUS_WEBHOOK_SECRET: undefined } },
