@@ -1,6 +1,7 @@
 import { normalizeUsername, USERNAME_CHANGE_DAYS, usernameProblem } from "@repo/shared";
 import { SOL, USDC } from "@repo/solana";
 import type { Me } from "../features/account/use-me";
+import type { TokenListItem } from "../features/tokens/use-tokens";
 import { FAKE_TOKEN } from "./fake-auth";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -19,12 +20,54 @@ export const FAKE_ME: Me = {
 // Someone who just signed in for the first time.
 export const NEW_ME: Me = { ...FAKE_ME, usernameChosen: false };
 
+// Real mints and prices from the local API (public data), with made-up sparklines.
+export const FAKE_TOKENS: TokenListItem[] = [
+  {
+    mint: "So11111111111111111111111111111111111111112",
+    symbol: "SOL",
+    name: "Wrapped SOL",
+    decimals: 9,
+    logoUrl: null,
+    rank: 1,
+    priceUsd: "118.92690462188556",
+    change24hPct: "0.3965",
+    priceUpdatedAt: "2026-09-30T15:42:10.563Z",
+    sparkline7d: ["116", "117.5", "118.9"],
+  },
+  {
+    mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    symbol: "JUP",
+    name: "Jupiter",
+    decimals: 6,
+    logoUrl: null,
+    rank: 2,
+    priceUsd: "0.3249568595792189",
+    change24hPct: "-4.8212",
+    priceUpdatedAt: "2026-09-30T15:42:10.563Z",
+    sparkline7d: ["0.34", "0.33", "0.325"],
+  },
+  {
+    mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    symbol: "Bonk",
+    name: "Bonk",
+    decimals: 5,
+    logoUrl: null,
+    rank: 3,
+    priceUsd: null,
+    change24hPct: null,
+    priceUpdatedAt: null,
+    sparkline7d: [],
+  },
+];
+
 export type FakeApi = {
   fetch: (request: Request) => Promise<Response>;
   requests: Request[];
   me: () => Me;
   /** What the wallet holds from now on, in raw units. */
   setBalances: (balances: { usdc?: bigint; sol?: bigint }) => void;
+  /** Whether GET /v1/tokens fails from now on. */
+  setTokensFail: (fail: boolean) => void;
 };
 
 type FakeApiOptions = {
@@ -39,6 +82,8 @@ type FakeApiOptions = {
   suggestFails?: boolean;
   balances?: { usdc?: bigint; sol?: bigint };
   balancesFail?: boolean;
+  tokens?: TokenListItem[];
+  tokensFail?: boolean;
 };
 
 // Answers like the real API, for the routes the web app calls. No network.
@@ -51,7 +96,10 @@ export function createFakeApi({
   suggestFails = false,
   balances: initialBalances = {},
   balancesFail = false,
+  tokens = FAKE_TOKENS,
+  tokensFail: initialTokensFail = false,
 }: FakeApiOptions = {}): FakeApi {
+  let tokensFail = initialTokensFail;
   let wallet = { usdc: 0n, sol: 0n, ...initialBalances };
   let me = initialMe;
   let notReady = walletNotReadyTimes;
@@ -117,6 +165,9 @@ export function createFakeApi({
     setBalances: (next) => {
       wallet = { ...wallet, ...next };
     },
+    setTokensFail: (fail) => {
+      tokensFail = fail;
+    },
     fetch: async (request) => {
       requests.push(request);
       const { pathname } = new URL(request.url);
@@ -130,6 +181,12 @@ export function createFakeApi({
         return suggestFails || username === undefined
           ? errorResponse(500, "INTERNAL")
           : Response.json({ username });
+      }
+
+      if (request.method === "GET" && pathname === "/v1/tokens") {
+        return tokensFail
+          ? errorResponse(500, "INTERNAL")
+          : Response.json({ items: tokens, nextCursor: null });
       }
 
       if (request.method === "GET" && pathname === "/v1/me/balances") {
