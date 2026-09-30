@@ -153,8 +153,8 @@ describe("token page", () => {
       v: 1,
       type: "price",
       items: [{ mint: SOL, priceUsd: "121.5", change24hPct: "2.5" }],
-    };
-    await act(async () => socket.receive(JSON.stringify(message satisfies WsServerMessage)));
+    } satisfies WsServerMessage;
+    await act(async () => socket.receive(JSON.stringify(message)));
 
     expect(await screen.findByText("$121.50")).toBeDefined();
     expect(screen.getByText("+2.50%")).toBeDefined();
