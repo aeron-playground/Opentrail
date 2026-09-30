@@ -1,5 +1,5 @@
-// Writer: `bun run db:seed` for the list itself (entries checked with scripts/add-token.ts), and
-// the indexer's market-data jobs for pools, verification and safety.
+// Writer: `bun run db:seed` for the list itself (entries checked with scripts/add-token.ts) and
+// its reviewed safety notes, and the indexer's market-data jobs for pools, checks and stats.
 import { TOKEN_PROGRAM_NAMES } from "@repo/solana";
 import { sql } from "drizzle-orm";
 import {
@@ -41,10 +41,14 @@ export const tokens = pgTable(
     isJupiterVerified: boolean("is_jupiter_verified"),
     mintAuthorityRevoked: boolean("mint_authority_revoked"),
     freezeAuthorityRevoked: boolean("freeze_authority_revoked"),
-    // Dollars, as a decimal string, so no cent is lost.
+    // Dollars, as decimal strings, so no cent is lost: what's in the token's pools, its market
+    // cap, and what traded in the last 24 hours.
     liquidityUsd: numeric("liquidity_usd", { precision: 38, scale: 2 }),
+    marketCapUsd: numeric("market_cap_usd", { precision: 38, scale: 2 }),
+    volume24hUsd: numeric("volume_24h_usd", { precision: 38, scale: 2 }),
     safetyLevel: text("safety_level", { enum: SAFETY_LEVELS }),
-    // The reviewed reason, shown on the token page.
+    // Why a token passes a check it fails on paper, such as a stablecoin keeping its mint
+    // authority. Written by a person and reviewed; shown on the token page.
     safetyNote: text("safety_note"),
     safetyCheckedAt: timestamp("safety_checked_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

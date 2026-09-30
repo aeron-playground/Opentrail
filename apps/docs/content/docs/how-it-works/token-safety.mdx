@@ -1,6 +1,51 @@
 ---
 title: Token safety
-description: How tokens are checked before you can trade them.
+description: The checks behind every token's safety badge, and what each badge means.
 ---
 
-This page isn't written yet. It will be written once the token list is in place.
+Every token on %APP_NAME% gets a safety level from three checks, run again every 10 minutes. The
+level shows as a badge beside the token's name on its page.
+
+## The checks
+
+- **Verified by Jupiter.** Jupiter, the service %APP_NAME% gets token data and prices from,
+  reviews tokens and marks the ones it has checked.
+- **Liquidity:** how many dollars sit in the token's pools, from Jupiter's token data. In thin
+  pools, a few trades move the price a lot, and selling can be hard.
+- **Mint and freeze authorities,** read from the token's own account on Solana. A mint authority
+  can create more of the token; a freeze authority can freeze anyone's tokens. Once revoked, no
+  one can do either, ever.
+
+## The levels
+
+| Badge     | When                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| Verified  | Verified by Jupiter, at least $1M of liquidity, and both authorities revoked or explained by a reviewed note |
+| Caution   | Under $1M of liquidity, or an authority kept without a reviewed note                                       |
+| High risk | Not verified by Jupiter, or under $100K of liquidity. It stays on the list with its badge, and can't be traded |
+
+A token shows no badge until its first check. If a check can't reach Jupiter or Solana, the token
+keeps its last result until the next one works.
+
+## Reviewed notes
+
+Some tokens keep an authority by design:
+
+- A **stablecoin** like USDC: its issuer creates new tokens as dollars come in, and must be able to
+  freeze funds when the law requires it.
+- A **liquid staking token** like JitoSOL or mSOL: new tokens are created only by its staking
+  program, when someone stakes SOL. No person holds that key.
+
+For these, a person writes a short note explaining why, and it's reviewed like any change to the
+code before it goes live. The note shows on the token's page. A note can explain a kept authority,
+never thin liquidity or a token Jupiter hasn't verified.
+
+## Stats
+
+A token's page also shows its market cap, its liquidity and its 24-hour volume (what was bought
+and sold together), from Jupiter's token data, refreshed with the checks.
+
+The rules are open source, in
+[`safety-level.ts`](https://github.com/aeron-playground/Opentrail/blob/main/apps/indexer/src/market/safety-level.ts),
+with a test for every case, and the reviewed notes are in
+[`safety-notes.ts`](https://github.com/aeron-playground/Opentrail/blob/main/packages/db/src/seed/safety-notes.ts).

@@ -75,6 +75,16 @@ export function percentChange(from: string, to: string, fractionDigits = 4): str
   return plainDecimal(fractionDigits === 0 ? sign + whole : `${sign}${whole}.${fraction}`);
 }
 
+/** The exact sum of decimals of zero or more, without trailing zeros: "1.5" + "2.25" is "3.75". */
+export function sumDecimals(values: readonly string[]): string {
+  const parsed = values.map(parseDecimal);
+  const scale = Math.max(0, ...parsed.map((value) => value.scale));
+  const total = parsed.reduce((sum, value) => sum + value.digits * pow10(scale - value.scale), 0n);
+  const whole = (total / pow10(scale)).toString();
+  const fraction = (total % pow10(scale)).toString().padStart(scale, "0");
+  return plainDecimal(scale === 0 ? whole : `${whole}.${fraction}`);
+}
+
 const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
 // Far beyond any price or percent; more would only make a huge string out of outside data.
 const MAX_EXPONENT = 100;

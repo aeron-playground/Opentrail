@@ -1,5 +1,5 @@
 // A Jupiter for tests: prices live in memory, and nothing touches the network.
-import type { JupiterPrices, PriceQuote } from "./types";
+import type { JupiterPrices, JupiterTokens, PriceQuote, TokenMarket } from "./types";
 
 export type FakeJupiter = JupiterPrices & {
   /** The prices the fake answers with; a mint missing here is left out, as Jupiter does. */
@@ -26,6 +26,42 @@ export function createFakeJupiter(initial: Record<string, PriceQuote> = {}): Fak
         mints.flatMap((mint) => {
           const quote = prices.get(mint);
           return quote ? [[mint, quote] as const] : [];
+        }),
+      );
+    },
+    failWith(error) {
+      failure = error;
+    },
+  };
+}
+
+export type FakeJupiterTokens = JupiterTokens & {
+  /** The token data the fake answers with; a mint missing here is left out, as Jupiter does. */
+  tokens: Map<string, TokenMarket>;
+  /** The mints asked for, one list per call. */
+  calls: string[][];
+  /** Makes the next calls fail, as if Jupiter were down; null makes them work again. */
+  failWith(error: Error | null): void;
+};
+
+export function createFakeJupiterTokens(
+  initial: Record<string, TokenMarket> = {},
+): FakeJupiterTokens {
+  const tokens = new Map(Object.entries(initial));
+  const calls: string[][] = [];
+  let failure: Error | null = null;
+  return {
+    tokens,
+    calls,
+    async getTokens(mints) {
+      calls.push([...mints]);
+      if (failure) {
+        throw failure;
+      }
+      return new Map(
+        mints.flatMap((mint) => {
+          const token = tokens.get(mint);
+          return token ? [[mint, token] as const] : [];
         }),
       );
     },

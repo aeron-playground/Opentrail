@@ -30,7 +30,7 @@ export type TokenDetail = TokenPrice & {
   isListed: boolean;
   rank: number | null;
   safety: { level: string | null; note: string | null };
-  // Null until the token safety job fills them.
+  // Filled by the token safety job every 10 minutes; null before its first check.
   stats: { marketCapUsd: string | null; liquidityUsd: string | null; volume24hUsd: string | null };
 };
 
@@ -131,6 +131,8 @@ export function createTokenService({
           safetyLevel: tokens.safetyLevel,
           safetyNote: tokens.safetyNote,
           liquidityUsd: sql<string | null>`trim_scale(${tokens.liquidityUsd})::text`,
+          marketCapUsd: sql<string | null>`trim_scale(${tokens.marketCapUsd})::text`,
+          volume24hUsd: sql<string | null>`trim_scale(${tokens.volume24hUsd})::text`,
         })
         .from(tokens)
         .leftJoin(tokenPrices, eq(tokenPrices.mint, tokens.mint))
@@ -138,11 +140,11 @@ export function createTokenService({
       if (row === undefined) {
         return null;
       }
-      const { safetyLevel, safetyNote, liquidityUsd, ...token } = row;
+      const { safetyLevel, safetyNote, liquidityUsd, marketCapUsd, volume24hUsd, ...token } = row;
       return {
         ...token,
         safety: { level: safetyLevel, note: safetyNote },
-        stats: { marketCapUsd: null, liquidityUsd, volume24hUsd: null },
+        stats: { marketCapUsd, liquidityUsd, volume24hUsd },
       };
     },
 

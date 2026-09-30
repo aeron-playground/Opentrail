@@ -58,6 +58,19 @@ describe("seedTokens", () => {
     expect((await row(JUP))?.name).toBe("Jupiter (renamed)");
   });
 
+  test("writes the reviewed safety notes, and updates them", async () => {
+    await seedTokens(handle.db);
+    expect((await row(USDC.mint))?.safetyNote).toStartWith("USDC is a stablecoin.");
+    expect((await row(JUP))?.safetyNote).toBeNull();
+
+    const reworded = seedTokenRows().map((token) =>
+      token.mint === USDC.mint ? { ...token, safetyNote: "Reworded." } : token,
+    );
+    await seedTokens(handle.db, reworded);
+
+    expect((await row(USDC.mint))?.safetyNote).toBe("Reworded.");
+  });
+
   test("leaves the market-data columns to their jobs", async () => {
     await seedTokens(handle.db);
     await handle.db

@@ -6,6 +6,7 @@ import { lazy, Suspense, useId, useState } from "react";
 import { EmptyState } from "../../components/common/empty-state";
 import { ErrorState } from "../../components/common/error-state";
 import { PriceChange } from "../../components/common/price-change";
+import { SafetyBadge } from "../../components/common/safety-badge";
 import { TokenIcon } from "../../components/common/token-icon";
 import { buttonVariants } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
@@ -84,10 +85,11 @@ function TokenView({ token }: { token: TokenDetail }) {
     <section className={FRAME}>
       <header className="flex items-center gap-3">
         <TokenIcon symbol={token.symbol} logoUrl={token.logoUrl} className="size-12" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="font-condensed font-semibold text-title">{token.symbol}</h1>
           <p className="truncate text-ink-2 text-meta">{token.name}</p>
         </div>
+        <SafetyBadge level={token.safety.level} className="shrink-0" />
       </header>
 
       <div className="mt-6">
@@ -107,6 +109,9 @@ function TokenView({ token }: { token: TokenDetail }) {
           <PriceChange percent={change.percent} missing="No change to show yet" />
           <span className="text-ink-2">{change.words}</span>
         </p>
+        {token.safety.note !== null && (
+          <p className="mt-4 max-w-prose text-body text-ink-2">{token.safety.note}</p>
+        )}
       </div>
 
       <fieldset className="mt-6 flex gap-1">

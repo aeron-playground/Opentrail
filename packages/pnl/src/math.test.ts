@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { compareDecimals, mulDiv, parseDecimal, percentChange, plainDecimal, pow10 } from "./math";
+import {
+  compareDecimals,
+  mulDiv,
+  parseDecimal,
+  percentChange,
+  plainDecimal,
+  pow10,
+  sumDecimals,
+} from "./math";
 
 describe("mulDiv", () => {
   const cases = [
@@ -185,5 +193,30 @@ describe("percentChange", () => {
 
   test.each([-1, 1.5])("refuses %p digits", (digits) => {
     expect(() => percentChange("1", "2", digits)).toThrow(RangeError);
+  });
+});
+
+describe("sumDecimals", () => {
+  // Expected values worked out with exact decimal math.
+  const cases: [string, string[], string][] = [
+    ["nothing", [], "0"],
+    ["zeros", ["0", "0.000"], "0"],
+    ["different lengths", ["1.5", "2.25"], "3.75"],
+    ["trailing zeros dropped", ["1", "2.000"], "3"],
+    [
+      "JUP's 24-hour buys and sells",
+      ["8596409.843694884", "8493909.989855358"],
+      "17090319.833550242",
+    ],
+    ["USDC's", ["1140306708.9927025", "1139766373.4764175"], "2280073082.46912"],
+    ["three at once", ["0.1", "0.2", "0.3"], "0.6"],
+  ];
+
+  test.each(cases)("adds %s", (_, values, expected) => {
+    expect(sumDecimals(values)).toBe(expected);
+  });
+
+  test.each([["-1"], ["abc"], ["1e5"]])("refuses %p", (value) => {
+    expect(() => sumDecimals(["1", value])).toThrow(RangeError);
   });
 });

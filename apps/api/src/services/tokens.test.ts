@@ -53,6 +53,8 @@ beforeEach(async () => {
       safetyLevel: "ok",
       safetyNote: "A stablecoin keeps a mint authority by design.",
       liquidityUsd: "470000000.50",
+      marketCapUsd: "7699778282.88",
+      volume24hUsd: "2280258938.20",
     },
   ]);
   await handle.db.insert(tokenPrices).values([
@@ -132,7 +134,11 @@ describe("detail", () => {
       priceUsd: "0.9999",
       change24hPct: "0",
       safety: { level: "ok", note: "A stablecoin keeps a mint authority by design." },
-      stats: { marketCapUsd: null, liquidityUsd: "470000000.5", volume24hUsd: null },
+      stats: {
+        marketCapUsd: "7699778282.88",
+        liquidityUsd: "470000000.5",
+        volume24hUsd: "2280258938.2",
+      },
     });
   });
 

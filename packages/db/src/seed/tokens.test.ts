@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { isSolanaAddress, SOL, USDC } from "@repo/solana";
+import { SAFETY_NOTES } from "./safety-notes";
 import { LISTED_TOKENS, seedTokenRows, UNLISTED_TOKENS } from "./tokens";
 
 const ALL = [...UNLISTED_TOKENS, ...LISTED_TOKENS];
@@ -28,6 +29,11 @@ describe("the token list", () => {
   test("keeps USDC off the tradable list", () => {
     expect(LISTED_TOKENS.map((token) => token.mint)).not.toContain(USDC.mint);
   });
+
+  test("has reviewed notes only for tokens on it that keep an authority by design", () => {
+    const symbolOf = (mint: string) => ALL.find((token) => token.mint === mint)?.symbol;
+    expect(Object.keys(SAFETY_NOTES).map(symbolOf).sort()).toEqual(["JitoSOL", "USDC", "mSOL"]);
+  });
 });
 
 describe("seedTokenRows", () => {
@@ -37,7 +43,19 @@ describe("seedTokenRows", () => {
       LISTED_TOKENS.map((token, index) => [token.symbol, index + 1]),
     );
     expect(rows.filter((row) => !row.isListed)).toEqual(
-      UNLISTED_TOKENS.map((token) => ({ ...token, isListed: false, sortRank: null })),
+      UNLISTED_TOKENS.map((token) => ({
+        ...token,
+        isListed: false,
+        sortRank: null,
+        safetyNote: SAFETY_NOTES[token.mint] ?? null,
+      })),
     );
+  });
+
+  test("gives each token its reviewed note, or none", () => {
+    const noteOf = (symbol: string) =>
+      seedTokenRows().find((row) => row.symbol === symbol)?.safetyNote;
+    expect(noteOf("JitoSOL")).toStartWith("JitoSOL is a liquid staking token.");
+    expect(noteOf("JUP")).toBeNull();
   });
 });

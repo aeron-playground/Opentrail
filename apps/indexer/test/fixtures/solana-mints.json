@@ -1,0 +1,177 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "context": { "apiVersion": "4.3.0", "slot": 452062718 },
+    "value": [
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 6,
+              "freezeAuthority": "7dGbd2QZcCKcTndnHcTL8q7SMVXAkp688NTQYwrRCrar",
+              "isInitialized": true,
+              "mintAuthority": "BJE5MMbqXjVwjAF7oxwPYXnTXDyspzZyt4vwenNw5ruG",
+              "supply": "7701204570545805"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 534808027998,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 9,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": null,
+              "supply": "0"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 1848455052303,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 6,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": null,
+              "supply": "6861486429065134"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 74276338103,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 6,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": null,
+              "supply": "554997392774925"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 346696437393,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 9,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": "6iQKfEyhr3bZMotVkW6beNZz5CPAkiwvgV2CTje9pVSS",
+              "supply": "7980842538165020"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 3826303234,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 9,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM",
+              "supply": "1612139999531496"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 11891295022,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 5,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": null,
+              "supply": "8799437763036767365"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 1092249446731,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      },
+      {
+        "data": {
+          "parsed": {
+            "info": {
+              "decimals": 6,
+              "freezeAuthority": null,
+              "isInitialized": true,
+              "mintAuthority": null,
+              "supply": "998837461638518"
+            },
+            "type": "mint"
+          },
+          "program": "spl-token",
+          "space": 82
+        },
+        "executable": false,
+        "lamports": 529174431588,
+        "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "rentEpoch": 18446744073709551615,
+        "space": 82
+      }
+    ]
+  },
+  "id": 1
+}
