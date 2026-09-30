@@ -1,10 +1,13 @@
-// One live connection to the API's /v1/ws: it signs in, subscribes to `me`, and reconnects by
-// itself after a drop, waiting a little longer each time.
+// One live connection to the API's /v1/ws: it signs in when it has a token, subscribes to the
+// channels it's asked for, and reconnects by itself after a drop, waiting a little longer each
+// time.
 import {
   parseWsServerMessage,
   WS_CLOSE_CODES,
   WS_RECONNECT_MAX_MS,
   WS_RECONNECT_MIN_MS,
+  WS_SIGNED_IN_CHANNELS,
+  type WsChannel,
   type WsClientMessage,
   type WsServerMessage,
 } from "@repo/shared/ws";
@@ -13,13 +16,19 @@ export type LiveConnectionOptions = {
   url: string;
   /** A fresh access token, or null when nobody is signed in. */
   getToken: () => Promise<string | null>;
+  /** The channels to subscribe to. Without a token, only the public ones are. */
+  channels: readonly WsChannel[];
   onMessage: (message: WsServerMessage) => void;
   // Tests pass fakes for these.
   createSocket?: (url: string) => WebSocket;
   random?: () => number;
 };
 
-export type LiveConnection = { stop(): void };
+export type LiveConnection = {
+  /** Adds a channel: at once when connected, and again after every reconnect. */
+  subscribe(channel: WsChannel): void;
+  stop(): void;
+};
 
 // 1000: the standard "closing normally".
 const NORMAL_CLOSE = 1000;
@@ -36,12 +45,16 @@ export function reconnectDelay(failures: number, random: () => number = Math.ran
 export function startLiveConnection({
   url,
   getToken,
+  channels,
   onMessage,
   createSocket = (address) => new WebSocket(address),
   random = Math.random,
 }: LiveConnectionOptions): LiveConnection {
+  const wanted = new Set(channels);
   let stopped = false;
   let socket: WebSocket | null = null;
+  // Whether the current socket signed in, once it's ready to subscribe; null while it isn't.
+  let signedIn: boolean | null = null;
   let retry: ReturnType<typeof setTimeout> | undefined;
   // Failed tries since the last successful subscribe.
   let failures = 0;
@@ -49,6 +62,7 @@ export function startLiveConnection({
   function connect() {
     const current = createSocket(url);
     socket = current;
+    signedIn = null;
     const send = (message: WsClientMessage) => current.send(JSON.stringify(message));
 
     current.addEventListener("open", async () => {
@@ -57,12 +71,18 @@ export function startLiveConnection({
       if (stopped || socket !== current) {
         return;
       }
-      if (token === null) {
+      const open = [...wanted].filter((channel) => token !== null || isPublic(channel));
+      if (open.length === 0) {
         current.close(NORMAL_CLOSE);
         return;
       }
-      send({ type: "auth", token });
-      send({ type: "subscribe", channel: "me" });
+      if (token !== null) {
+        send({ type: "auth", token });
+      }
+      signedIn = token !== null;
+      for (const channel of open) {
+        send({ type: "subscribe", channel });
+      }
     });
 
     current.addEventListener("message", (event) => {
@@ -84,6 +104,7 @@ export function startLiveConnection({
         return;
       }
       socket = null;
+      signedIn = null;
       const wait =
         event.code === WS_CLOSE_CODES.TOO_MANY_CONNECTIONS
           ? WS_RECONNECT_MAX_MS
@@ -95,6 +116,16 @@ export function startLiveConnection({
 
   connect();
   return {
+    subscribe(channel) {
+      if (wanted.has(channel)) {
+        return;
+      }
+      wanted.add(channel);
+      // Before the socket is ready, the open handler subscribes to everything wanted.
+      if (socket !== null && signedIn !== null && (signedIn || isPublic(channel))) {
+        socket.send(JSON.stringify({ type: "subscribe", channel } satisfies WsClientMessage));
+      }
+    },
     stop() {
       stopped = true;
       clearTimeout(retry);
@@ -103,3 +134,5 @@ export function startLiveConnection({
     },
   };
 }
+
+const isPublic = (channel: WsChannel) => !WS_SIGNED_IN_CHANNELS.includes(channel);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { formatPnl, formatUsd } from "./money";
-import { formatPercent } from "./percent";
+import { type Change, formatChangePercent, formatPercent } from "./percent";
 
 const en = { locale: "en-US" };
 
@@ -52,6 +52,33 @@ describe("formatPercent", () => {
 
   test.each(["", "4%", "1e-3", "+0.1", "abc"])('refuses "%s"', (ratio) => {
     expect(() => formatPercent(ratio, en)).toThrow(RangeError);
+  });
+});
+
+describe("formatChangePercent", () => {
+  const cases: [string, string, Change["direction"]][] = [
+    ["4.82", "+4.82%", "up"],
+    ["-4.8212", "−4.82%", "down"],
+    ["0", "0.00%", "flat"],
+    ["0.004", "0.00%", "flat"],
+    ["-0.004", "0.00%", "flat"],
+    ["0.005", "+0.01%", "up"],
+    ["5", "+5.00%", "up"],
+    ["120.5", "+120.50%", "up"],
+    ["-99.99", "−99.99%", "down"],
+    ["0.3965", "+0.40%", "up"],
+    ["12345.678", "+12,345.68%", "up"],
+  ];
+  test.each(cases)("%s percent → %s, %s", (percent, text, direction) => {
+    expect(formatChangePercent(percent, en)).toEqual({ text, direction });
+  });
+
+  test("can show fewer decimals", () => {
+    expect(formatChangePercent("3.21", { ...en, decimals: 1 }).text).toBe("+3.2%");
+  });
+
+  test.each(["", "4%", "1e-3", "+0.1", ".5", "abc"])('refuses "%s"', (percent) => {
+    expect(() => formatChangePercent(percent, en)).toThrow(RangeError);
   });
 });
 

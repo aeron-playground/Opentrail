@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { WebEnv } from "../env";
 import { useAuth } from "../features/auth/auth-context";
 import { PrivyAuthProvider } from "../features/auth/privy-auth-provider";
+import { LivePricesProvider } from "../features/live/live-prices";
 import { LiveUpdates } from "../features/live/live-updates";
 import { type ApiClient, createWebApi } from "../lib/api";
 import { ApiProvider } from "../lib/api-context";
@@ -47,15 +48,20 @@ export function AppProviders({
   children: ReactNode;
 }) {
   const { status } = useAuth();
-  // Signed out: nothing of the last person's data may stay on the screen or in memory.
+  // Signed out: nothing of the last person's data may stay on the screen or in memory. Queries
+  // marked `meta: { public: true }` hold the same data for everyone and stay, so a screen showing
+  // them keeps getting live updates; removing one would cut it off from its cache.
   useEffect(() => {
     if (status === "signed-out") {
-      queryClient.clear();
+      queryClient.removeQueries({ predicate: (query) => query.meta?.public !== true });
+      queryClient.getMutationCache().clear();
     }
   }, [status, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
-      <ApiProvider client={api}>{children}</ApiProvider>
+      <ApiProvider client={api}>
+        <LivePricesProvider>{children}</LivePricesProvider>
+      </ApiProvider>
     </QueryClientProvider>
   );
 }
