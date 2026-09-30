@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import { createRateLimit } from "../../lib/rate-limit";
-import { createJupiterPrices, MAX_IDS_PER_CALL } from "./jupiter";
+import { createJupiterPrices, createJupiterTokens, MAX_IDS_PER_CALL } from "./jupiter";
 
 // Made up for these tests: no real key.
 const API_KEY = "test-jupiter-key-0123";
@@ -26,20 +26,25 @@ function fakeJupiter({
   const requests: Request[] = [];
   const noWait = createRateLimit(0);
   let rateLimited = 0;
-  const prices = createJupiterPrices({
+  const options = {
     apiKey,
-    rateLimit: (task) => {
+    rateLimit: <T>(task: () => Promise<T>) => {
       rateLimited += 1;
       return noWait(task);
     },
-    fetch: async (request) => {
+    fetch: async (request: Request) => {
       requests.push(request);
       const answer = answers.shift() ?? new Error("The test gave no more answers");
       if (answer instanceof Error) throw answer;
       return typeof answer === "string" ? new Response(answer) : answer;
     },
-  });
-  return { prices, requests, rateLimitedCalls: () => rateLimited };
+  };
+  return {
+    prices: createJupiterPrices(options),
+    tokens: createJupiterTokens(options),
+    requests,
+    rateLimitedCalls: () => rateLimited,
+  };
 }
 
 describe("getPrices", () => {
@@ -139,5 +144,101 @@ describe("getPrices", () => {
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toContain(message);
     expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain(API_KEY);
+  });
+});
+
+describe("getTokens", () => {
+  const JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
+  const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+  // Jupiter's real token data for our 8 tokens, 2026-10-01 (public data).
+  const realTokens = () =>
+    Bun.file(
+      join(import.meta.dir, "..", "..", "..", "test", "fixtures", "jupiter-tokens.json"),
+    ).text();
+  const token = (fields: Record<string, unknown>) => JSON.stringify([{ id: JUP, ...fields }]);
+
+  test("reads the real answer, adding up 24-hour buys and sells exactly", async () => {
+    const { tokens } = fakeJupiter({ answers: [await realTokens()] });
+
+    const found = await tokens.getTokens([JUP, USDC]);
+
+    expect(found.get(JUP)).toEqual({
+      isVerified: true,
+      liquidityUsd: "5877443.9157540025",
+      marketCapUsd: "1084239675.815317",
+      volume24hUsd: "17085883.597498145",
+    });
+    expect(found.get(USDC)?.volume24hUsd).toBe("2280258938.2795062");
+    // The answer holds all 8 tokens; only the ones asked for count.
+    expect(found.size).toBe(2);
+  });
+
+  test("asks for every mint in one search, through the rate limit", async () => {
+    const { tokens, requests, rateLimitedCalls } = fakeJupiter({ answers: ["[]"] });
+    await tokens.getTokens([JUP, USDC]);
+    expect(requests.map((request) => request.url)).toEqual([
+      `https://lite-api.jup.ag/tokens/v2/search?query=${JUP},${USDC}`,
+    ]);
+    expect(rateLimitedCalls()).toBe(1);
+  });
+
+  test("sends the key in a header to the keyed address", async () => {
+    const { tokens, requests } = fakeJupiter({ apiKey: API_KEY, answers: ["[]"] });
+    await tokens.getTokens([JUP]);
+    expect(requests[0]?.url).toStartWith("https://api.jup.ag/tokens/v2/search?");
+    expect(requests[0]?.headers.get("x-api-key")).toBe(API_KEY);
+  });
+
+  test("leaves out a mint Jupiter doesn't know", async () => {
+    const { tokens } = fakeJupiter({ answers: ["[]"] });
+    expect((await tokens.getTokens([JUP])).size).toBe(0);
+  });
+
+  test("counts a token without Jupiter's review as not verified, and missing data as none", async () => {
+    const { tokens } = fakeJupiter({ answers: [token({})] });
+    expect((await tokens.getTokens([JUP])).get(JUP)).toEqual({
+      isVerified: false,
+      liquidityUsd: null,
+      marketCapUsd: null,
+      volume24hUsd: null,
+    });
+  });
+
+  test("takes no amount below zero or unreadable, and no volume from half of it", async () => {
+    const answer = token({
+      isVerified: true,
+      liquidity: -5,
+      mcap: "lots",
+      stats24h: { buyVolume: 10.5, sellVolume: null },
+    });
+    const { tokens } = fakeJupiter({ answers: [answer] });
+    expect((await tokens.getTokens([JUP])).get(JUP)).toEqual({
+      isVerified: true,
+      liquidityUsd: null,
+      marketCapUsd: null,
+      volume24hUsd: null,
+    });
+  });
+
+  test("writes exponents as plain decimals", async () => {
+    const { tokens } = fakeJupiter({ answers: [token({ liquidity: 1.5e6 })] });
+    expect((await tokens.getTokens([JUP])).get(JUP)?.liquidityUsd).toBe("1500000");
+  });
+
+  test("fails on an answer in a shape it doesn't know", async () => {
+    const { tokens } = fakeJupiter({ answers: ['{"tokens": []}'] });
+    await expect(tokens.getTokens([JUP])).rejects.toThrow(
+      "Jupiter answered tokens in a shape we don't know",
+    );
+  });
+
+  test("fails when Jupiter answers with an error or not at all", async () => {
+    const { tokens } = fakeJupiter({
+      answers: [new Response("", { status: 503 }), new TypeError("network down")],
+    });
+    await expect(tokens.getTokens([JUP])).rejects.toThrow("Jupiter tokens answered 503");
+    await expect(tokens.getTokens([JUP])).rejects.toThrow(
+      "Jupiter tokens didn't answer (TypeError)",
+    );
   });
 });
