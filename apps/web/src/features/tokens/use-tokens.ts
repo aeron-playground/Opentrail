@@ -13,5 +13,7 @@ export function useTokens(): UseQueryResult<TokenList> {
   return useQuery({
     queryKey: TOKENS_QUERY_KEY,
     queryFn: async () => unwrap(await api.GET("/v1/tokens")),
+    // The same for everyone, so it stays when someone signs out.
+    meta: { public: true },
   });
 }

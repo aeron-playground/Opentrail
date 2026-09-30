@@ -8,13 +8,12 @@ import { fakeSockets } from "../../test/fake-socket";
 import { renderRoute } from "../../test/render-route";
 import type { TokenListItem } from "./use-tokens";
 
-async function explore({ api = createFakeApi(), signedIn = false } = {}) {
+async function explore({
+  api = createFakeApi(),
+  auth = createFakeAuth({ status: "signed-out" }),
+} = {}) {
   const sockets = fakeSockets();
-  const rendered = await renderRoute("/explore", {
-    api,
-    auth: createFakeAuth({ status: signedIn ? "signed-in" : "signed-out" }),
-    liveSocket: sockets.create,
-  });
+  const rendered = await renderRoute("/explore", { api, auth, liveSocket: sockets.create });
   return { ...rendered, sockets, user: userEvent.setup() };
 }
 
@@ -151,6 +150,26 @@ describe("live prices on Explore", () => {
     expect(rows()[1]).toMatch(/^JUP Jupiter \$0\.3250 /);
   });
 
+  // In a browser, sign-in is still loading when the list arrives. Finding out that nobody is
+  // signed in must not cut the list off from live prices.
+  test("keep prices live when sign-in finishes loading after the list arrives", async () => {
+    const auth = createFakeAuth({ status: "loading" });
+    const { sockets } = await explore({ auth });
+    await screen.findByText("Wrapped SOL");
+    await waitFor(() => expect(sockets.all).toHaveLength(1));
+    const socket = sockets.latest();
+    await act(async () => socket.opened());
+
+    await auth.setState({ status: "signed-out" });
+    await act(async () =>
+      socket.receive(
+        price([{ mint: FAKE_TOKENS[0]?.mint ?? "", priceUsd: "121.5", change24hPct: "2.5" }]),
+      ),
+    );
+
+    await waitFor(() => expect(rows()[0]).toMatch(/^SOL Wrapped SOL \$121\.50 \+2\.50%/));
+  });
+
   test("close a signed-out visitor's connection when they leave Explore", async () => {
     const { sockets, router } = await explore();
     await waitFor(() => expect(sockets.all).toHaveLength(1));
@@ -161,7 +180,7 @@ describe("live prices on Explore", () => {
   });
 
   test("add prices to a signed-in connection, keeping it", async () => {
-    const { sockets } = await explore({ signedIn: true });
+    const { sockets } = await explore({ auth: createFakeAuth({ status: "signed-in" }) });
     await waitFor(() => expect(sockets.all).toHaveLength(1));
     const socket = sockets.latest();
     await act(async () => socket.opened());
