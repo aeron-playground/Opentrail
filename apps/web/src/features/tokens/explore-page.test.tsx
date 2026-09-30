@@ -56,8 +56,8 @@ describe("Explore", () => {
       expect.stringMatching(/^JUP Jupiter \$0\.3250 −4\.82%/),
       expect.stringMatching(/^Bonk Bonk No price yet No 24-hour change yet/),
     ]);
-    expect(screen.getByRole("img", { name: "7-day trend: up 2.5%" })).toBeDefined();
-    expect(screen.getByRole("img", { name: "7-day trend: down 4.4%" })).toBeDefined();
+    expect(screen.getByRole("img", { name: "7-day trend: up 2.50%" })).toBeDefined();
+    expect(screen.getByRole("img", { name: "7-day trend: down 4.41%" })).toBeDefined();
     expect(screen.getByText("Chart data: GeckoTerminal")).toBeDefined();
   });
 

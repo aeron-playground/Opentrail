@@ -4,10 +4,12 @@ import { Sparkline } from "./sparkline";
 
 describe("Sparkline", () => {
   const cases: [string, string[], string, string][] = [
-    ["a rise", ["1", "1.5", "2"], "7-day trend: up 100.0%", "text-gain"],
-    ["a fall", ["2", "3", "1"], "7-day trend: down 50.0%", "text-loss"],
+    ["a rise", ["1", "1.5", "2"], "7-day trend: up 100.00%", "text-gain"],
+    ["a fall", ["2", "3", "1"], "7-day trend: down 50.00%", "text-loss"],
     ["no change", ["1", "2", "1"], "7-day trend: unchanged", "text-ink-3"],
-    ["a price it can't read, left out", ["1", "oops", "2"], "7-day trend: up 100.0%", "text-gain"],
+    ["a change that rounds to 0.00%", ["100", "100.001"], "7-day trend: unchanged", "text-ink-3"],
+    ["a rise from zero, with no percent", ["0", "1"], "7-day trend: up", "text-gain"],
+    ["a price it can't read, left out", ["1", "oops", "2"], "7-day trend: up 100.00%", "text-gain"],
   ];
 
   test.each(cases)("describes %s", (_, prices, name, color) => {

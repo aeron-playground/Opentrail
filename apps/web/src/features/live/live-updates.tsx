@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import type { LiveConnection } from "../../lib/ws";
 import { useAuth } from "../auth/auth-context";
-import { TOKENS_QUERY_KEY } from "../tokens/query-keys";
+import { TOKEN_DETAILS_QUERY_KEY, TOKENS_QUERY_KEY } from "../tokens/query-keys";
+import type { TokenDetail } from "../tokens/use-token";
 import type { TokenList } from "../tokens/use-tokens";
 import { BALANCES_QUERY_KEY } from "../wallet/query-keys";
 import { useLivePricesWanted } from "./live-prices";
@@ -46,27 +47,27 @@ export function LiveUpdates({
     const refreshTokens = () => {
       void queryClient.invalidateQueries({ queryKey: TOKENS_QUERY_KEY });
     };
-    // New prices go straight into the cached list: no reload, nothing else changes.
+    // New prices go straight into the cached list and the open token: no reload, nothing else
+    // changes.
     const applyPrices = (items: PriceItems) => {
       const byMint = new Map(items.map((item) => [item.mint, item]));
       const now = new Date().toISOString();
-      queryClient.setQueryData<TokenList>(TOKENS_QUERY_KEY, (list) =>
-        list === undefined
-          ? list
+      const withPrice = <T extends TokenDetail | TokenList["items"][number]>(token: T): T => {
+        const update = byMint.get(token.mint);
+        return update === undefined
+          ? token
           : {
-              ...list,
-              items: list.items.map((token) => {
-                const update = byMint.get(token.mint);
-                return update === undefined
-                  ? token
-                  : {
-                      ...token,
-                      priceUsd: update.priceUsd,
-                      change24hPct: update.change24hPct,
-                      priceUpdatedAt: now,
-                    };
-              }),
-            },
+              ...token,
+              priceUsd: update.priceUsd,
+              change24hPct: update.change24hPct,
+              priceUpdatedAt: now,
+            };
+      };
+      queryClient.setQueryData<TokenList>(TOKENS_QUERY_KEY, (list) =>
+        list === undefined ? list : { ...list, items: list.items.map(withPrice) },
+      );
+      queryClient.setQueriesData<TokenDetail>({ queryKey: TOKEN_DETAILS_QUERY_KEY }, (token) =>
+        token === undefined ? token : withPrice(token),
       );
     };
     // Loaded only now, so people who never need it never download it. If it can't load, Add

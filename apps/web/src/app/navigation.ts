@@ -8,8 +8,11 @@ import { HouseIcon } from "@phosphor-icons/react/House";
 import { PlusCircleIcon } from "@phosphor-icons/react/PlusCircle";
 import type { FileRouteTypes } from "../routeTree.gen";
 
+// A menu leads to whole pages, never to one token's page: no path with a parameter such as $mint.
+type PagePath = Exclude<FileRouteTypes["to"], `${string}/$${string}`>;
+
 export type NavItem = {
-  to: FileRouteTypes["to"];
+  to: PagePath;
   label: string;
   icon: Icon;
 };
