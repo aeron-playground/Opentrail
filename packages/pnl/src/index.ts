@@ -19,6 +19,7 @@ export {
   type Decimal,
   mulDiv,
   parseDecimal,
+  percentChange,
   plainDecimal,
   pow10,
 } from "./math";

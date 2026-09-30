@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { compareDecimals, mulDiv, parseDecimal, plainDecimal, pow10 } from "./math";
+import { compareDecimals, mulDiv, parseDecimal, percentChange, plainDecimal, pow10 } from "./math";
 
 describe("mulDiv", () => {
   const cases = [
@@ -139,5 +139,51 @@ describe("compareDecimals", () => {
 
   test("refuses text that isn't a decimal of zero or more", () => {
     expect(() => compareDecimals("-1", "1")).toThrow(RangeError);
+  });
+});
+
+describe("percentChange", () => {
+  // Expected values worked out with exact decimal math.
+  const cases: [string, string, string, number, string][] = [
+    ["a rise", "100", "110", 4, "10"],
+    ["a fall", "100", "90", 4, "-10"],
+    ["no change", "100", "100", 4, "0"],
+    ["a third, rounded down", "3", "4", 4, "33.3333"],
+    ["a fall of a third", "3", "2", 4, "-33.3333"],
+    ["two thirds, rounded up", "3", "5", 4, "66.6667"],
+    ["prices of different lengths", "1.5", "3", 4, "100"],
+    ["a fall too small to show: 0, not -0", "100", "99.999999", 4, "0"],
+    ["JUP", "0.3249568595792189", "0.3314", 4, "1.9828"],
+    ["SOL", "118.92690462188556", "121.5", 4, "2.1636"],
+    ["a tiny price, trailing zeros dropped", "0.000003863", "0.000003854", 4, "-0.233"],
+    ["no digits after the point", "3", "4", 0, "33"],
+    ["two digits", "3", "4", 2, "33.33"],
+    ["fewer digits than asked", "8", "9", 1, "12.5"],
+    ["exactly half rounds up", "8", "9", 0, "13"],
+    ["and away from zero when falling", "8", "7", 0, "-13"],
+  ];
+
+  test.each(cases)("%s: %p to %p, %p digits", (_, from, to, digits, expected) => {
+    expect(percentChange(from, to, digits)).toBe(expected);
+  });
+
+  test("keeps 4 digits by default", () => {
+    expect(percentChange("3", "4")).toBe("33.3333");
+  });
+
+  test("is null from zero, where no percent exists", () => {
+    expect(percentChange("0", "1")).toBeNull();
+    expect(percentChange("0.000", "0")).toBeNull();
+  });
+
+  test.each([
+    ["-1", "1"],
+    ["1", "abc"],
+  ])("refuses %p to %p", (from, to) => {
+    expect(() => percentChange(from, to)).toThrow(RangeError);
+  });
+
+  test.each([-1, 1.5])("refuses %p digits", (digits) => {
+    expect(() => percentChange("1", "2", digits)).toThrow(RangeError);
   });
 });

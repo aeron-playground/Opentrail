@@ -48,6 +48,33 @@ export function compareDecimals(a: string, b: string): number {
   return left === right ? 0 : left > right ? 1 : -1;
 }
 
+/**
+ * How far `to` moved from `from`, in percent of `from`: "-4.8212" is down 4.8212%. Rounded half
+ * away from zero to `fractionDigits` places, without trailing zeros. Null when `from` is zero,
+ * where no percent exists.
+ */
+export function percentChange(from: string, to: string, fractionDigits = 4): string | null {
+  const unit = pow10(fractionDigits);
+  const a = parseDecimal(from);
+  const b = parseDecimal(to);
+  const scale = Math.max(a.scale, b.scale);
+  const start = a.digits * pow10(scale - a.scale);
+  const end = b.digits * pow10(scale - b.scale);
+  if (start === 0n) {
+    return null;
+  }
+  const change = end - start;
+  // Percent × 10^fractionDigits, as a whole number.
+  const size = mulDiv(change < 0n ? -change : change, 100n * unit, start);
+  if (size === 0n) {
+    return "0";
+  }
+  const sign = change < 0n ? "-" : "";
+  const whole = (size / unit).toString();
+  const fraction = (size % unit).toString().padStart(fractionDigits, "0");
+  return plainDecimal(fractionDigits === 0 ? sign + whole : `${sign}${whole}.${fraction}`);
+}
+
 const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
 // Far beyond any price or percent; more would only make a huge string out of outside data.
 const MAX_EXPONENT = 100;
