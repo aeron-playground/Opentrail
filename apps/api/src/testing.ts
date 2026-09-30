@@ -19,6 +19,11 @@ export function testAppDeps(overrides: Partial<AppDeps> = {}): AppDeps {
       changeableAt: () => null,
     },
     balances: { forWallet: () => Promise.reject(new Error("This test has no balance service")) },
+    tokens: {
+      listed: () => Promise.reject(new Error("This test has no token service")),
+      detail: () => Promise.reject(new Error("This test has no token service")),
+      candles: () => Promise.reject(new Error("This test has no token service")),
+    },
     ...overrides,
   };
 }

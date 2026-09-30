@@ -236,6 +236,330 @@
           "username",
           "available"
         ]
+      },
+      "TokenList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenListItem"
+            }
+          },
+          "nextCursor": {
+            "type": "null",
+            "description": "Always null: the whole list comes in one page."
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "TokenListItem": {
+        "type": "object",
+        "properties": {
+          "mint": {
+            "type": "string",
+            "description": "The token's mint address.",
+            "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "JUP"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jupiter"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "How many of a raw amount's digits come after the decimal point.",
+            "example": 6
+          },
+          "logoUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://static.jup.ag/jup/icon.png"
+          },
+          "priceUsd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Dollars per whole token, as a decimal string. Null before the token's first price.",
+            "example": "0.3253799780422554"
+          },
+          "change24hPct": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The price change over the last 24 hours, in percent: -4.82 means down 4.82%.",
+            "example": "-4.8212"
+          },
+          "priceUpdatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the price was last confirmed; prices refresh about every 15 seconds, so an older time means the price is stale.",
+            "example": "2026-09-30T12:00:00.000Z"
+          },
+          "rank": {
+            "type": "integer",
+            "description": "Place in the list, from 1.",
+            "example": 2
+          },
+          "sparkline7d": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Closing prices every 4 hours over the last 7 days, oldest first, as decimal strings. Shorter for a token listed recently.",
+            "example": [
+              "0.3312",
+              "0.3290",
+              "0.3254"
+            ]
+          }
+        },
+        "required": [
+          "mint",
+          "symbol",
+          "name",
+          "decimals",
+          "logoUrl",
+          "priceUsd",
+          "change24hPct",
+          "priceUpdatedAt",
+          "rank",
+          "sparkline7d"
+        ]
+      },
+      "TokenDetail": {
+        "type": "object",
+        "properties": {
+          "mint": {
+            "type": "string",
+            "description": "The token's mint address.",
+            "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "JUP"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jupiter"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "How many of a raw amount's digits come after the decimal point.",
+            "example": 6
+          },
+          "logoUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://static.jup.ag/jup/icon.png"
+          },
+          "priceUsd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Dollars per whole token, as a decimal string. Null before the token's first price.",
+            "example": "0.3253799780422554"
+          },
+          "change24hPct": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The price change over the last 24 hours, in percent: -4.82 means down 4.82%.",
+            "example": "-4.8212"
+          },
+          "priceUpdatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the price was last confirmed; prices refresh about every 15 seconds, so an older time means the price is stale.",
+            "example": "2026-09-30T12:00:00.000Z"
+          },
+          "isListed": {
+            "type": "boolean",
+            "description": "Whether the token can be traded. USDC, which you pay with, isn't.",
+            "example": true
+          },
+          "rank": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Place in the list, from 1; null for a token that isn't listed.",
+            "example": 2
+          },
+          "safety": {
+            "$ref": "#/components/schemas/TokenSafety"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/TokenStats"
+          }
+        },
+        "required": [
+          "mint",
+          "symbol",
+          "name",
+          "decimals",
+          "logoUrl",
+          "priceUsd",
+          "change24hPct",
+          "priceUpdatedAt",
+          "isListed",
+          "rank",
+          "safety",
+          "stats"
+        ]
+      },
+      "TokenSafety": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`ok`, `caution` or `high_risk`, or null before the token is checked. A string, not a list: treat a level you don't know as `caution`.",
+            "example": "ok"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The reviewed reason behind the level, to show on the token page.",
+            "example": null
+          }
+        },
+        "required": [
+          "level",
+          "note"
+        ]
+      },
+      "TokenStats": {
+        "type": "object",
+        "properties": {
+          "marketCapUsd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Market cap in dollars; null when unknown.",
+            "example": null
+          },
+          "liquidityUsd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Dollars in the token's pools; null when unknown.",
+            "example": null
+          },
+          "volume24hUsd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Dollars traded in the last 24 hours; null when unknown.",
+            "example": null
+          }
+        },
+        "required": [
+          "marketCapUsd",
+          "liquidityUsd",
+          "volume24hUsd"
+        ]
+      },
+      "CandleList": {
+        "type": "object",
+        "properties": {
+          "mint": {
+            "type": "string",
+            "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+          },
+          "timeframe": {
+            "type": "string",
+            "enum": [
+              "15m",
+              "1h",
+              "4h",
+              "1d"
+            ],
+            "example": "1h"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Candle"
+            }
+          }
+        },
+        "required": [
+          "mint",
+          "timeframe",
+          "items"
+        ]
+      },
+      "Candle": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the candle's period starts. The newest candle is still open.",
+            "example": "2026-09-30T08:00:00.000Z"
+          },
+          "open": {
+            "type": "string",
+            "description": "Dollars per whole token when the period opened.",
+            "example": "0.3312"
+          },
+          "high": {
+            "type": "string",
+            "description": "The highest price in the period.",
+            "example": "0.3330"
+          },
+          "low": {
+            "type": "string",
+            "description": "The lowest price in the period.",
+            "example": "0.3251"
+          },
+          "close": {
+            "type": "string",
+            "description": "The latest price in the period.",
+            "example": "0.3254"
+          },
+          "volumeUsd": {
+            "type": "string",
+            "description": "Dollars traded in the token's main pool in the period.",
+            "example": "26262.57"
+          }
+        },
+        "required": [
+          "start",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volumeUsd"
+        ]
       }
     },
     "parameters": {}
@@ -503,6 +827,176 @@
           },
           "400": {
             "description": "`VALIDATION_FAILED`: the name is longer than 64 characters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tokens": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "List tokens",
+        "description": "The tokens you can trade, in list order, with their latest prices. No sign-in needed. For live prices, subscribe to the WebSocket `prices` channel.",
+        "responses": {
+          "200": {
+            "description": "The tradable tokens.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tokens/{mint}": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Get a token",
+        "description": "One token, tradable or not, with its price, safety and stats. No sign-in needed. Safety and stats are null until the token has been checked.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The token's mint address.",
+              "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+            },
+            "required": true,
+            "description": "The token's mint address.",
+            "name": "mint",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: the mint isn't a Solana address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`NOT_FOUND`: no token with this mint address is known.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tokens/{mint}/candles": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Get a token's price candles",
+        "description": "Price candles for a chart, oldest first, from the token's main pool on GeckoTerminal. Show \"Chart data: GeckoTerminal\" under every chart. Without `from`, the answer covers 1 day of `15m`, 7 days of `1h`, 30 days of `4h` or 365 days of `1d` candles, up to `to` (now by default). A range may hold at most 1000 candles. No sign-in needed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The token's mint address.",
+              "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+            },
+            "required": true,
+            "description": "The token's mint address.",
+            "name": "mint",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "15m",
+                "1h",
+                "4h",
+                "1d"
+              ],
+              "description": "How long each candle lasts.",
+              "example": "1h"
+            },
+            "required": true,
+            "description": "How long each candle lasts.",
+            "name": "tf",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The earliest candle start to include.",
+              "example": "2026-09-23T12:00:00Z"
+            },
+            "required": false,
+            "description": "The earliest candle start to include.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Candles must start before this time.",
+              "example": "2026-09-30T12:00:00Z"
+            },
+            "required": false,
+            "description": "Candles must start before this time.",
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The candles; an empty list when there are none in the range.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandleList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: the mint isn't a Solana address, `tf` is missing or unknown, a time isn't ISO 8601, `from` isn't before `to`, or the range holds more than 1000 candles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`NOT_FOUND`: no token with this mint address is known.",
             "content": {
               "application/json": {
                 "schema": {

@@ -320,6 +320,172 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List tokens
+         * @description The tokens you can trade, in list order, with their latest prices. No sign-in needed. For live prices, subscribe to the WebSocket `prices` channel.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The tradable tokens. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TokenList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tokens/{mint}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a token
+         * @description One token, tradable or not, with its price, safety and stats. No sign-in needed. Safety and stats are null until the token has been checked.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The token's mint address. */
+                    mint: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The token. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TokenDetail"];
+                    };
+                };
+                /** @description `VALIDATION_FAILED`: the mint isn't a Solana address. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `NOT_FOUND`: no token with this mint address is known. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tokens/{mint}/candles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a token's price candles
+         * @description Price candles for a chart, oldest first, from the token's main pool on GeckoTerminal. Show "Chart data: GeckoTerminal" under every chart. Without `from`, the answer covers 1 day of `15m`, 7 days of `1h`, 30 days of `4h` or 365 days of `1d` candles, up to `to` (now by default). A range may hold at most 1000 candles. No sign-in needed.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description How long each candle lasts. */
+                    tf: "15m" | "1h" | "4h" | "1d";
+                    /** @description The earliest candle start to include. */
+                    from?: string;
+                    /** @description Candles must start before this time. */
+                    to?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description The token's mint address. */
+                    mint: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The candles; an empty list when there are none in the range. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CandleList"];
+                    };
+                };
+                /** @description `VALIDATION_FAILED`: the mint isn't a Solana address, `tf` is missing or unknown, a time isn't ISO 8601, `from` isn't before `to`, or the range holds more than 1000 candles. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `NOT_FOUND`: no token with this mint address is known. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -437,6 +603,177 @@ export interface components {
              * @example taken
              */
             reason?: string;
+        };
+        TokenList: {
+            items: components["schemas"]["TokenListItem"][];
+            /** @description Always null: the whole list comes in one page. */
+            nextCursor: null;
+        };
+        TokenListItem: {
+            /**
+             * @description The token's mint address.
+             * @example JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+             */
+            mint: string;
+            /** @example JUP */
+            symbol: string;
+            /** @example Jupiter */
+            name: string;
+            /**
+             * @description How many of a raw amount's digits come after the decimal point.
+             * @example 6
+             */
+            decimals: number;
+            /** @example https://static.jup.ag/jup/icon.png */
+            logoUrl: string | null;
+            /**
+             * @description Dollars per whole token, as a decimal string. Null before the token's first price.
+             * @example 0.3253799780422554
+             */
+            priceUsd: string | null;
+            /**
+             * @description The price change over the last 24 hours, in percent: -4.82 means down 4.82%.
+             * @example -4.8212
+             */
+            change24hPct: string | null;
+            /**
+             * Format: date-time
+             * @description When the price was last confirmed; prices refresh about every 15 seconds, so an older time means the price is stale.
+             * @example 2026-09-30T12:00:00.000Z
+             */
+            priceUpdatedAt: string | null;
+            /**
+             * @description Place in the list, from 1.
+             * @example 2
+             */
+            rank: number;
+            /**
+             * @description Closing prices every 4 hours over the last 7 days, oldest first, as decimal strings. Shorter for a token listed recently.
+             * @example [
+             *       "0.3312",
+             *       "0.3290",
+             *       "0.3254"
+             *     ]
+             */
+            sparkline7d: string[];
+        };
+        TokenDetail: {
+            /**
+             * @description The token's mint address.
+             * @example JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+             */
+            mint: string;
+            /** @example JUP */
+            symbol: string;
+            /** @example Jupiter */
+            name: string;
+            /**
+             * @description How many of a raw amount's digits come after the decimal point.
+             * @example 6
+             */
+            decimals: number;
+            /** @example https://static.jup.ag/jup/icon.png */
+            logoUrl: string | null;
+            /**
+             * @description Dollars per whole token, as a decimal string. Null before the token's first price.
+             * @example 0.3253799780422554
+             */
+            priceUsd: string | null;
+            /**
+             * @description The price change over the last 24 hours, in percent: -4.82 means down 4.82%.
+             * @example -4.8212
+             */
+            change24hPct: string | null;
+            /**
+             * Format: date-time
+             * @description When the price was last confirmed; prices refresh about every 15 seconds, so an older time means the price is stale.
+             * @example 2026-09-30T12:00:00.000Z
+             */
+            priceUpdatedAt: string | null;
+            /**
+             * @description Whether the token can be traded. USDC, which you pay with, isn't.
+             * @example true
+             */
+            isListed: boolean;
+            /**
+             * @description Place in the list, from 1; null for a token that isn't listed.
+             * @example 2
+             */
+            rank: number | null;
+            safety: components["schemas"]["TokenSafety"];
+            stats: components["schemas"]["TokenStats"];
+        };
+        TokenSafety: {
+            /**
+             * @description `ok`, `caution` or `high_risk`, or null before the token is checked. A string, not a list: treat a level you don't know as `caution`.
+             * @example ok
+             */
+            level: string | null;
+            /**
+             * @description The reviewed reason behind the level, to show on the token page.
+             * @example null
+             */
+            note: string | null;
+        };
+        TokenStats: {
+            /**
+             * @description Market cap in dollars; null when unknown.
+             * @example null
+             */
+            marketCapUsd: string | null;
+            /**
+             * @description Dollars in the token's pools; null when unknown.
+             * @example null
+             */
+            liquidityUsd: string | null;
+            /**
+             * @description Dollars traded in the last 24 hours; null when unknown.
+             * @example null
+             */
+            volume24hUsd: string | null;
+        };
+        CandleList: {
+            /** @example JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN */
+            mint: string;
+            /**
+             * @example 1h
+             * @enum {string}
+             */
+            timeframe: "15m" | "1h" | "4h" | "1d";
+            items: components["schemas"]["Candle"][];
+        };
+        Candle: {
+            /**
+             * Format: date-time
+             * @description When the candle's period starts. The newest candle is still open.
+             * @example 2026-09-30T08:00:00.000Z
+             */
+            start: string;
+            /**
+             * @description Dollars per whole token when the period opened.
+             * @example 0.3312
+             */
+            open: string;
+            /**
+             * @description The highest price in the period.
+             * @example 0.3330
+             */
+            high: string;
+            /**
+             * @description The lowest price in the period.
+             * @example 0.3251
+             */
+            low: string;
+            /**
+             * @description The latest price in the period.
+             * @example 0.3254
+             */
+            close: string;
+            /**
+             * @description Dollars traded in the token's main pool in the period.
+             * @example 26262.57
+             */
+            volumeUsd: string;
         };
     };
     responses: never;
