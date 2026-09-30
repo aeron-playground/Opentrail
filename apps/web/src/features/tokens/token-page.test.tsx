@@ -226,6 +226,35 @@ describe("token page", () => {
     expect(stats.queryByText("24h volume")).toBeNull();
   });
 
+  test("shows the safety badge beside the name, and the reviewed note", async () => {
+    await tokenPage(`/token/${SOL}`, {
+      api: createFakeApi({
+        details: {
+          [SOL]: { safety: { level: "ok", note: "Checked by a person, for this test." } },
+        },
+      }),
+    });
+    const header = (await screen.findByRole("heading", { level: 1, name: "SOL" })).closest(
+      "header",
+    );
+    expect(header?.textContent).toContain("Safety: Verified");
+    expect(screen.getByText("Checked by a person, for this test.")).toBeDefined();
+  });
+
+  test("warns when a token is high risk", async () => {
+    await tokenPage(`/token/${SOL}`, {
+      api: createFakeApi({ details: { [SOL]: { safety: { level: "high_risk", note: null } } } }),
+    });
+    expect(await screen.findByText("High risk")).toBeDefined();
+  });
+
+  test("shows no badge or note before the first check", async () => {
+    await tokenPage();
+    await screen.findByTestId("chart");
+    expect(screen.queryByText(/^Safety:/)).toBeNull();
+    expect(screen.queryByText("Verified")).toBeNull();
+  });
+
   test("shows no stats before the token is checked", async () => {
     await tokenPage();
     await screen.findByTestId("chart");
