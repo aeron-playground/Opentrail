@@ -7,7 +7,7 @@ import { seedTokenRows } from "./tokens";
 const excluded = (column: { name: string }) => sql.raw(`excluded."${column.name}"`);
 
 // Loads the curated list into the tokens table, and can run again safely. It sets what the list
-// says and leaves the market-data columns to their jobs. A listed token that left the list is
+// says, including the reviewed safety notes, and leaves the market-data columns to their jobs. A listed token that left the list is
 // unlisted, never deleted: other tables may name it. Resolves to how many tokens it saved.
 export async function seedTokens(
   db: Database,
@@ -28,6 +28,7 @@ export async function seedTokens(
           logoUrl: excluded(tokens.logoUrl),
           isListed: excluded(tokens.isListed),
           sortRank: excluded(tokens.sortRank),
+          safetyNote: excluded(tokens.safetyNote),
           updatedAt: sql`now()`,
         },
       })

@@ -3,6 +3,7 @@
 // To stop trading a token, move it to UNLISTED_TOKENS; never delete an entry.
 import type { TokenProgram } from "@repo/solana";
 import type { NewToken } from "../schema/tokens";
+import { SAFETY_NOTES } from "./safety-notes";
 
 export type SeedToken = {
   mint: string;
@@ -91,10 +92,21 @@ export const LISTED_TOKENS: readonly SeedToken[] = [
   },
 ];
 
-/** Rows for the tokens table: listed tokens ranked from 1 in list order. */
+/** Rows for the tokens table: listed tokens ranked from 1 in list order, with their notes. */
 export function seedTokenRows(): NewToken[] {
+  const note = (mint: string) => SAFETY_NOTES[mint] ?? null;
   return [
-    ...UNLISTED_TOKENS.map((token) => ({ ...token, isListed: false, sortRank: null })),
-    ...LISTED_TOKENS.map((token, index) => ({ ...token, isListed: true, sortRank: index + 1 })),
+    ...UNLISTED_TOKENS.map((token) => ({
+      ...token,
+      isListed: false,
+      sortRank: null,
+      safetyNote: note(token.mint),
+    })),
+    ...LISTED_TOKENS.map((token, index) => ({
+      ...token,
+      isListed: true,
+      sortRank: index + 1,
+      safetyNote: note(token.mint),
+    })),
   ];
 }
