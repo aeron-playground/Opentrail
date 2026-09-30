@@ -10,13 +10,16 @@ import { processInboxJob } from "./jobs/process-inbox";
 import { CANDLES_EVERY_MS, refreshCandlesJob } from "./jobs/refresh-candles";
 import { refreshPoolsJob } from "./jobs/refresh-pools";
 import { refreshPricesJob } from "./jobs/refresh-prices";
+import { refreshTokenSafetyJob } from "./jobs/refresh-token-safety";
 import { createScheduler, type Job } from "./jobs/scheduler";
 import { syncWebhookAddressesJob } from "./jobs/sync-webhook-addresses";
 import { createRateLimit } from "./lib/rate-limit";
 import { createPriceBook } from "./price-book";
 import { createGeckoTerminal } from "./providers/geckoterminal/geckoterminal";
 import { createHeliusWebhooks } from "./providers/helius/helius";
-import { createJupiterPrices } from "./providers/jupiter/jupiter";
+import { createJupiterPrices, createJupiterTokens } from "./providers/jupiter/jupiter";
+import { createSolanaMints } from "./providers/solana/solana";
+import { createSafetyBook } from "./safety-book";
 import { createWatchList } from "./watch-list";
 
 let env: IndexerEnv;
@@ -35,7 +38,8 @@ const app = createApp({ logger, inbox, webhookSecret: env.HELIUS_WEBHOOK_SECRET 
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch });
 // Jupiter's free plan allows one request a second, across every Jupiter call we make.
 const jupiterRateLimit = createRateLimit(1_000);
-const jupiter = createJupiterPrices({ apiKey: env.JUPITER_API_KEY, rateLimit: jupiterRateLimit });
+const jupiterOptions = { apiKey: env.JUPITER_API_KEY, rateLimit: jupiterRateLimit };
+const jupiter = createJupiterPrices(jupiterOptions);
 if (env.JUPITER_API_KEY === undefined) {
   logger.info("Prices come from Jupiter's keyless address: set JUPITER_API_KEY for production");
 }
@@ -51,6 +55,12 @@ const jobs: Job[] = [
   refreshPricesJob({ priceBook: createPriceBook(database.db), jupiter, logger }),
   refreshPoolsJob({ chartBook, gecko, logger }),
   refreshCandlesJob({ chartBook, gecko, logger }),
+  refreshTokenSafetyJob({
+    safetyBook: createSafetyBook(database.db),
+    jupiter: createJupiterTokens(jupiterOptions),
+    solana: createSolanaMints({ rpcUrl: env.SOLANA_RPC_URL }),
+    logger,
+  }),
 ];
 if (env.HELIUS_API_KEY !== undefined && env.HELIUS_WEBHOOK_ID !== undefined) {
   const helius = createHeliusWebhooks({
