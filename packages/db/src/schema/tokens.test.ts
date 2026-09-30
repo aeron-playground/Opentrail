@@ -52,16 +52,28 @@ describe("tokens", () => {
       primaryPoolAddress: null,
       isJupiterVerified: null,
       liquidityUsd: null,
+      marketCapUsd: null,
+      volume24hUsd: null,
       safetyLevel: null,
       safetyNote: null,
     });
     expect(row?.createdAt).toBeInstanceOf(Date);
   });
 
-  test("keeps liquidity to the cent, as a string", async () => {
-    await handle.db.insert(tokens).values(token({ liquidityUsd: "123456789012345678.99" }));
+  test("keeps liquidity, market cap and volume to the cent, as strings", async () => {
+    await handle.db.insert(tokens).values(
+      token({
+        liquidityUsd: "123456789012345678.99",
+        marketCapUsd: "1084204567.91",
+        volume24hUsd: "17526657.02",
+      }),
+    );
     const [row] = await handle.db.select().from(tokens).where(eq(tokens.mint, "made-up-mint"));
-    expect(row?.liquidityUsd).toBe("123456789012345678.99");
+    expect(row).toMatchObject({
+      liquidityUsd: "123456789012345678.99",
+      marketCapUsd: "1084204567.91",
+      volume24hUsd: "17526657.02",
+    });
   });
 
   test("accepts both token programs and every safety level", async () => {
