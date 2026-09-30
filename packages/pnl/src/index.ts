@@ -22,4 +22,5 @@ export {
   percentChange,
   plainDecimal,
   pow10,
+  sumDecimals,
 } from "./math";
