@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.5](https://github.com/aeron-playground/Opentrail/compare/v0.0.4...v0.0.5) (2026-09-30)
+
+
+### Features
+
+* **api:** serve tokens, prices and candles ([#73](https://github.com/aeron-playground/Opentrail/issues/73)) ([7a55dc6](https://github.com/aeron-playground/Opentrail/commit/7a55dc69893dfe194c885b2aec761fe1a9479a1c))
+* **web:** build the explore page ([#76](https://github.com/aeron-playground/Opentrail/issues/76)) ([5084e36](https://github.com/aeron-playground/Opentrail/commit/5084e36d34ad70a093fbc30c5074f74dd9c9cc11))
+
+
+### Bug fixes
+
+* **deps:** upgrade next to 16.3.6 ([#78](https://github.com/aeron-playground/Opentrail/issues/78)) ([e7e0299](https://github.com/aeron-playground/Opentrail/commit/e7e02995be7244eb6c2b204faf1398ebc533687b))
+
 ## [0.0.4](https://github.com/aeron-playground/Opentrail/compare/v0.0.3...v0.0.4) (2026-09-29)
 
 
