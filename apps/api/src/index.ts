@@ -9,6 +9,7 @@ import { createSolanaReader } from "./providers/solana/rpc";
 import { serveOptions } from "./server";
 import { createBalanceService } from "./services/balances";
 import { createPriceReader } from "./services/prices";
+import { createTokenService } from "./services/tokens";
 import { createUsernameService } from "./services/usernames";
 import { createUserService } from "./services/users";
 import { createHub } from "./ws/hub";
@@ -36,6 +37,7 @@ const app = createApp({
   users,
   usernames: createUsernameService({ db: database.db }),
   balances: createBalanceService({ solana: createSolanaReader({ url: env.SOLANA_RPC_URL }) }),
+  tokens: createTokenService({ db: database.db }),
 });
 const hub = createHub({
   privy,

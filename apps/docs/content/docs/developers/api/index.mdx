@@ -15,6 +15,9 @@ route or a new version instead.
   says what happened, and never includes internal details.
 - Amounts of money and token amounts are strings, so no precision is lost. Times are ISO 8601
   in UTC.
+- Public routes that are the same for everyone send `Cache-Control`, so an answer may be up to
+  10 seconds old (tokens) or 30 seconds old (candles). For prices as they change, subscribe to
+  the `prices` channel on the [live updates](/developers/websocket-protocol) WebSocket.
 
 The pages in this section are generated from the API contract,
 [`openapi.json`](https://github.com/aeron-playground/Opentrail/blob/main/packages/api-client/openapi.json),
