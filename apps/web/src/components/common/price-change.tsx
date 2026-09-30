@@ -7,16 +7,19 @@ import { cn } from "../../lib/cn";
 // follow the gain and loss colors, including the colorblind setting.
 export function PriceChange({
   percent,
+  missing = "No 24-hour change yet",
   className,
 }: {
   percent: string | null;
+  // What a screen reader says in place of the dash when there's no change to show.
+  missing?: string;
   className?: string;
 }) {
   if (percent === null) {
     return (
       <span className={cn("text-ink-3 tabular-nums", className)}>
         <span aria-hidden="true">—</span>
-        <span className="sr-only">No 24-hour change yet</span>
+        <span className="sr-only">{missing}</span>
       </span>
     );
   }

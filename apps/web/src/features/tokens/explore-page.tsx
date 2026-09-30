@@ -1,4 +1,5 @@
 import { formatPrice } from "@repo/format";
+import { Link } from "@tanstack/react-router";
 import { useId, useState } from "react";
 import { EmptyState } from "../../components/common/empty-state";
 import { ErrorState } from "../../components/common/error-state";
@@ -158,7 +159,21 @@ function TokenList({
 
 function TokenRow({ token }: { token: TokenListItem }) {
   return (
-    <li className="flex items-center gap-3 border-line border-b py-3">
+    <li className="border-line border-b">
+      <Link
+        to="/token/$mint"
+        params={{ mint: token.mint }}
+        className="flex items-center gap-3 py-3 hover:bg-paper-2"
+      >
+        <TokenRowContent token={token} />
+      </Link>
+    </li>
+  );
+}
+
+function TokenRowContent({ token }: { token: TokenListItem }) {
+  return (
+    <>
       <TokenIcon symbol={token.symbol} logoUrl={token.logoUrl} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-row">{token.symbol}</p>
@@ -181,6 +196,6 @@ function TokenRow({ token }: { token: TokenListItem }) {
       </div>
       <PriceChange percent={token.change24hPct} className="hidden w-24 text-body sm:inline-flex" />
       <Sparkline prices={token.sparkline7d} label="7-day trend" className="shrink-0" />
-    </li>
+    </>
   );
 }

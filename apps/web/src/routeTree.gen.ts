@@ -16,6 +16,7 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TokenMintRouteImport } from './routes/token.$mint'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TokenMintRoute = TokenMintRouteImport.update({
+  id: '/token/$mint',
+  path: '/token/$mint',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
+  '/token/$mint': typeof TokenMintRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
+  '/token/$mint': typeof TokenMintRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/portfolio': typeof PortfolioRoute
   '/settings': typeof SettingsRoute
+  '/token/$mint': typeof TokenMintRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/portfolio'
     | '/settings'
+    | '/token/$mint'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/portfolio'
     | '/settings'
+    | '/token/$mint'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/portfolio'
     | '/settings'
+    | '/token/$mint'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PortfolioRoute: typeof PortfolioRoute
   SettingsRoute: typeof SettingsRoute
+  TokenMintRoute: typeof TokenMintRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/token/$mint': {
+      id: '/token/$mint'
+      path: '/token/$mint'
+      fullPath: '/token/$mint'
+      preLoaderRoute: typeof TokenMintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PortfolioRoute: PortfolioRoute,
   SettingsRoute: SettingsRoute,
+  TokenMintRoute: TokenMintRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
