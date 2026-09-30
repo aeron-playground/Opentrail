@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.6](https://github.com/aeron-playground/Opentrail/compare/v0.0.5...v0.0.6) (2026-09-30)
+
+
+### Features
+
+* **indexer:** check token safety and fill token stats ([#83](https://github.com/aeron-playground/Opentrail/issues/83)) ([a22a830](https://github.com/aeron-playground/Opentrail/commit/a22a8303d6e42a091d5cf2d02a712e0c3b1a8451))
+* **web:** build the token page ([#80](https://github.com/aeron-playground/Opentrail/issues/80)) ([f15c8bd](https://github.com/aeron-playground/Opentrail/commit/f15c8bdcfe72db3f1af1e2c93989b8e12bc51ded))
+
 ## [0.0.5](https://github.com/aeron-playground/Opentrail/compare/v0.0.4...v0.0.5) (2026-09-30)
 
 
