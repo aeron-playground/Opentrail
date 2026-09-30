@@ -1,11 +1,14 @@
+import { formatChangePercent } from "@repo/format";
+import { compareDecimals, percentChange } from "@repo/pnl";
 import { cn } from "../../lib/cn";
 
 const WIDTH = 72;
 const HEIGHT = 28;
 const PADDING = 2;
+const DECIMAL = /^\d+(?:\.\d+)?$/;
 
 // A small line of prices, oldest first: green when the period went up, red when it went down.
-// The prices become numbers only to place points on the drawing, never for money math.
+// The prices become numbers only to place points on the drawing; the change is exact.
 export function Sparkline({
   prices,
   label,
@@ -16,10 +19,11 @@ export function Sparkline({
   label: string;
   className?: string;
 }) {
-  const values = prices.map(Number).filter(Number.isFinite);
-  const first = values[0];
-  const last = values.at(-1);
-  if (values.length < 2 || first === undefined || last === undefined) {
+  const readable = prices.filter((price) => DECIMAL.test(price));
+  const values = readable.map(Number);
+  const first = readable[0];
+  const last = readable.at(-1);
+  if (readable.length < 2 || first === undefined || last === undefined) {
     return (
       <span className={cn("block h-7 w-18", className)}>
         <span className="sr-only">{`${label}: not enough prices yet`}</span>
@@ -36,12 +40,17 @@ export function Sparkline({
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
-  const change = first === 0 ? 0 : ((last - first) / first) * 100;
-  const direction = last > first ? "up" : last < first ? "down" : "flat";
+  // Read from the shown percent, so a change that rounds to 0.00% is unchanged, as in the rows.
+  const percent = percentChange(first, last);
+  const change = percent === null ? null : formatChangePercent(percent);
+  const compared = compareDecimals(last, first);
+  const direction = change?.direction ?? (compared > 0 ? "up" : compared < 0 ? "down" : "flat");
   const words =
     direction === "flat"
       ? `${label}: unchanged`
-      : `${label}: ${direction} ${Math.abs(change).toFixed(1)}%`;
+      : change === null
+        ? `${label}: ${direction}`
+        : `${label}: ${direction} ${change.text.replace(/^[+−]/, "")}`;
   return (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
