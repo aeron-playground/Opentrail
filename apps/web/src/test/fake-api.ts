@@ -1,6 +1,9 @@
 import { normalizeUsername, USERNAME_CHANGE_DAYS, usernameProblem } from "@repo/shared";
 import { SOL, USDC } from "@repo/solana";
 import type { Me } from "../features/account/use-me";
+import { CHART_RANGES } from "../features/tokens/chart-ranges";
+import type { Candle } from "../features/tokens/use-candles";
+import type { TokenDetail } from "../features/tokens/use-token";
 import type { TokenListItem } from "../features/tokens/use-tokens";
 import { FAKE_TOKEN } from "./fake-auth";
 
@@ -60,6 +63,39 @@ export const FAKE_TOKENS: TokenListItem[] = [
   },
 ];
 
+type Timeframe = (typeof CHART_RANGES)[keyof typeof CHART_RANGES]["timeframe"];
+const RANGE_DAYS = Object.fromEntries(
+  Object.values(CHART_RANGES).map(({ timeframe, days }) => [timeframe, days]),
+) as Record<Timeframe, number>;
+
+// Three candles across the timeframe's whole range, the first right at its start, like the API's
+// answer when no `from` is given.
+function fakeCandles(timeframe: Timeframe, closes = ["110", "115", "118.9"]): Candle[] {
+  const span = RANGE_DAYS[timeframe] * DAY_MS;
+  const first = Date.now() - span + 60_000;
+  return closes.map((close, index) => ({
+    start: new Date(first + (index * span) / closes.length).toISOString(),
+    open: index === 0 ? "108" : (closes[index - 1] ?? close),
+    high: close,
+    low: close,
+    close,
+    volumeUsd: "1000",
+  }));
+}
+
+// A token's page data, built from its row in the list.
+function detailOf({ rank, sparkline7d: _, ...token }: TokenListItem): TokenDetail {
+  return {
+    ...token,
+    isListed: true,
+    rank,
+    safety: { level: null, note: null },
+    stats: { marketCapUsd: null, liquidityUsd: null, volume24hUsd: null },
+  };
+}
+
+const SOLANA_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
 export type FakeApi = {
   fetch: (request: Request) => Promise<Response>;
   requests: Request[];
@@ -68,6 +104,8 @@ export type FakeApi = {
   setBalances: (balances: { usdc?: bigint; sol?: bigint }) => void;
   /** Whether GET /v1/tokens fails from now on. */
   setTokensFail: (fail: boolean) => void;
+  /** Whether GET /v1/tokens/{mint} and its candles fail from now on. */
+  setTokenFail: (fail: boolean) => void;
 };
 
 type FakeApiOptions = {
@@ -84,6 +122,11 @@ type FakeApiOptions = {
   balancesFail?: boolean;
   tokens?: TokenListItem[];
   tokensFail?: boolean;
+  // Changes to a token's page data, by mint.
+  details?: Record<string, Partial<TokenDetail>>;
+  // Candles by timeframe, instead of three across the range.
+  candles?: Partial<Record<Timeframe, Candle[]>>;
+  tokenFail?: boolean;
 };
 
 // Answers like the real API, for the routes the web app calls. No network.
@@ -98,8 +141,12 @@ export function createFakeApi({
   balancesFail = false,
   tokens = FAKE_TOKENS,
   tokensFail: initialTokensFail = false,
+  details = {},
+  candles = {},
+  tokenFail: initialTokenFail = false,
 }: FakeApiOptions = {}): FakeApi {
   let tokensFail = initialTokensFail;
+  let tokenFail = initialTokenFail;
   let wallet = { usdc: 0n, sol: 0n, ...initialBalances };
   let me = initialMe;
   let notReady = walletNotReadyTimes;
@@ -168,6 +215,9 @@ export function createFakeApi({
     setTokensFail: (fail) => {
       tokensFail = fail;
     },
+    setTokenFail: (fail) => {
+      tokenFail = fail;
+    },
     fetch: async (request) => {
       requests.push(request);
       const { pathname } = new URL(request.url);
@@ -187,6 +237,30 @@ export function createFakeApi({
         return tokensFail
           ? errorResponse(500, "INTERNAL")
           : Response.json({ items: tokens, nextCursor: null });
+      }
+
+      const token = /^\/v1\/tokens\/([^/]+)(\/candles)?$/.exec(pathname);
+      if (request.method === "GET" && token?.[1] !== undefined) {
+        const mint = decodeURIComponent(token[1]);
+        const listed = tokens.find((item) => item.mint === mint);
+        if (!SOLANA_ADDRESS.test(mint)) {
+          return errorResponse(400, "VALIDATION_FAILED");
+        }
+        if (tokenFail) {
+          return errorResponse(500, "INTERNAL");
+        }
+        if (listed === undefined) {
+          return errorResponse(404, "NOT_FOUND");
+        }
+        if (token[2] === undefined) {
+          return Response.json({ ...detailOf(listed), ...details[mint] });
+        }
+        const timeframe = new URL(request.url).searchParams.get("tf") as Timeframe;
+        return Response.json({
+          mint,
+          timeframe,
+          items: candles[timeframe] ?? fakeCandles(timeframe),
+        });
       }
 
       if (request.method === "GET" && pathname === "/v1/me/balances") {
