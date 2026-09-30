@@ -20,3 +20,30 @@ export function formatPercent(
   });
   return formatWithTrueMinus(format, ratio as DecimalString);
 }
+
+export type Change = {
+  // Signed, like "+4.82%", "−0.87%" or "0.00%".
+  text: string;
+  // Read from the text, so a change that rounds to zero is flat: no arrow, no color.
+  direction: "up" | "down" | "flat";
+};
+
+/**
+ * A change given in percent ("-4.82" is −4.82%) as signed text and a direction. The point moves
+ * in the text, so no digit is lost on the way to a ratio.
+ */
+export function formatChangePercent(percent: string, options: PercentOptions = {}): Change {
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(percent);
+  if (!match) {
+    throw new RangeError(`Not a decimal number: "${percent}".`);
+  }
+  const [, sign = "", whole = "", fraction = ""] = match;
+  const digits = (whole + fraction).padStart(fraction.length + 3, "0");
+  const point = digits.length - fraction.length - 2;
+  const ratio = `${sign}${digits.slice(0, point)}.${digits.slice(point)}`;
+  const text = formatPercent(ratio, options);
+  return {
+    text,
+    direction: text.startsWith("+") ? "up" : text.startsWith("−") ? "down" : "flat",
+  };
+}
