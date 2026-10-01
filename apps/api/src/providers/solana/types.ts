@@ -4,4 +4,13 @@ export type SolanaReader = {
   getSolBalance(owner: string): Promise<bigint>;
   /** The raw amount of `mint` across all of the owner's token accounts; 0 when there are none. */
   getTokenBalance(owner: string, mint: string): Promise<bigint>;
+  /** The token account at `account`; null when there is none, or the address holds something else. */
+  getTokenAccount(account: string): Promise<TokenAccount | null>;
+};
+
+export type TokenAccount = {
+  mint: string;
+  owner: string;
+  // An issuer can freeze an account; a frozen one can't send or receive.
+  frozen: boolean;
 };

@@ -75,6 +75,62 @@ describe("getTokenBalance", () => {
   });
 });
 
+describe("getTokenAccount", () => {
+  // Trimmed from a real jsonParsed answer for a USDC account.
+  const usdcAccount = (state: string, program = "spl-token") => ({
+    data: {
+      program,
+      parsed: {
+        type: "account",
+        info: { mint: USDC.mint, owner: OWNER, state, tokenAmount: { amount: "0", decimals: 6 } },
+      },
+      space: 165,
+    },
+    executable: false,
+    lamports: 2_039_280,
+    owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    space: 165,
+  });
+
+  test("reads the token, owner and state of a token account, at 'confirmed'", async () => {
+    const { reader, payloads } = fakeServer({
+      result: { context: { slot: 1 }, value: usdcAccount("initialized") },
+    });
+    expect(await reader.getTokenAccount(OWNER)).toEqual({
+      mint: USDC.mint,
+      owner: OWNER,
+      frozen: false,
+    });
+    expect(payloads[0]).toMatchObject({
+      method: "getAccountInfo",
+      params: [OWNER, { encoding: "jsonParsed", commitment: "confirmed" }],
+    });
+  });
+
+  test.each([
+    ["a frozen account", usdcAccount("frozen"), { mint: USDC.mint, owner: OWNER, frozen: true }],
+    [
+      "a Token-2022 account",
+      usdcAccount("initialized", "spl-token-2022"),
+      { mint: USDC.mint, owner: OWNER, frozen: false },
+    ],
+    ["no account at all", null, null],
+    [
+      "a wallet, not a token account",
+      { data: ["", "base64"], owner: "11111111111111111111111111111111" },
+      null,
+    ],
+    [
+      "a mint, not a token account",
+      { data: { program: "spl-token", parsed: { type: "mint", info: {} } } },
+      null,
+    ],
+  ])("reads %s", async (_, value, expected) => {
+    const { reader } = fakeServer({ result: { context: { slot: 1 }, value } });
+    expect(await reader.getTokenAccount(OWNER)).toEqual(expected);
+  });
+});
+
 test("refuses an owner that isn't a Solana address, before asking the server", async () => {
   const { reader, payloads } = fakeServer({ result: { context: { slot: 1 }, value: 0 } });
   await expect(reader.getSolBalance("not-an-address")).rejects.toThrow();
