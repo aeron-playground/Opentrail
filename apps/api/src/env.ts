@@ -61,14 +61,14 @@ const apiEnvSchema = z
       .transform(Number)
       .pipe(z.number().max(100)),
     // The receive-only wallet fees go to; its key is never on a server. Needed when fees are on.
-    FEE_WALLET: unsetIfEmpty.pipe(
+    FEE_WALLET_ADDRESS: unsetIfEmpty.pipe(
       z.string().refine(isSolanaAddress, { error: "must be a Solana address" }).optional(),
     ),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
   })
-  .refine((env) => !env.FEES_ENABLED || env.FEE_WALLET !== undefined, {
-    path: ["FEE_WALLET"],
+  .refine((env) => !env.FEES_ENABLED || env.FEE_WALLET_ADDRESS !== undefined, {
+    path: ["FEE_WALLET_ADDRESS"],
     error: "is needed when FEES_ENABLED is true",
   });
 

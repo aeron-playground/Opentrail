@@ -12,7 +12,11 @@ const WALLET_USDC = address("7VRD4eLZVU8qGwTUjfCRTCvkMTzAiTbSZ8CzU9zWBDU6");
 const OTHER_WALLET = "ExYDCa8Gvw8VynhG9SWNKK9k5gg4FpYtf1cF3BUhiDgo";
 
 const OFF: FeeSettings = { enabled: false };
-const ON = await feeSettings({ FEES_ENABLED: true, PLATFORM_FEE_BPS: 10, FEE_WALLET: WALLET });
+const ON = await feeSettings({
+  FEES_ENABLED: true,
+  PLATFORM_FEE_BPS: 10,
+  FEE_WALLET_ADDRESS: WALLET,
+});
 
 describe("feeOn", () => {
   test.each([
@@ -64,13 +68,13 @@ describe("feeSettings", () => {
 
   test("with fees off, is off whatever else is set", async () => {
     expect(
-      await feeSettings({ FEES_ENABLED: false, PLATFORM_FEE_BPS: 10, FEE_WALLET: WALLET }),
+      await feeSettings({ FEES_ENABLED: false, PLATFORM_FEE_BPS: 10, FEE_WALLET_ADDRESS: WALLET }),
     ).toEqual(OFF);
   });
 
   test("refuses fees on without a fee wallet", async () => {
     await expect(feeSettings({ FEES_ENABLED: true, PLATFORM_FEE_BPS: 10 })).rejects.toThrow(
-      "FEE_WALLET",
+      "FEE_WALLET_ADDRESS",
     );
   });
 });
