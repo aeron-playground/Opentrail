@@ -13,6 +13,7 @@ describe("readApiEnv", () => {
       ...REQUIRED,
       CORS_ORIGINS: ["http://localhost:5173"],
       SOLANA_RPC_URL: "https://api.mainnet-beta.solana.com",
+      JUPITER_API_KEY: undefined,
       PORT: 3001,
       LOG_LEVEL: "info",
     });

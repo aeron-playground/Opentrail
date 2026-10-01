@@ -1,0 +1,70 @@
+{
+  "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "inAmount": "999000",
+  "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  "outAmount": "3169210",
+  "otherAmountThreshold": "3153364",
+  "swapMode": "ExactIn",
+  "slippageBps": 50,
+  "platformFee": null,
+  "priceImpactPct": "0",
+  "routePlan": [
+    {
+      "swapInfo": {
+        "ammKey": "FkGgvNwKBMkDAWStXx7C9CbYiwTCHq2pFrkWHkvS9eJg",
+        "label": "GoonFi V2",
+        "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "outputMint": "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn",
+        "inAmount": "999000",
+        "outAmount": "179064348",
+        "updateContextSlot": "452346417"
+      },
+      "percent": 100,
+      "bps": null
+    },
+    {
+      "swapInfo": {
+        "ammKey": "5YPxToTobawvkbn5rkWKYDhZqHf5v6LAtRLNPGiq6U2A",
+        "label": "PancakeSwap",
+        "inputMint": "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn",
+        "outputMint": "So11111111111111111111111111111111111111112",
+        "inAmount": "179064348",
+        "outAmount": "8532595",
+        "updateContextSlot": "452346415"
+      },
+      "percent": 100,
+      "bps": null
+    },
+    {
+      "swapInfo": {
+        "ammKey": "EZVkeboWeXygtq8LMyENHyXdF5wpYrtExRNH9UwB1qYw",
+        "label": "Raydium CLMM",
+        "inputMint": "So11111111111111111111111111111111111111112",
+        "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "inAmount": "8532595",
+        "outAmount": "3169210",
+        "updateContextSlot": "452346402"
+      },
+      "percent": 100,
+      "bps": null
+    }
+  ],
+  "contextSlot": 452346418,
+  "timeTaken": 0.005487792,
+  "swapUsdValue": "0.9988795833707664",
+  "mostReliableAmmsQuoteReport": {
+    "info": {
+      "BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU": "999292",
+      "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE": "8526221",
+      "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg": "3146653",
+      "2uF4Xh61rDwxnG9woyxsVQP7zuA6kLFpb3NvnRQeoiSd": "178215410"
+    }
+  },
+  "longtailMarketQuoteReport": null,
+  "useIncurredSlippageForQuoting": null,
+  "useRewards": null,
+  "otherRoutePlans": null,
+  "loadedLongtailToken": false,
+  "instructionVersion": null,
+  "transactionVersion": 0
+}
