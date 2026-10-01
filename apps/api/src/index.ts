@@ -8,6 +8,7 @@ import { createPrivy } from "./providers/privy/privy";
 import { createSolanaReader } from "./providers/solana/rpc";
 import { serveOptions } from "./server";
 import { createBalanceService } from "./services/balances";
+import { checkFeeWallet, type FeeSettings, feeSettings } from "./services/fees";
 import { createPriceReader } from "./services/prices";
 import { createTokenService } from "./services/tokens";
 import { createUsernameService } from "./services/usernames";
@@ -25,6 +26,17 @@ try {
   process.exit(1);
 }
 
+const solana = createSolanaReader({ url: env.SOLANA_RPC_URL });
+let fees: FeeSettings;
+try {
+  // With fees on, a fee wallet that can't take USDC would make every trade fail, so stop here.
+  fees = await feeSettings(env);
+  await checkFeeWallet(fees, solana);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+
 const logger = createLogger(env.LOG_LEVEL);
 const database = createDb(env.DATABASE_URL);
 const privy = createPrivy({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET });
@@ -36,7 +48,7 @@ const app = createApp({
   privy,
   users,
   usernames: createUsernameService({ db: database.db }),
-  balances: createBalanceService({ solana: createSolanaReader({ url: env.SOLANA_RPC_URL }) }),
+  balances: createBalanceService({ solana }),
   tokens: createTokenService({ db: database.db }),
 });
 const hub = createHub({
@@ -55,7 +67,7 @@ const forwarding = [
   }),
 ];
 const server = Bun.serve(serveOptions({ app, hub, port: env.PORT }));
-logger.info({ port: server.port }, "API started");
+logger.info({ port: server.port, fees: fees.enabled ? `${fees.bps} bps` : "off" }, "API started");
 
 // Hosts send SIGTERM before they replace the process: tell live connections to come back later,
 // finish open requests, then close the pool.
