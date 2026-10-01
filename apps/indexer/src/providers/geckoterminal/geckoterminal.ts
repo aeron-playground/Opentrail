@@ -1,8 +1,7 @@
 import type { CandleTimeframe } from "@repo/db";
 import { compareDecimals, parseDecimal, plainDecimal } from "@repo/pnl";
+import { parseJsonKeepingNumbers, type RateLimit } from "@repo/server";
 import { z } from "zod";
-import { parseJsonKeepingNumbers } from "../../lib/json";
-import type { RateLimit } from "../../lib/rate-limit";
 import { type CandleQuote, type GeckoTerminal, type Pool, RateLimitedError } from "./types";
 
 export const DEFAULT_BASE_URL = "https://api.geckoterminal.com/api/v2";

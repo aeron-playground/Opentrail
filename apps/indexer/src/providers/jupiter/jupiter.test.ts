@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { createRateLimit } from "../../lib/rate-limit";
+import { createRateLimit } from "@repo/server";
 import { createJupiterPrices, createJupiterTokens, MAX_IDS_PER_CALL } from "./jupiter";
 
 // Made up for these tests: no real key.

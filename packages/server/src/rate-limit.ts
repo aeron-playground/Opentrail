@@ -1,6 +1,6 @@
 // Runs tasks one after another, each starting at least `gapMs` after the previous one started.
-// Jupiter's free plan allows one request a second across all of our calls, so every Jupiter
-// request in the indexer goes through one of these.
+// Outside APIs limit how often we may call them (Jupiter's free plan: one request a second), so
+// each app sends every call to such an API through one of these.
 export type RateLimit = <T>(task: () => Promise<T>) => Promise<T>;
 
 export function createRateLimit(

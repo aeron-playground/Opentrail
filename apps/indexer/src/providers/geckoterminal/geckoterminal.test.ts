@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { createRateLimit } from "../../lib/rate-limit";
+import { createRateLimit } from "@repo/server";
 import { createGeckoTerminal, DEFAULT_BASE_URL, MAX_CANDLES_PER_CALL } from "./geckoterminal";
 import { RateLimitedError } from "./types";
 
