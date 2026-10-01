@@ -56,7 +56,8 @@ export function createFakeSwapProvider(): FakeSwapProvider {
     fakeRoute(request);
 
   return {
-    name: "fake",
+    // Stands in for Jupiter, so intents it routes save like real ones.
+    name: "jupiter",
     async getSwapInstructions(request) {
       requests.push(request);
       const result = answer(request);

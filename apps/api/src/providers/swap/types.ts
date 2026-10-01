@@ -45,7 +45,8 @@ export class SwapProviderError extends Error {
 }
 
 export type SwapProvider = {
-  readonly name: "jupiter" | "fake";
+  // Saved with each intent, so only real providers have a name; the fake stands in for one.
+  readonly name: "jupiter" | "titan";
   /** One route for the trade. Throws a SwapProviderError when there is none. */
   getSwapInstructions(request: SwapRequest): Promise<SwapRoute>;
 };
