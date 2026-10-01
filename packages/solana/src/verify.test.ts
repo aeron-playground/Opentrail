@@ -94,6 +94,49 @@ describe("checkSignedTransaction", () => {
     });
   });
 
+  test("says it was changed when the message asks for a second signer", async () => {
+    const twoSigners = await buildSwapTransaction({
+      side: "buy",
+      fee: null,
+      parts: {
+        setup: [],
+        swap: {
+          ...swap,
+          accounts: [{ address: stranger.address, role: AccountRole.READONLY_SIGNER }],
+        },
+        cleanup: [],
+      },
+      computeUnitLimit: 50_000,
+      priorityMicroLamports: 0n,
+      payer: person.address,
+      lifetime,
+      lookupTables: {},
+    });
+    if (!twoSigners.fits) throw new Error("the test transaction should fit");
+    const both = await signTransaction(
+      [person.keyPair, stranger.keyPair],
+      getTransactionDecoder().decode(getBase64Encoder().encode(twoSigners.base64)),
+    );
+    expect(await check(getBase64EncodedWireTransaction(both))).toEqual({
+      ok: false,
+      reason: "changed",
+    });
+  });
+
+  test("can't read a second signature slot added outside the message", async () => {
+    const bytes = getBase64Encoder().encode(signedBase64);
+    const extra = new Uint8Array([
+      2,
+      ...bytes.slice(1, MESSAGE_START),
+      ...new Uint8Array(64),
+      ...bytes.slice(MESSAGE_START),
+    ]);
+    expect(await check(getBase64Decoder().decode(extra))).toEqual({
+      ok: false,
+      reason: "unreadable",
+    });
+  });
+
   test.each([
     ["text that isn't base64", "not a transaction ~~"],
     ["nothing", ""],
