@@ -9,6 +9,7 @@ export {
   tokenProgramAt,
   USDC,
 } from "./mints";
+export { associatedTokenAddress } from "./token-account";
 export {
   type BuiltSwapTransaction,
   buildSwapTransaction,

@@ -14,6 +14,9 @@ describe("readApiEnv", () => {
       CORS_ORIGINS: ["http://localhost:5173"],
       SOLANA_RPC_URL: "https://api.mainnet-beta.solana.com",
       JUPITER_API_KEY: undefined,
+      FEES_ENABLED: false,
+      PLATFORM_FEE_BPS: 10,
+      FEE_WALLET: undefined,
       PORT: 3001,
       LOG_LEVEL: "info",
     });
@@ -32,6 +35,30 @@ describe("readApiEnv", () => {
         name: "a Jupiter API key",
         env: { JUPITER_API_KEY: "test-jupiter-key" },
         expected: { JUPITER_API_KEY: "test-jupiter-key" },
+      },
+      {
+        name: "fees on, with a fee wallet and its own rate",
+        env: {
+          FEES_ENABLED: "true",
+          PLATFORM_FEE_BPS: "25",
+          FEE_WALLET: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+        },
+        expected: {
+          FEES_ENABLED: true,
+          PLATFORM_FEE_BPS: 25,
+          FEE_WALLET: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+        },
+      },
+      {
+        name: "fees off, said out loud",
+        env: { FEES_ENABLED: "false" },
+        expected: { FEES_ENABLED: false },
+      },
+      { name: "a fee of zero", env: { PLATFORM_FEE_BPS: "0" }, expected: { PLATFORM_FEE_BPS: 0 } },
+      {
+        name: "a blank fee switch and wallet, as unset",
+        env: { FEES_ENABLED: "", FEE_WALLET: "" },
+        expected: { FEES_ENABLED: false, FEE_WALLET: undefined },
       },
       {
         name: "an empty Jupiter API key, as unset",
@@ -83,6 +110,20 @@ describe("readApiEnv", () => {
     { name: "an origin in upper case", env: { CORS_ORIGINS: "https://Example.com" } },
     { name: "a non-web origin", env: { CORS_ORIGINS: "ftp://example.com" } },
     { name: "an empty origin list", env: { CORS_ORIGINS: " , " } },
+    { name: "fees on without a fee wallet", env: { FEES_ENABLED: "true" } },
+    { name: "fees on with a blank fee wallet", env: { FEES_ENABLED: "true", FEE_WALLET: "" } },
+    { name: "a fee switch of yes", env: { FEES_ENABLED: "yes" } },
+    { name: "a fee switch of 1", env: { FEES_ENABLED: "1" } },
+    { name: "a fee switch in capitals", env: { FEES_ENABLED: "TRUE" } },
+    { name: "a fee above 100 bps", env: { PLATFORM_FEE_BPS: "101" } },
+    { name: "a negative fee", env: { PLATFORM_FEE_BPS: "-1" } },
+    { name: "a fractional fee", env: { PLATFORM_FEE_BPS: "1.5" } },
+    { name: "a fee that isn't a number", env: { PLATFORM_FEE_BPS: "abc" } },
+    { name: "a blank fee", env: { PLATFORM_FEE_BPS: "" } },
+    {
+      name: "a fee wallet that isn't a Solana address",
+      env: { FEE_WALLET: "0x52908400098527886E0F7030069857D2E4169EE7" },
+    },
   ];
 
   for (const { name, env } of invalid) {
