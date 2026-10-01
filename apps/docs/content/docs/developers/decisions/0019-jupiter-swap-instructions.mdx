@@ -1,0 +1,87 @@
+---
+title: "ADR 0019: Swap instructions from Jupiter's swap API"
+description: Trades are built from Jupiter's swap instructions plus our own fee transfer, in one transaction. Tested by simulating buys and sells on mainnet.
+---
+
+## Status
+
+Accepted on 2026-10-01, from simulations on mainnet. No transaction was signed or sent yet; a real
+signed $1 swap will be added to this record before the trade screens are built.
+
+## Context
+
+[ADR 0004](./0004-swap-aggregator.mdx) routes swaps through Jupiter, [ADR 0005](./0005-platform-fee.mdx)
+adds the platform fee as our own USDC transfer in the same transaction, and
+[ADR 0006](./0006-transaction-flow.mdx) has the API build that transaction. So the API needs the swap
+as separate instructions it can combine with the fee, not as a finished transaction. Jupiter offers
+several APIs, and it wasn't certain which one gives instructions today, whether Jupiter takes a fee
+on it, and whether a swap plus our fee stays under Solana's 1,232-byte transaction limit.
+
+## What was tested
+
+A script built each transaction the way the API will, then simulated it on mainnet as a real public
+wallet holding USDC and SOL (simulation runs without signatures, so nothing can move):
+
+1. `GET /swap/v1/quote` with `slippageBps=50` and a `maxAccounts` value.
+2. `POST /swap/v1/swap-instructions` for that quote, with `wrapAndUnwrapSol: true`.
+3. Our own compute budget instructions in place of Jupiter's, our USDC `TransferChecked` fee
+   instruction, then Jupiter's setup, swap and cleanup instructions. A buy puts the fee before the
+   swap and charges 0.1% of the amount; a sell puts it after the swap and charges 0.1% of the
+   minimum USDC out.
+4. A version 0 transaction using Jupiter's address lookup tables, read from the chain.
+5. A first simulation to measure the compute used, then a second with the limit set to that
+   amount plus 10% and a priority fee.
+
+Other Jupiter APIs were checked too. Swap API version 2 (`/swap/v2/build`) doesn't exist on the
+free address. The Ultra API (`/ultra/v1/order`) returns a finished transaction, which leaves no room
+for our fee instruction.
+
+## Results
+
+Every transaction that fit simulated successfully, with the fee transfer and the swap in one
+transaction. Jupiter's quotes carried no fee of its own (`platformFee` was empty).
+
+| Trade | Transaction size | Compute used |
+| ----- | ---------------: | -----------: |
+| Buy $1 of JUP | 598 bytes | 48,268 |
+| Sell about $1 of SOL | 665–701 bytes | 66,376–80,474 |
+| Buy $500 of each listed token | 501–1,066 bytes | 13,607–142,479 |
+| Buy $5,000 of each listed token | 767–1,081 bytes | 137,695–266,435 |
+
+Bigger trades split across more pools (up to 4), so their transactions grow. Twice, a $5,000 buy
+with `maxAccounts=64` came out over the limit. Asking again with a lower `maxAccounts` made the
+same buy fit, and the tokens received changed by about 0.01%, no more than prices moved between
+quotes:
+
+| `maxAccounts` | Size of a $5,000 RAY buy | Pools |
+| ------------: | -----------------------: | ----: |
+| 64 | 1,074 bytes | 4 |
+| 54 | 992 bytes | 3 |
+| 34 | 660 bytes | 2 |
+| 24 | 578 bytes | 1 |
+
+Recent priority fees on our own accounts were zero, because nobody competes for them. On the
+accounts the swap writes to (its pools), the median over the last 150 slots was 50,000–300,000
+micro-lamports per compute unit, the 75th percentile 300,000–1,000,000, and the highest about
+32,000,000. At the 75th percentile, a swap of 150,000 compute units pays about 150,000 lamports.
+
+## Decision
+
+- Trades use Jupiter's swap API: `GET /swap/v1/quote` and `POST /swap/v1/swap-instructions`. In
+  production it's called on Jupiter's keyed address with an API key.
+- The API asks with `maxAccounts=54`. When the transaction is over 1,232 bytes, it asks again with
+  40, then 30, and gives up with a clear error after that.
+- The API sets its own compute budget: the limit is the compute used in a simulation plus 10%, and
+  the priority fee comes from recent fees on the swap's writable accounts, with an upper cap.
+- Lookup tables are read from the chain, not taken from Jupiter's answer.
+
+## Consequences
+
+- One transaction holds the swap and the fee, so they succeed or fail together.
+- Jupiter takes no fee on this path; if that ever changes, it shows as its own line in the quote.
+- A quote can need up to four calls (quote, instructions, two simulations), so the API spaces its
+  Jupiter calls within the plan's limit.
+- The public Solana server limits heavy requests; the API and the indexer use a provider's server in
+  production.
+- Still to test: a real signed swap, closing an emptied token account on a full sale, and tokens
+  on Token-2022 (none on the list today).
