@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { createRateLimit } from "../lib/rate-limit";
+import { createRateLimit } from "@repo/server";
 import { createGeckoTerminal } from "../providers/geckoterminal/geckoterminal";
 import type { Pool } from "../providers/geckoterminal/types";
 import { choosePrimaryPool } from "./primary-pool";

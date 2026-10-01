@@ -1,6 +1,6 @@
 // Starts the indexer: `bun run dev` locally, `bun run start` in production.
 import { createDb } from "@repo/db";
-import { createLogger } from "@repo/server";
+import { createLogger, createRateLimit } from "@repo/server";
 import { createApp } from "./app";
 import { createChartBook } from "./chart-book";
 import { type IndexerEnv, readIndexerEnv } from "./env";
@@ -13,7 +13,6 @@ import { refreshPricesJob } from "./jobs/refresh-prices";
 import { refreshTokenSafetyJob } from "./jobs/refresh-token-safety";
 import { createScheduler, type Job } from "./jobs/scheduler";
 import { syncWebhookAddressesJob } from "./jobs/sync-webhook-addresses";
-import { createRateLimit } from "./lib/rate-limit";
 import { createPriceBook } from "./price-book";
 import { createGeckoTerminal } from "./providers/geckoterminal/geckoterminal";
 import { createHeliusWebhooks } from "./providers/helius/helius";
