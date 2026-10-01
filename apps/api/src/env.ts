@@ -36,6 +36,12 @@ const apiEnvSchema = z.object({
   // The Solana server the API reads balances from. Solana's public one is fine for development;
   // production uses a provider URL, which carries a key, so it's never logged.
   SOLANA_RPC_URL: z.url({ protocol: /^https?$/ }).default("https://api.mainnet-beta.solana.com"),
+  // A secret. Without it, trades are quoted on Jupiter's keyless address, which it plans to retire.
+  // Empty counts as unset, so a blank line in .env leaves it off.
+  JUPITER_API_KEY: z
+    .string()
+    .optional()
+    .transform((value) => (value === "" ? undefined : value)),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
   LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
 });

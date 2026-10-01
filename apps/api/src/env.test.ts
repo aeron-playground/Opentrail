@@ -28,6 +28,16 @@ describe("readApiEnv", () => {
       },
       { name: "a log level", env: { LOG_LEVEL: "debug" }, expected: { LOG_LEVEL: "debug" } },
       {
+        name: "a Jupiter API key",
+        env: { JUPITER_API_KEY: "test-jupiter-key" },
+        expected: { JUPITER_API_KEY: "test-jupiter-key" },
+      },
+      {
+        name: "an empty Jupiter API key, as unset",
+        env: { JUPITER_API_KEY: "" },
+        expected: { JUPITER_API_KEY: undefined },
+      },
+      {
         name: "several origins with spaces",
         env: { CORS_ORIGINS: "https://example.com, http://localhost:5173" },
         expected: { CORS_ORIGINS: ["https://example.com", "http://localhost:5173"] },
