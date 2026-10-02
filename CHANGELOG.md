@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.7](https://github.com/aeron-playground/Opentrail/compare/v0.0.6...v0.0.7) (2026-10-02)
+
+
+### Features
+
+* **api:** add the groundwork for swap quotes ([#94](https://github.com/aeron-playground/Opentrail/issues/94)) ([d40455e](https://github.com/aeron-playground/Opentrail/commit/d40455ed7296b226ae75e0f14e0c6b3bff0f9051))
+* **api:** add the platform fee settings and checks ([#92](https://github.com/aeron-playground/Opentrail/issues/92)) ([947ae85](https://github.com/aeron-playground/Opentrail/commit/947ae855121f77622f2edbd6d6079a0f883fa9f0))
+* **api:** get swap instructions from jupiter ([#90](https://github.com/aeron-playground/Opentrail/issues/90)) ([2e74027](https://github.com/aeron-playground/Opentrail/commit/2e740278fcff57677124524dd51f0a35962796a4))
+* **api:** quote a trade with post /v1/swaps/quote ([#95](https://github.com/aeron-playground/Opentrail/issues/95)) ([da9a142](https://github.com/aeron-playground/Opentrail/commit/da9a142ea90224c0f77942eae005b8b39510211e))
+* **solana:** build and check swap transactions ([#88](https://github.com/aeron-playground/Opentrail/issues/88)) ([17c5ab7](https://github.com/aeron-playground/Opentrail/commit/17c5ab79dd2435957b77804a3aa1f19fcd359293))
+
+
+### Documentation
+
+* **docs:** record how trades use jupiter's swap instructions ([#85](https://github.com/aeron-playground/Opentrail/issues/85)) ([e1c888c](https://github.com/aeron-playground/Opentrail/commit/e1c888ce30760dd8fc98d7bc33600c72de9a1807))
+
 ## [0.0.6](https://github.com/aeron-playground/Opentrail/compare/v0.0.5...v0.0.6) (2026-09-30)
 
 
