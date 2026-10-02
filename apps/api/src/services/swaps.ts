@@ -4,6 +4,7 @@
 import { type Database, type SwapSide, swapIntents, tokens } from "@repo/db";
 import { marketValue } from "@repo/pnl";
 import { AppError } from "@repo/server";
+import { MICRO_USDC_PER_USD, MIN_TRADE_MICRO_USDC } from "@repo/shared";
 import {
   associatedTokenAddress,
   buildSwapTransaction,
@@ -26,10 +27,8 @@ export const MAX_ACCOUNTS_STEPS = [54, 40, 30] as const;
 export const HIGH_IMPACT_BPS = 500;
 // The most compute units a transaction may use: the first simulation runs with it.
 const MAX_COMPUTE_UNITS = 1_400_000;
-const MIN_TRADE_MICRO = 1_000_000n;
 // Solana's fee for the one signature a trade carries.
 const BASE_FEE_LAMPORTS = 5_000n;
-const MICRO_PER_DOLLAR = 1_000_000n;
 // Solana takes at most this many accounts in one priority fee request.
 const MAX_PRIORITY_FEE_ACCOUNTS = 128;
 
@@ -165,10 +164,10 @@ export function createSwapService({
     async quote(request) {
       const token = await tradableToken(request.mint);
       const value = await valueMicro(request, token.decimals);
-      if (value < MIN_TRADE_MICRO) {
+      if (value < MIN_TRADE_MICRO_USDC) {
         throw new AppError("AMOUNT_TOO_SMALL");
       }
-      if (value > BigInt(limits.maxTradeUsd) * MICRO_PER_DOLLAR) {
+      if (value > BigInt(limits.maxTradeUsd) * MICRO_USDC_PER_USD) {
         throw new AppError("AMOUNT_TOO_LARGE");
       }
       await checkBalances(request);
