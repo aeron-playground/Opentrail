@@ -27,6 +27,7 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
     "/v1/tokens",
     "/v1/tokens/{mint}",
     "/v1/tokens/{mint}/candles",
+    "/v1/swaps/quote",
   ]);
   expect(Object.keys(document.components.schemas).sort()).toEqual([
     "Balance",
@@ -37,6 +38,8 @@ test("serves an OpenAPI 3.1 document with every route and the shared error shape
     "Health",
     "Me",
     "MeUpdate",
+    "SwapQuote",
+    "SwapQuoteRequest",
     "Token",
     "TokenDetail",
     "TokenList",

@@ -1,13 +1,11 @@
 // A Privy for tests: people and their tokens live in memory, and nothing touches the network.
+import { getAddressDecoder } from "@solana/kit";
 import type { PrivyProvider } from "./types";
 
-const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-// A made-up address in the right format (44 base58 characters). It names no real wallet.
+// A made-up address: 32 random bytes, so a valid address that names no real wallet. (Random base58
+// text of the right length usually decodes to 33 bytes, which no address check accepts.)
 export function fakeSolanaAddress(): string {
-  return Array.from(crypto.getRandomValues(new Uint8Array(44)), (byte) =>
-    BASE58.charAt(byte % BASE58.length),
-  ).join("");
+  return getAddressDecoder().decode(crypto.getRandomValues(new Uint8Array(32)));
 }
 
 export type FakePerson = {

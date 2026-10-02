@@ -17,9 +17,11 @@ import { OPENAPI_CONFIG, OPENAPI_PATH } from "./openapi";
 import type { PrivyProvider } from "./providers/privy/types";
 import { healthRoutes } from "./routes/v1/health";
 import { meRoutes } from "./routes/v1/me";
+import { swapRoutes } from "./routes/v1/swaps";
 import { tokenRoutes } from "./routes/v1/tokens";
 import { usernameRoutes } from "./routes/v1/usernames";
 import type { BalanceService } from "./services/balances";
+import type { SwapService } from "./services/swaps";
 import type { TokenService } from "./services/tokens";
 import type { UsernameService } from "./services/usernames";
 import type { UserService } from "./services/users";
@@ -38,6 +40,7 @@ export type AppDeps = {
   usernames: UsernameService;
   balances: BalanceService;
   tokens: TokenService;
+  swaps: SwapService;
 };
 
 export type App = ReturnType<typeof createApp>;
@@ -53,6 +56,7 @@ export function createApp({
   usernames,
   balances,
   tokens,
+  swaps,
 }: AppDeps) {
   const app = createRouter();
 
@@ -84,6 +88,7 @@ export function createApp({
   app.route("/v1", meRoutes({ privy, users, usernames, balances }));
   app.route("/v1", usernameRoutes({ usernames }));
   app.route("/v1", tokenRoutes({ tokens }));
+  app.route("/v1", swapRoutes({ privy, users, swaps }));
 
   // Listed first: every error on every route uses this shape.
   app.openAPIRegistry.register("Error", ErrorBodySchema);

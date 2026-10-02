@@ -24,6 +24,7 @@ const app = createApp({
     detail: () => Promise.reject(new Error("Not available here")),
     candles: () => Promise.reject(new Error("Not available here")),
   },
+  swaps: { quote: () => Promise.reject(new Error("Not available here")) },
 });
 
 await Bun.write(SNAPSHOT_PATH, await renderOpenApi(app));

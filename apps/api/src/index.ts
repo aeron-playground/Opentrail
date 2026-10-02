@@ -1,15 +1,17 @@
 // Starts the API: `bun run dev` locally, `bun run start` in production.
 import { createDb } from "@repo/db";
-import { createLogger } from "@repo/server";
+import { createLogger, createRateLimit } from "@repo/server";
 import { WS_PING_INTERVAL_MS } from "@repo/shared/ws";
 import { createApp } from "./app";
 import { type ApiEnv, readApiEnv } from "./env";
 import { createPrivy } from "./providers/privy/privy";
 import { createSolanaReader } from "./providers/solana/rpc";
+import { createJupiterSwaps } from "./providers/swap/jupiter";
 import { serveOptions } from "./server";
 import { createBalanceService } from "./services/balances";
 import { checkFeeWallet, type FeeSettings, feeSettings } from "./services/fees";
 import { createPriceReader } from "./services/prices";
+import { createSwapService } from "./services/swaps";
 import { createTokenService } from "./services/tokens";
 import { createUsernameService } from "./services/usernames";
 import { createUserService } from "./services/users";
@@ -41,6 +43,20 @@ const logger = createLogger(env.LOG_LEVEL);
 const database = createDb(env.DATABASE_URL);
 const privy = createPrivy({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET });
 const users = createUserService({ db: database.db, privy, logger });
+const prices = createPriceReader(database.db);
+const swaps = createSwapService({
+  db: database.db,
+  solana,
+  // Jupiter's free plan takes one request a second from us, so every API call to it waits its turn.
+  swaps: createJupiterSwaps({ apiKey: env.JUPITER_API_KEY, rateLimit: createRateLimit(1_000) }),
+  fees,
+  prices,
+  limits: {
+    maxTradeUsd: env.MAX_TRADE_USD,
+    minSolForFeesLamports: env.MIN_SOL_FOR_FEES_LAMPORTS,
+    maxPriorityFeeMicroLamports: env.MAX_PRIORITY_FEE_MICROLAMPORTS,
+  },
+});
 const app = createApp({
   logger,
   corsOrigins: env.CORS_ORIGINS,
@@ -50,6 +66,7 @@ const app = createApp({
   usernames: createUsernameService({ db: database.db }),
   balances: createBalanceService({ solana }),
   tokens: createTokenService({ db: database.db }),
+  swaps,
 });
 const hub = createHub({
   privy,
@@ -63,7 +80,7 @@ const forwarding = [
     listen: database.listen,
     hub,
     logger,
-    prices: createPriceReader(database.db),
+    prices,
   }),
 ];
 const server = Bun.serve(serveOptions({ app, hub, port: env.PORT }));
