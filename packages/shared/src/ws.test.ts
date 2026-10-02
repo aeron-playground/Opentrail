@@ -68,6 +68,31 @@ describe("parseWsServerMessage", () => {
       },
     ],
     ["error", { v: 1, type: "error", code: "UNAUTHORIZED", message: "Sign in again to continue." }],
+    ["auth.expired", { v: 1, type: "auth.expired" }],
+    [
+      "swap.status, submitted",
+      {
+        v: 1,
+        type: "swap.status",
+        id: "made-up-id",
+        status: "submitted",
+        signature: "made-up-sig",
+        reason: null,
+        message: null,
+      },
+    ],
+    [
+      "swap.status, failed with a reason",
+      {
+        v: 1,
+        type: "swap.status",
+        id: "made-up-id",
+        status: "failed",
+        signature: "made-up-sig",
+        reason: "slippage",
+        message: "The price moved more than your slippage limit. Only the network fee was used.",
+      },
+    ],
   ];
   test.each(accepted)("reads %s", (_, message) => {
     expect<unknown>(parseWsServerMessage(json(message))).toEqual(message);
@@ -93,6 +118,30 @@ describe("parseWsServerMessage", () => {
       json({ v: 1, type: "price", items: [{ mint: "x", priceUsd: 1, change24hPct: null }] }),
     ],
     ["another protocol version", json({ v: 2, type: "balance.changed" })],
+    [
+      "a swap.status before it was sent",
+      json({
+        v: 1,
+        type: "swap.status",
+        id: "x",
+        status: "built",
+        signature: null,
+        reason: null,
+        message: null,
+      }),
+    ],
+    [
+      "a swap.status with a reason we don't know",
+      json({
+        v: 1,
+        type: "swap.status",
+        id: "x",
+        status: "failed",
+        signature: null,
+        reason: "gremlins",
+        message: null,
+      }),
+    ],
     ["a message without a version", json({ type: "balance.changed" })],
   ];
   test.each(ignored)("ignores %s", (_, text) => {

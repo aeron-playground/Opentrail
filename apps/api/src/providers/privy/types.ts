@@ -3,12 +3,19 @@
 export type PrivyProvider = {
   /**
    * Checks a Privy access token: signature, issuer, audience (our app id) and expiry.
-   * Resolves to the person's Privy user id, or null when the token isn't valid.
+   * Resolves to the person's Privy user id and when the token expires, or null when the token
+   * isn't valid.
    */
-  verifyAccessToken(token: string): Promise<string | null>;
+  verifyAccessToken(token: string): Promise<VerifiedToken | null>;
   /**
    * Reads the person's embedded Solana wallet from Privy. Resolves to its address, or null
    * when Privy hasn't created the wallet yet.
    */
   getSolanaWallet(privyDid: string): Promise<string | null>;
+};
+
+export type VerifiedToken = {
+  privyDid: string;
+  // A live connection's sign-in ends at this time, as the token's does.
+  expiresAt: Date;
 };

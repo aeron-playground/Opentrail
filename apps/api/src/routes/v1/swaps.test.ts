@@ -161,6 +161,24 @@ describe("POST /v1/swaps/quote", () => {
     expect(asked).toEqual([]);
   });
 
+  test("refuses a person's quote past 30 in a minute, before quoting", async () => {
+    const person = privy.signIn();
+    const app = testApp();
+    const quote = () =>
+      app.request("/v1/swaps/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${person.token}` },
+        body: JSON.stringify(BUY),
+      });
+    for (let n = 0; n < 30; n += 1) {
+      expect((await quote()).status).toBe(200);
+    }
+    const refused = await quote();
+    await expectError(refused, 429, "RATE_LIMITED");
+    expect(Number(refused.headers.get("retry-after"))).toBeGreaterThan(0);
+    expect(asked).toHaveLength(30);
+  });
+
   test.each<[ErrorCode, number]>([
     ["INSUFFICIENT_BALANCE", 400],
     ["PRICE_IMPACT_TOO_HIGH", 400],

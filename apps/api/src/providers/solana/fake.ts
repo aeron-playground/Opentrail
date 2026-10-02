@@ -1,6 +1,20 @@
 // A Solana for tests: balances live in memory, and nothing touches the network.
-import type { Address, AddressesByLookupTableAddress, Blockhash } from "@solana/kit";
-import type { BlockhashLifetime, Simulation, SolanaReader, TokenAccount } from "./types";
+import {
+  type Address,
+  type AddressesByLookupTableAddress,
+  type Blockhash,
+  getBase64Encoder,
+  getSignatureFromTransaction,
+  getTransactionDecoder,
+} from "@solana/kit";
+import type {
+  BlockhashLifetime,
+  SignatureStatus,
+  Simulation,
+  SolanaReader,
+  SolanaSender,
+  TokenAccount,
+} from "./types";
 
 // 32 zero bytes: a blockhash in the right shape that no real block has.
 const FAKE_BLOCKHASH = "11111111111111111111111111111111" as Blockhash;
@@ -92,5 +106,48 @@ export function createFakeSolana(): FakeSolana {
     fail: (error) => {
       failure = error;
     },
+  };
+}
+
+export type FakeSolanaSender = SolanaSender & {
+  /** Every transaction sent so far, in order, repeats included. */
+  readonly sent: readonly string[];
+  /** How status reads answer; by default no node has seen the transaction. */
+  statusWith(answer: (signature: string) => SignatureStatus | null): void;
+  setBlockHeight(height: bigint): void;
+  /** Makes the next sends fail, as if the node refused them. */
+  failSends(error: Error | null): void;
+};
+
+// A Solana that takes transactions for tests: nothing is sent anywhere.
+export function createFakeSolanaSender(): FakeSolanaSender {
+  const sent: string[] = [];
+  let status = (_signature: string): SignatureStatus | null => null;
+  let blockHeight = 0n;
+  let sendError: Error | null = null;
+
+  return {
+    async sendTransaction(base64) {
+      sent.push(base64);
+      if (sendError) {
+        throw sendError;
+      }
+      // The same id a real node answers with: the wallet's signature.
+      return getSignatureFromTransaction(
+        getTransactionDecoder().decode(getBase64Encoder().encode(base64)),
+      );
+    },
+    getSignatureStatus: async (signature) => status(signature),
+    getBlockHeight: async () => blockHeight,
+    statusWith: (answer) => {
+      status = answer;
+    },
+    setBlockHeight: (height) => {
+      blockHeight = height;
+    },
+    failSends: (error) => {
+      sendError = error;
+    },
+    sent,
   };
 }

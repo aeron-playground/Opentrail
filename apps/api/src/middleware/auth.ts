@@ -36,11 +36,11 @@ export function requireAuth(
     if (token === undefined || token.length > MAX_TOKEN_LENGTH) {
       throw new AppError("UNAUTHORIZED");
     }
-    const privyDid = await privy.verifyAccessToken(token);
-    if (privyDid === null) {
+    const verified = await privy.verifyAccessToken(token);
+    if (verified === null) {
       throw new AppError("UNAUTHORIZED");
     }
-    c.set("privyDid", privyDid);
+    c.set("privyDid", verified.privyDid);
     await next();
   };
 }

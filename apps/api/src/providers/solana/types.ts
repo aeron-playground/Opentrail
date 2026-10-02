@@ -23,6 +23,26 @@ export type SolanaReader = {
 
 export type BlockhashLifetime = { blockhash: Blockhash; lastValidBlockHeight: bigint };
 
+// What the API sends to Solana: only transactions the person signed, after the API checked them.
+export type SolanaSender = {
+  /**
+   * Sends a signed transaction once, without the node's trial run or its own re-sending: the API
+   * simulated it when quoting, and re-sends it itself. Resolves to the transaction's signature.
+   */
+  sendTransaction(base64: string): Promise<string>;
+  /** Where a recent transaction stands; null when no node has seen it yet. */
+  getSignatureStatus(signature: string): Promise<SignatureStatus | null>;
+  /** The block height at 'confirmed'. Past a transaction's last valid height, it can't land. */
+  getBlockHeight(): Promise<bigint>;
+};
+
+export type SignatureStatus = {
+  // How far the network agrees on it: "confirmed" is what the app shows as done.
+  confirmationStatus: "processed" | "confirmed" | "finalized" | null;
+  // Solana's error, with every number as a bigint; null when the transaction succeeded.
+  error: unknown;
+};
+
 // What happened when a transaction ran without being sent.
 export type Simulation = {
   // Solana's error as it sent it, with every number as a bigint, such as

@@ -548,6 +548,17 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description `RATE_LIMITED`: more than 30 in a minute. Try again after `Retry-After` seconds. */
+                429: {
+                    headers: {
+                        /** @description Seconds until the next one is allowed. */
+                        "Retry-After": string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
                 /** @description `QUOTE_UNAVAILABLE`: no route for this trade right now. */
                 502: {
                     headers: {

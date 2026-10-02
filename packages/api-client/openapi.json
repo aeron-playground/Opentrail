@@ -1223,6 +1223,27 @@
               }
             }
           },
+          "429": {
+            "description": "`RATE_LIMITED`: more than 30 in a minute. Try again after `Retry-After` seconds.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds until the next one is allowed.",
+                  "example": "20"
+                },
+                "required": true,
+                "description": "Seconds until the next one is allowed."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "502": {
             "description": "`QUOTE_UNAVAILABLE`: no route for this trade right now.",
             "content": {
