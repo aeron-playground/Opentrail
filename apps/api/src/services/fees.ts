@@ -14,20 +14,20 @@ const WHOLE = 10_000;
 export async function feeSettings(env: {
   FEES_ENABLED: boolean;
   PLATFORM_FEE_BPS: number;
-  FEE_WALLET?: string;
+  FEE_WALLET_ADDRESS?: string;
 }): Promise<FeeSettings> {
   if (!env.FEES_ENABLED) {
     return { enabled: false };
   }
-  if (env.FEE_WALLET === undefined) {
-    throw new Error("FEE_WALLET is needed when FEES_ENABLED is true.");
+  if (env.FEE_WALLET_ADDRESS === undefined) {
+    throw new Error("FEE_WALLET_ADDRESS is needed when FEES_ENABLED is true.");
   }
   return {
     enabled: true,
     bps: env.PLATFORM_FEE_BPS,
-    wallet: env.FEE_WALLET,
+    wallet: env.FEE_WALLET_ADDRESS,
     usdcAccount: await associatedTokenAddress({
-      owner: env.FEE_WALLET,
+      owner: env.FEE_WALLET_ADDRESS,
       mint: USDC.mint,
       tokenProgram: "spl-token",
     }),

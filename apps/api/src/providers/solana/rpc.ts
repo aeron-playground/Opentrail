@@ -1,11 +1,13 @@
 import {
   address,
+  type Base64EncodedWireTransaction,
   createSolanaRpc,
   createSolanaRpcFromTransport,
+  fetchAddressesForLookupTables,
   type RpcTransport,
 } from "@solana/kit";
 import { z } from "zod";
-import type { SolanaReader, TokenAccount } from "./types";
+import type { Simulation, SolanaReader, TokenAccount } from "./types";
 
 // Funds count once a supermajority of the network has voted on them, as the UI shows.
 const COMMITMENT = "confirmed";
@@ -36,6 +38,15 @@ const TokenAccountSchema = z.object({
     }),
   }),
 });
+
+const SimulationSchema = z.object({
+  err: z.unknown(),
+  logs: z.array(z.string()).nullable(),
+  unitsConsumed: z.bigint().nullish(),
+});
+
+// Solana's own limit for one priority fee request.
+const MAX_PRIORITY_FEE_ACCOUNTS = 128;
 
 export type SolanaReaderOptions =
   | { url: string }
@@ -80,6 +91,48 @@ export function createSolanaReader(options: SolanaReaderOptions): SolanaReader {
       }
       const { mint, owner, state } = parsed.data.data.parsed.info;
       return { mint, owner, frozen: state === "frozen" };
+    },
+
+    async getLatestBlockhash() {
+      const { value } = await rpc
+        .getLatestBlockhash({ commitment: COMMITMENT })
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+      return { blockhash: value.blockhash, lastValidBlockHeight: value.lastValidBlockHeight };
+    },
+
+    getLookupTables(tables) {
+      return fetchAddressesForLookupTables(tables.map(address), rpc, {
+        commitment: COMMITMENT,
+        abortSignal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+    },
+
+    async simulate(base64): Promise<Simulation> {
+      const { value } = await rpc
+        .simulateTransaction(base64 as Base64EncodedWireTransaction, {
+          encoding: "base64",
+          // Nothing is signed yet, and a fresh blockhash keeps the run about the trade itself.
+          sigVerify: false,
+          replaceRecentBlockhash: true,
+          commitment: COMMITMENT,
+        })
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+      const parsed = SimulationSchema.parse(value);
+      return {
+        error: parsed.err ?? null,
+        unitsConsumed: parsed.unitsConsumed ?? null,
+        logs: parsed.logs ?? [],
+      };
+    },
+
+    async getRecentPriorityFees(accounts) {
+      if (accounts.length > MAX_PRIORITY_FEE_ACCOUNTS) {
+        throw new RangeError(`Solana takes at most ${MAX_PRIORITY_FEE_ACCOUNTS} accounts here.`);
+      }
+      const fees = await rpc
+        .getRecentPrioritizationFees(accounts.map(address))
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+      return fees.map((fee) => BigInt(fee.prioritizationFee));
     },
   };
 }

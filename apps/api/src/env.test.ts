@@ -16,7 +16,10 @@ describe("readApiEnv", () => {
       JUPITER_API_KEY: undefined,
       FEES_ENABLED: false,
       PLATFORM_FEE_BPS: 10,
-      FEE_WALLET: undefined,
+      FEE_WALLET_ADDRESS: undefined,
+      MAX_TRADE_USD: 5000,
+      MIN_SOL_FOR_FEES_LAMPORTS: 5_000_000n,
+      MAX_PRIORITY_FEE_MICROLAMPORTS: 1_000_000n,
       PORT: 3001,
       LOG_LEVEL: "info",
     });
@@ -41,12 +44,12 @@ describe("readApiEnv", () => {
         env: {
           FEES_ENABLED: "true",
           PLATFORM_FEE_BPS: "25",
-          FEE_WALLET: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+          FEE_WALLET_ADDRESS: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
         },
         expected: {
           FEES_ENABLED: true,
           PLATFORM_FEE_BPS: 25,
-          FEE_WALLET: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+          FEE_WALLET_ADDRESS: "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
         },
       },
       {
@@ -56,9 +59,22 @@ describe("readApiEnv", () => {
       },
       { name: "a fee of zero", env: { PLATFORM_FEE_BPS: "0" }, expected: { PLATFORM_FEE_BPS: 0 } },
       {
+        name: "beta limits of its own",
+        env: {
+          MAX_TRADE_USD: "250",
+          MIN_SOL_FOR_FEES_LAMPORTS: "10000000",
+          MAX_PRIORITY_FEE_MICROLAMPORTS: "0",
+        },
+        expected: {
+          MAX_TRADE_USD: 250,
+          MIN_SOL_FOR_FEES_LAMPORTS: 10_000_000n,
+          MAX_PRIORITY_FEE_MICROLAMPORTS: 0n,
+        },
+      },
+      {
         name: "a blank fee switch and wallet, as unset",
-        env: { FEES_ENABLED: "", FEE_WALLET: "" },
-        expected: { FEES_ENABLED: false, FEE_WALLET: undefined },
+        env: { FEES_ENABLED: "", FEE_WALLET_ADDRESS: "" },
+        expected: { FEES_ENABLED: false, FEE_WALLET_ADDRESS: undefined },
       },
       {
         name: "an empty Jupiter API key, as unset",
@@ -111,7 +127,10 @@ describe("readApiEnv", () => {
     { name: "a non-web origin", env: { CORS_ORIGINS: "ftp://example.com" } },
     { name: "an empty origin list", env: { CORS_ORIGINS: " , " } },
     { name: "fees on without a fee wallet", env: { FEES_ENABLED: "true" } },
-    { name: "fees on with a blank fee wallet", env: { FEES_ENABLED: "true", FEE_WALLET: "" } },
+    {
+      name: "fees on with a blank fee wallet",
+      env: { FEES_ENABLED: "true", FEE_WALLET_ADDRESS: "" },
+    },
     { name: "a fee switch of yes", env: { FEES_ENABLED: "yes" } },
     { name: "a fee switch of 1", env: { FEES_ENABLED: "1" } },
     { name: "a fee switch in capitals", env: { FEES_ENABLED: "TRUE" } },
@@ -120,9 +139,15 @@ describe("readApiEnv", () => {
     { name: "a fractional fee", env: { PLATFORM_FEE_BPS: "1.5" } },
     { name: "a fee that isn't a number", env: { PLATFORM_FEE_BPS: "abc" } },
     { name: "a blank fee", env: { PLATFORM_FEE_BPS: "" } },
+    { name: "a maximum trade of $0", env: { MAX_TRADE_USD: "0" } },
+    { name: "a maximum trade in cents", env: { MAX_TRADE_USD: "99.50" } },
+    { name: "a blank maximum trade", env: { MAX_TRADE_USD: "" } },
+    { name: "a negative SOL minimum", env: { MIN_SOL_FOR_FEES_LAMPORTS: "-1" } },
+    { name: "a SOL minimum in SOL, not lamports", env: { MIN_SOL_FOR_FEES_LAMPORTS: "0.005" } },
+    { name: "a blank priority fee cap", env: { MAX_PRIORITY_FEE_MICROLAMPORTS: "" } },
     {
       name: "a fee wallet that isn't a Solana address",
-      env: { FEE_WALLET: "0x52908400098527886E0F7030069857D2E4169EE7" },
+      env: { FEE_WALLET_ADDRESS: "0x52908400098527886E0F7030069857D2E4169EE7" },
     },
   ];
 

@@ -6,6 +6,19 @@ export {
   type NewCandle,
 } from "./candles";
 export { citext } from "./columns";
+export {
+  INTENT_KINDS,
+  INTENT_STATUSES,
+  type IntentKind,
+  type IntentStatus,
+  type NewSwapIntent,
+  SWAP_PROVIDERS,
+  SWAP_SIDES,
+  type SwapIntent,
+  type SwapProviderName,
+  type SwapSide,
+  swapIntents,
+} from "./swap-intents";
 export { type NewTokenPrice, type TokenPrice, tokenPrices } from "./token-prices";
 export {
   type NewToken,

@@ -8,6 +8,10 @@ const unsetIfEmpty = z
   .optional()
   .transform((value) => (value === "" ? undefined : value));
 
+// A whole number setting. Blank is an error, not 0, so nobody switches a limit off by accident.
+const wholeNumber = (fallback: string) =>
+  z.string().regex(/^\d+$/, { error: "must be a whole number" }).default(fallback);
+
 // Browsers send the Origin header in exactly this form, so any other spelling would never match.
 function isOrigin(value: string): boolean {
   if (!URL.canParse(value)) {
@@ -52,23 +56,24 @@ const apiEnvSchema = z
     FEES_ENABLED: unsetIfEmpty
       .pipe(z.enum(["true", "false"]).default("false"))
       .transform((value) => value === "true"),
-    // The platform fee in basis points: 10 is 0.1%. A whole number from 0 to 100; blank is an error,
-    // not 0, so nobody turns the fee off by accident.
-    PLATFORM_FEE_BPS: z
-      .string()
-      .regex(/^\d+$/, { error: "must be a whole number" })
-      .default("10")
-      .transform(Number)
-      .pipe(z.number().max(100)),
+    // The platform fee in basis points: 10 is 0.1%. From 0 to 100.
+    PLATFORM_FEE_BPS: wholeNumber("10").transform(Number).pipe(z.number().max(100)),
     // The receive-only wallet fees go to; its key is never on a server. Needed when fees are on.
-    FEE_WALLET: unsetIfEmpty.pipe(
+    FEE_WALLET_ADDRESS: unsetIfEmpty.pipe(
       z.string().refine(isSolanaAddress, { error: "must be a Solana address" }).optional(),
     ),
+    // The most one trade may be worth, in whole dollars: $5,000 during the beta.
+    MAX_TRADE_USD: wholeNumber("5000").transform(Number).pipe(z.number().min(1).max(1_000_000)),
+    // The SOL a wallet must hold to trade, for network fees: 0.005 SOL.
+    MIN_SOL_FOR_FEES_LAMPORTS: wholeNumber("5000000").transform(BigInt),
+    // The highest priority fee a trade offers, per compute unit. Busy pools ran up to 1,000,000 in
+    // the P3 spike (ADR 0019), with rare spikes far above; at the cap a large swap pays ~0.0003 SOL.
+    MAX_PRIORITY_FEE_MICROLAMPORTS: wholeNumber("1000000").transform(BigInt),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
   })
-  .refine((env) => !env.FEES_ENABLED || env.FEE_WALLET !== undefined, {
-    path: ["FEE_WALLET"],
+  .refine((env) => !env.FEES_ENABLED || env.FEE_WALLET_ADDRESS !== undefined, {
+    path: ["FEE_WALLET_ADDRESS"],
     error: "is needed when FEES_ENABLED is true",
   });
 
