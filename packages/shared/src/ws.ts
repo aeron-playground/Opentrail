@@ -6,6 +6,8 @@
 // live updates never loads zod.
 import * as z from "zod/mini";
 
+import { SWAP_FAILURE_REASONS } from "./swaps";
+
 export { WS_PATH } from "./constants";
 
 /** Every server message carries it as `v`, so a client can tell a newer format apart. */
@@ -75,6 +77,17 @@ export const WsServerMessageSchema = z.discriminatedUnion("type", [
   // The access token this connection signed in with has expired: personal events stop until the
   // client sends a fresh token with "auth". The connection and its public channels stay open.
   z.looseObject({ v, type: z.literal("auth.expired") }),
+  // A trade you submitted moved on. On "failed", reason says why; on "failed" and "expired",
+  // message says it in plain words. Sent on the `me` channel.
+  z.looseObject({
+    v,
+    type: z.literal("swap.status"),
+    id: z.string(),
+    status: z.enum(["submitted", "confirmed", "failed", "expired"]),
+    signature: z.nullable(z.string()),
+    reason: z.nullable(z.enum(SWAP_FAILURE_REASONS)),
+    message: z.nullable(z.string()),
+  }),
   // The tokens whose price changed. Numbers are decimal strings, so no digit is lost:
   // priceUsd in dollars per whole token, change24hPct in percent (null when unknown).
   z.looseObject({

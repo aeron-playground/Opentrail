@@ -36,7 +36,7 @@ Send these two messages once the connection is open:
 
 | Channel  | What it sends                                  | Needs `auth` |
 | -------- | ---------------------------------------------- | ------------ |
-| `me`     | Events about you, like `balance.changed`       | Yes          |
+| `me`     | Events about you, like `balance.changed` and `swap.status` | Yes          |
 | `prices` | Live prices of the tradable tokens, as `price` | No           |
 
 To follow prices only, you don't need to sign in: subscribe to `prices` right away.
@@ -54,6 +54,7 @@ Every server message has `"v": 1`, the protocol version, and a `type`.
 | `subscribed`      | `channel`         | The subscription works                                                |
 | `balance.changed` | none              | Your balances changed. Read them again with [Get your balances](/developers/api/account/get-me-balances) |
 | `auth.expired`    | none              | Your access token expired. Send `auth` with a fresh one to get events about you again |
+| `swap.status`     | `id`, `status`, `signature`, `reason`, `message` | A trade you submitted moved on: see [Trade status](#trade-status) |
 | `price`           | `items`           | Tokens whose price changed since the last `price` message, at most one message every 5 seconds |
 | `error`           | `code`, `message` | A message of yours failed. The connection stays open, unless noted below |
 
@@ -86,6 +87,41 @@ Error codes are the same as the HTTP API's, so check `code`, never `message`:
 | `WALLET_NOT_READY`     | Your wallet is still being created. Send `auth` again in a moment      |
 | `TOO_MANY_CONNECTIONS` | Your account already has 5 live connections. The server closes this one |
 | `INTERNAL`             | Something went wrong on our side. Try again                           |
+
+## Trade status
+
+After you submit a signed trade, `swap.status` follows it on the `me` channel. `id` is the quote's
+id, and `signature` is the transaction's signature on Solana.
+
+| `status`    | What it means                                                        |
+| ----------- | -------------------------------------------------------------------- |
+| `submitted` | Sent to the network; waiting for it to land                          |
+| `confirmed` | Landed: the trade is done                                            |
+| `failed`    | Landed, but the swap failed. `reason` says why, `message` in words   |
+| `expired`   | Never landed before its blockhash ran out. Nothing was spent         |
+
+A status only moves forward, so a later message never goes back to an earlier status.
+
+| `reason`           | `message`                                                                      |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `slippage`         | The price moved more than your slippage limit. Only the network fee was used.  |
+| `insufficient_sol` | Not enough SOL for network fees.                                               |
+| `frozen`           | This token is frozen for your wallet by its issuer.                            |
+| `unknown`          | The trade failed. Only the network fee was used.                               |
+
+```json
+{
+  "v": 1,
+  "type": "swap.status",
+  "id": "0192b6f0-7c1e-7a3b-9d7e-3f5c1a2b4d6e",
+  "status": "failed",
+  "signature": "<the transaction signature>",
+  "reason": "slippage",
+  "message": "The price moved more than your slippage limit. Only the network fee was used."
+}
+```
+
+Reasons may be added later: show `message` for a reason you don't know.
 
 ## Staying connected
 

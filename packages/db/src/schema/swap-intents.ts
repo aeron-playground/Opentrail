@@ -1,4 +1,6 @@
 // Writer: api. The indexer may also set a swap `confirmed`, since status only moves forward.
+
+import { SWAP_STATUSES } from "@repo/shared";
 import { sql } from "drizzle-orm";
 import {
   bigint,
@@ -20,8 +22,8 @@ export type IntentKind = (typeof INTENT_KINDS)[number];
 export const SWAP_SIDES = ["buy", "sell"] as const;
 export type SwapSide = (typeof SWAP_SIDES)[number];
 
-// built → submitted → confirmed | failed | expired, and never backwards.
-export const INTENT_STATUSES = ["built", "submitted", "confirmed", "failed", "expired"] as const;
+// built → submitted → confirmed | failed | expired, and never backwards: the same for every app.
+export const INTENT_STATUSES = SWAP_STATUSES;
 export type IntentStatus = (typeof INTENT_STATUSES)[number];
 
 export const SWAP_PROVIDERS = ["jupiter", "titan", "internal"] as const;
