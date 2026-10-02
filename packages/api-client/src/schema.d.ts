@@ -486,6 +486,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/swaps/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote a trade
+         * @description Checks the trade, finds a route, and builds one transaction with the swap and the platform fee, simulated before it's returned. Nothing is signed or sent: sign the transaction in your wallet before `expiresAt`. Ask again for a fresh price.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SwapQuoteRequest"];
+                };
+            };
+            responses: {
+                /** @description The quote and the transaction to sign. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SwapQuote"];
+                    };
+                };
+                /** @description `VALIDATION_FAILED`, `TOKEN_NOT_SUPPORTED`, `AMOUNT_TOO_SMALL`, `AMOUNT_TOO_LARGE`, `INSUFFICIENT_BALANCE`, `INSUFFICIENT_SOL_FOR_FEES`, `PRICE_IMPACT_TOO_HIGH` (send again with `acceptHighImpact`), or `TX_SIMULATION_FAILED`. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `UNAUTHORIZED`: the access token is missing, expired or not valid. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `WALLET_NOT_READY`: see GET /v1/me. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `QUOTE_UNAVAILABLE`: no route for this trade right now. */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description `QUOTE_BUSY`: getting a price took too long. Try again. */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -774,6 +862,107 @@ export interface components {
              * @example 26262.57
              */
             volumeUsd: string;
+        };
+        SwapQuote: {
+            /**
+             * Format: uuid
+             * @description The intent to submit the signed transaction to.
+             * @example 0192b6f0-7c1e-7a3b-9d7e-3f5c1a2b4d6e
+             */
+            id: string;
+            /** @enum {string} */
+            side: "buy" | "sell";
+            /** @description The token bought or sold. */
+            mint: string;
+            /** @description The token the swap spends. */
+            inputMint: string;
+            /** @description The token the swap brings. */
+            outputMint: string;
+            /**
+             * @description What you spend, as asked; for a buy, the fee included. In raw units, as a string so no digit is lost.
+             * @example 25000000
+             */
+            inAmountRaw: string;
+            /**
+             * @description What the swap expects to bring. On a sell, the fee comes out of it after the swap. In raw units, as a string so no digit is lost.
+             * @example 79230250
+             */
+            expectedOutRaw: string;
+            /**
+             * @description The least the swap may bring before it fails, after slippage. On a sell, the fee comes out of it after the swap. In raw units, as a string so no digit is lost.
+             * @example 78834099
+             */
+            minOutRaw: string;
+            /**
+             * @description The platform fee rate; 0 with fees off.
+             * @example 10
+             */
+            feeBps: number;
+            /**
+             * @description The platform fee, in micro-USDC. In raw units, as a string so no digit is lost.
+             * @example 25000
+             */
+            feeUsdcMicro: string;
+            /** @example 50 */
+            slippageBps: number;
+            /**
+             * @description How much this trade moves the price, rounded up. Show a warning from 100.
+             * @example 3
+             */
+            priceImpactBps: number;
+            /**
+             * @description The venues the swap goes through.
+             * @example GoonFi V2 → PancakeSwap → Raydium CLMM
+             */
+            routeLabel: string;
+            /**
+             * @description The swap provider's own fee; 0 when it takes none. Show it as its own line above 0.
+             * @example 0
+             */
+            providerFeeBps: number;
+            /**
+             * @description The most the network can take: the signature fee plus the priority fee. In raw units, as a string so no digit is lost.
+             * @example 58095
+             */
+            networkFeeLamports: string;
+            /** @description The unsigned transaction, base64. Sign it in the wallet and submit it unchanged. */
+            transaction: string;
+            /**
+             * Format: date-time
+             * @description When this quote stops being accepted: 45 seconds after it was made.
+             * @example 2026-10-02T09:00:45.000Z
+             */
+            expiresAt: string;
+        };
+        SwapQuoteRequest: {
+            /**
+             * @description `buy` spends USDC on the token; `sell` sells the token for USDC.
+             * @example buy
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /**
+             * @description The token to buy or sell. USDC is always the other side.
+             * @example JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+             */
+            mint: string;
+            /**
+             * @description A buy: the micro-USDC to spend, the fee included ("25000000" is $25). A sell: the token's raw units to sell.
+             * @example 25000000
+             */
+            amountRaw: string;
+            /**
+             * @description How far the price may move before the trade fails, in basis points (50 is 0.5%). From 10 to 300.
+             * @default 50
+             * @example 50
+             */
+            slippageBps: number;
+            /**
+             * @description Send true to go ahead after a `PRICE_IMPACT_TOO_HIGH` refusal (impact of 5% or more).
+             * @default false
+             * @example false
+             */
+            acceptHighImpact: boolean;
         };
     };
     responses: never;
