@@ -228,7 +228,7 @@ export function createSwapService({
       ]);
       const computeUnitLimit = unitLimit(simulation);
       const priorityMicroLamports = minBigint(
-        median(recentFees),
+        paidMedian(recentFees),
         limits.maxPriorityFeeMicroLamports,
       );
       const built = await buildSwapTransaction({
@@ -329,13 +329,12 @@ function writableAccounts(swap: Instruction): string[] {
     .slice(0, MAX_PRIORITY_FEE_ACCOUNTS);
 }
 
-// The middle value (the lower one of an even count); 0 when there are none.
-function median(values: readonly bigint[]): bigint {
-  if (values.length === 0) {
-    return 0n;
-  }
-  const sorted = [...values].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-  return sorted[Math.floor((sorted.length - 1) / 2)] ?? 0n;
+// What other transactions paid to get in: the middle of the slots where anyone paid (the lower
+// one of an even count). A slot shows 0 when nobody wrote to these accounts then, which says
+// nothing about the price, and on mainnet most slots do (118 of 150 for a real swap's accounts).
+function paidMedian(values: readonly bigint[]): bigint {
+  const paid = values.filter((fee) => fee > 0n).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return paid[Math.floor((paid.length - 1) / 2)] ?? 0n;
 }
 
 const minBigint = (a: bigint, b: bigint) => (a < b ? a : b);

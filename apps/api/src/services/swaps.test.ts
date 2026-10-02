@@ -270,9 +270,12 @@ describe("quote: the transaction's compute budget", () => {
   });
 
   test.each([
-    ["the median of recent fees", [0n, 100n, 300_000n, 2_000_000n, 50n], 100n],
+    ["the middle of what was paid", [0n, 100n, 300_000n, 2_000_000n, 50n], 100n],
     ["the lower middle of an even count", [10n, 20n, 30n, 40n], 20n],
-    ["none when nobody paid", [], 0n],
+    // As on mainnet: most slots show 0 because nobody wrote to these accounts then.
+    ["what was paid, not the quiet slots", [0n, 0n, 0n, 0n, 20_003n], 20_003n],
+    ["none when nobody paid", [0n, 0n, 0n], 0n],
+    ["none when there are no recent slots", [], 0n],
     ["the cap when the median is above it", [5_000_000n, 6_000_000n, 7_000_000n], 1_000_000n],
   ])("offers %s as the priority fee", async (_, recent, expected) => {
     solana.setPriorityFees(recent);
