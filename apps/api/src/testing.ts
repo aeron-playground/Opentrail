@@ -24,6 +24,7 @@ export function testAppDeps(overrides: Partial<AppDeps> = {}): AppDeps {
       detail: () => Promise.reject(new Error("This test has no token service")),
       candles: () => Promise.reject(new Error("This test has no token service")),
     },
+    swaps: { quote: () => Promise.reject(new Error("This test has no swap service")) },
     ...overrides,
   };
 }
