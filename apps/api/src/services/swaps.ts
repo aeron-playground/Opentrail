@@ -13,7 +13,7 @@ import {
 } from "@repo/solana";
 import { AccountRole, address, type Instruction } from "@solana/kit";
 import { eq } from "drizzle-orm";
-import type { BlockhashLifetime, Simulation, SolanaReader } from "../providers/solana/types";
+import type { Simulation, SolanaReader } from "../providers/solana/types";
 import { type SwapProvider, SwapProviderError, type SwapRoute } from "../providers/swap/types";
 import { buyFee, type FeeSettings, sellFee } from "./fees";
 import type { PriceReader } from "./prices";
@@ -105,7 +105,7 @@ export function createSwapService({
       throw new AppError("TOKEN_NOT_SUPPORTED");
     }
     const [token] = await db.select().from(tokens).where(eq(tokens.mint, mint));
-    if (!token || !token.isListed || token.safetyLevel === "high_risk") {
+    if (!token?.isListed || token.safetyLevel === "high_risk") {
       throw new AppError("TOKEN_NOT_SUPPORTED");
     }
     return token;
@@ -340,6 +340,3 @@ function median(values: readonly bigint[]): bigint {
 
 const minBigint = (a: bigint, b: bigint) => (a < b ? a : b);
 const ceilDiv = (a: bigint, b: bigint) => (a + b - 1n) / b;
-
-// Re-exported for tests that build the same transaction.
-export type { BlockhashLifetime };
