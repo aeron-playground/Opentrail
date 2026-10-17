@@ -72,6 +72,9 @@ export const WsServerMessageSchema = z.discriminatedUnion("type", [
   z.looseObject({ v, type: z.literal("subscribed"), channel }),
   // No data: the client reads its balances again.
   z.looseObject({ v, type: z.literal("balance.changed") }),
+  // The access token this connection signed in with has expired: personal events stop until the
+  // client sends a fresh token with "auth". The connection and its public channels stay open.
+  z.looseObject({ v, type: z.literal("auth.expired") }),
   // The tokens whose price changed. Numbers are decimal strings, so no digit is lost:
   // priceUsd in dollars per whole token, change24hPct in percent (null when unknown).
   z.looseObject({

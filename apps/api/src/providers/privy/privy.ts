@@ -44,8 +44,9 @@ export function createPrivy({
   return {
     async verifyAccessToken(token) {
       try {
-        const { user_id } = await client.utils().auth().verifyAccessToken(token);
-        return user_id;
+        const { user_id, expiration } = await client.utils().auth().verifyAccessToken(token);
+        // Seconds since 1970, as in every JWT.
+        return { privyDid: user_id, expiresAt: new Date(expiration * 1000) };
       } catch (error) {
         if (error instanceof InvalidAuthTokenError) {
           return null;

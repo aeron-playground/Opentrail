@@ -55,6 +55,37 @@ describe("startLiveConnection", () => {
     ]);
   });
 
+  test("signs in again with a fresh token when the server says the old one expired", async () => {
+    let tokens = 0;
+    const { latest } = setup({
+      getToken: async () => {
+        tokens += 1;
+        return `token-${tokens}`;
+      },
+    });
+    latest().opened();
+    await settle();
+
+    latest().receive(JSON.stringify({ v: 1, type: "auth.expired" }));
+    await settle();
+
+    expect(latest().sent.at(-1)).toEqual({ type: "auth", token: "token-2" });
+  });
+
+  test("sends nothing after an expiry when nobody is signed in any more", async () => {
+    let signedIn = true;
+    const { latest } = setup({ getToken: async () => (signedIn ? "a-token" : null) });
+    latest().opened();
+    await settle();
+    const before = latest().sent.length;
+
+    signedIn = false;
+    latest().receive(JSON.stringify({ v: 1, type: "auth.expired" }));
+    await settle();
+
+    expect(latest().sent).toHaveLength(before);
+  });
+
   test("passes on the messages it knows, and skips the rest", () => {
     const { latest, received } = setup();
     const price: WsServerMessage = {

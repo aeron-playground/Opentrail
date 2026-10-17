@@ -55,12 +55,13 @@ function setup(overrides: Partial<HubDeps> = {}) {
     ...overrides,
   });
   let next = 0;
-  const person = () => {
-    const signedIn = privy.signIn();
+  // Signed in for an hour unless `expiresAt` says otherwise.
+  const person = (expiresAt?: Date) => {
+    const signedIn = privy.signIn(expiresAt ? { expiresAt } : {});
     next += 1;
     const userId = `user-${next}`;
     accounts.set(signedIn.privyDid, userId);
-    return { token: signedIn.token, userId };
+    return { token: signedIn.token, userId, privyDid: signedIn.privyDid };
   };
   // A connection signed in as `token` and subscribed to `me`.
   const subscribed = async (token: string) => {
@@ -70,8 +71,15 @@ function setup(overrides: Partial<HubDeps> = {}) {
     await hub.message(peer, json({ type: "subscribe", channel: "me" }));
     return peer;
   };
-  return { hub, person, subscribed, lines };
+  return { hub, privy, person, subscribed, lines };
 }
+
+const AUTH_EXPIRED: WsServerMessage = { v: 1, type: "auth.expired" };
+// Tokens in these tests expire this soon, and the tests wait twice as long.
+const SHORT_MS = 100;
+const soon = () => new Date(Date.now() + SHORT_MS);
+const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000);
+const afterExpiry = () => Bun.sleep(SHORT_MS * 2);
 
 describe("auth and subscribe", () => {
   test("a signed-in connection subscribes to me and gets its events", async () => {
@@ -392,5 +400,61 @@ describe("closeAll", () => {
     hub.closeAll();
 
     expect(peers.map((peer) => peer.closedWith?.code)).toEqual([1001, 1001]);
+  });
+});
+
+describe("token expiry", () => {
+  test("ends the sign-in when the token expires and says so, keeping the connection and public channels", async () => {
+    const { hub, person, subscribed } = setup();
+    const maya = person(soon());
+    const peer = await subscribed(maya.token);
+    await hub.message(peer, json({ type: "subscribe", channel: "prices" }));
+
+    await afterExpiry();
+
+    expect(peer.received.at(-1)).toEqual(AUTH_EXPIRED);
+    expect(hub.sendToUser(maya.userId, BALANCE_CHANGED)).toBe(0);
+    expect(hub.broadcast("prices", { v: 1, type: "price", items: [] })).toBe(1);
+    expect(peer.closedWith).toBeNull();
+  });
+
+  test("a fresh token before then keeps the sign-in", async () => {
+    const { hub, privy, person, subscribed } = setup();
+    const maya = person(soon());
+    const peer = await subscribed(maya.token);
+    await hub.message(
+      peer,
+      json({ type: "auth", token: privy.refresh(maya.privyDid, inAnHour()) }),
+    );
+
+    await afterExpiry();
+
+    expect(peer.received).not.toContainEqual(AUTH_EXPIRED);
+    expect(hub.sendToUser(maya.userId, BALANCE_CHANGED)).toBe(1);
+  });
+
+  test("a fresh token after it brings personal events back", async () => {
+    const { hub, privy, person, subscribed } = setup();
+    const maya = person(soon());
+    const peer = await subscribed(maya.token);
+    await afterExpiry();
+
+    await hub.message(
+      peer,
+      json({ type: "auth", token: privy.refresh(maya.privyDid, inAnHour()) }),
+    );
+
+    expect(hub.sendToUser(maya.userId, BALANCE_CHANGED)).toBe(1);
+  });
+
+  test("a connection closed before then hears nothing more", async () => {
+    const { hub, person, subscribed } = setup();
+    const maya = person(soon());
+    const peer = await subscribed(maya.token);
+    hub.close(peer);
+
+    await afterExpiry();
+
+    expect(peer.received).not.toContainEqual(AUTH_EXPIRED);
   });
 });

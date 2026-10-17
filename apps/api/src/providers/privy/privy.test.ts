@@ -58,9 +58,13 @@ describe("verifyAccessToken", () => {
   const privy = () =>
     createPrivy({ appId: APP_ID, appSecret: APP_SECRET, verificationKey: signer.pem });
 
-  test("gives the Privy user id for a valid token", async () => {
-    const token = await signer.sign(validClaims());
-    expect(await privy().verifyAccessToken(token)).toBe(PRIVY_DID);
+  test("gives the Privy user id and the token's expiry for a valid token", async () => {
+    const claims = validClaims();
+    const token = await signer.sign(claims);
+    expect(await privy().verifyAccessToken(token)).toEqual({
+      privyDid: PRIVY_DID,
+      expiresAt: new Date((claims.exp as number) * 1000),
+    });
   });
 
   const invalid: { name: string; token: () => Promise<string> }[] = [

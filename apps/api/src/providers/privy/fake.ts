@@ -11,13 +11,19 @@ export function fakeSolanaAddress(): string {
 export type FakePerson = {
   privyDid: string;
   token: string;
+  expiresAt: Date;
   // null until "Privy" creates the wallet.
   wallet: string | null;
 };
 
 export type FakePrivy = PrivyProvider & {
-  /** Signs a new person in. Pass `wallet: null` for someone whose wallet isn't created yet. */
-  signIn(options?: { wallet?: string | null }): FakePerson;
+  /**
+   * Signs a new person in. Pass `wallet: null` for someone whose wallet isn't created yet. The
+   * token lasts an hour unless `expiresAt` says otherwise; like Privy, it's refused once expired.
+   */
+  signIn(options?: { wallet?: string | null; expiresAt?: Date }): FakePerson;
+  /** A fresh token for someone already signed in, as when the app refreshes it. */
+  refresh(privyDid: string, expiresAt: Date): string;
   /** Sets or clears a person's wallet, as Privy would once it creates one. */
   setWallet(privyDid: string, wallet: string | null): void;
   /** How many times the API asked for a wallet. */
@@ -27,14 +33,15 @@ export type FakePrivy = PrivyProvider & {
 };
 
 export function createFakePrivy(): FakePrivy {
-  const didByToken = new Map<string, string>();
+  const tokens = new Map<string, { privyDid: string; expiresAt: Date }>();
   const walletByDid = new Map<string, string | null>();
   let walletReads = 0;
   let walletError: Error | null = null;
 
   return {
     async verifyAccessToken(token) {
-      return didByToken.get(token) ?? null;
+      const verified = tokens.get(token);
+      return verified && verified.expiresAt.getTime() > Date.now() ? verified : null;
     },
 
     async getSolanaWallet(privyDid) {
@@ -48,15 +55,25 @@ export function createFakePrivy(): FakePrivy {
       return walletByDid.get(privyDid) ?? null;
     },
 
-    signIn({ wallet = fakeSolanaAddress() } = {}) {
+    signIn({
+      wallet = fakeSolanaAddress(),
+      expiresAt = new Date(Date.now() + 60 * 60 * 1000),
+    } = {}) {
       const person = {
         privyDid: `did:privy:${crypto.randomUUID()}`,
         token: `fake-token-${crypto.randomUUID()}`,
+        expiresAt,
         wallet,
       };
-      didByToken.set(person.token, person.privyDid);
+      tokens.set(person.token, { privyDid: person.privyDid, expiresAt });
       walletByDid.set(person.privyDid, wallet);
       return person;
+    },
+
+    refresh(privyDid, expiresAt) {
+      const token = `fake-token-${crypto.randomUUID()}`;
+      tokens.set(token, { privyDid, expiresAt });
+      return token;
     },
 
     setWallet(privyDid, wallet) {

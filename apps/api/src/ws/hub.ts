@@ -59,10 +59,14 @@ type Connection = {
   // waits for the auth to finish.
   queue: Promise<void>;
   authTimer: ReturnType<typeof setTimeout>;
+  // Ends the sign-in when the token expires; null while signed out.
+  expiryTimer: ReturnType<typeof setTimeout> | null;
 };
 
 // 1001: the standard "going away", which tells clients to reconnect.
 const GOING_AWAY = 1001;
+// setTimeout runs at once for anything longer (about 24.8 days), so a longer wait is cut to it.
+const MAX_TIMER_MS = 2 ** 31 - 1;
 
 export function createHub({
   privy,
@@ -96,15 +100,31 @@ export function createHub({
     }
   }
 
+  // The sign-in lasts as long as the token. When it runs out, personal events stop until the
+  // client sends a fresh token; the connection and its public channels stay.
+  function endSignInAt(peer: Peer, connection: Connection, expiresAt: Date) {
+    if (connection.expiryTimer !== null) {
+      clearTimeout(connection.expiryTimer);
+    }
+    const wait = Math.min(Math.max(expiresAt.getTime() - Date.now(), 0), MAX_TIMER_MS);
+    connection.expiryTimer = setTimeout(() => {
+      connection.expiryTimer = null;
+      if (connections.get(peer) === connection && connection.userId !== null) {
+        setUser(peer, connection, null);
+        send(peer, { v: WS_PROTOCOL_VERSION, type: "auth.expired" });
+      }
+    }, wait);
+  }
+
   async function authenticate(peer: Peer, connection: Connection, token: string) {
-    const privyDid = await privy.verifyAccessToken(token);
-    if (privyDid === null) {
+    const verified = await privy.verifyAccessToken(token);
+    if (verified === null) {
       sendError(peer, "UNAUTHORIZED");
       return;
     }
     let userId: string;
     try {
-      userId = await userIdFor(privyDid);
+      userId = await userIdFor(verified.privyDid);
     } catch (error) {
       if (error instanceof AppError) {
         sendError(peer, error.code);
@@ -116,7 +136,9 @@ export function createHub({
     if (connections.get(peer) !== connection) {
       return;
     }
+    // The same person with a refreshed token: only the clock moves.
     if (userId === connection.userId) {
+      endSignInAt(peer, connection, verified.expiresAt);
       return;
     }
     if ((peersByUser.get(userId)?.size ?? 0) >= WS_MAX_CONNECTIONS_PER_USER) {
@@ -125,6 +147,7 @@ export function createHub({
       return;
     }
     setUser(peer, connection, userId);
+    endSignInAt(peer, connection, verified.expiresAt);
   }
 
   async function handle(peer: Peer, text: string) {
@@ -161,6 +184,7 @@ export function createHub({
             peer.close(WS_CLOSE_CODES.IDLE, "No auth or subscription in time");
           }
         }, authWindowMs),
+        expiryTimer: null,
       };
       connections.set(peer, connection);
     },
@@ -192,6 +216,9 @@ export function createHub({
         return;
       }
       clearTimeout(connection.authTimer);
+      if (connection.expiryTimer !== null) {
+        clearTimeout(connection.expiryTimer);
+      }
       setUser(peer, connection, null);
       connections.delete(peer);
     },

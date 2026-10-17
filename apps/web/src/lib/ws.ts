@@ -96,6 +96,16 @@ export function startLiveConnection({
       if (message.type === "subscribed") {
         failures = 0;
       }
+      if (message.type === "auth.expired") {
+        // The sign-in lasts as long as the token: sign in again with a fresh one.
+        void getToken()
+          .catch(() => null)
+          .then((token) => {
+            if (token !== null && !stopped && socket === current) {
+              send({ type: "auth", token });
+            }
+          });
+      }
       onMessage(message);
     });
 
