@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@repo/solana": "workspace:*",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
-    "@types/bun": "1.4.2"
+    "@types/bun": "1.4.3"
   }
 }
