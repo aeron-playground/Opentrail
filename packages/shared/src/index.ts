@@ -10,6 +10,14 @@ export {
 } from "./constants";
 export { ERROR_CODES, ERRORS, type ErrorCode } from "./errors";
 export {
+  SWAP_EXPIRED_MESSAGE,
+  SWAP_FAILURE_MESSAGES,
+  SWAP_FAILURE_REASONS,
+  SWAP_STATUSES,
+  type SwapFailureReason,
+  type SwapStatus,
+} from "./swaps";
+export {
   normalizeUsername,
   type RandomInt,
   RESERVED_USERNAMES,

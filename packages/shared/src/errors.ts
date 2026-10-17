@@ -25,6 +25,8 @@ export const ERRORS = {
     status: 429,
     message: `You can change your username once every ${USERNAME_CHANGE_DAYS} days.`,
   },
+  // Too many requests from one person in a short time. The answer carries Retry-After.
+  RATE_LIMITED: { status: 429, message: "Too many requests. Try again in a few seconds." },
   // Trading. The app shows the token's name and the current limits around these messages.
   // Not listed, or marked high risk.
   TOKEN_NOT_SUPPORTED: { status: 400, message: "This token isn't available to trade." },
@@ -49,6 +51,14 @@ export const ERRORS = {
   TX_SIMULATION_FAILED: {
     status: 400,
     message: "This trade would fail right now, so nothing was sent.",
+  },
+  // The quote's time to sign ran out, so its transaction may no longer land. Ask for a new one.
+  QUOTE_EXPIRED: { status: 409, message: "This price expired. Review the new price." },
+  // The signed transaction isn't exactly the one built for the quote, or its signature doesn't
+  // check out, so it wasn't sent.
+  TX_TAMPERED: {
+    status: 400,
+    message: "This transaction changed after we built it, so we didn't send it.",
   },
   INTERNAL: { status: 500, message: "Something went wrong on our side. Try again." },
 } as const satisfies Record<string, { status: number; message: string }>;

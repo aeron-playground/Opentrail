@@ -1,8 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import { USDC } from "@repo/solana";
-import { address, type Blockhash, getAddressDecoder, type RpcTransport } from "@solana/kit";
-import { createSolanaReader } from "./rpc";
+import {
+  address,
+  type Blockhash,
+  getAddressDecoder,
+  getBase58Decoder,
+  type RpcTransport,
+} from "@solana/kit";
+import { createSolanaReader, createSolanaSender } from "./rpc";
 
 // A made-up owner: 32 fixed bytes, so a valid address that belongs to nobody we know.
 const OWNER = getAddressDecoder().decode(new Uint8Array(32).fill(7));
@@ -230,6 +236,83 @@ describe("getRecentPriorityFees", () => {
     const { reader, payloads } = fakeServer({ result: [] });
     await expect(reader.getRecentPriorityFees(Array(129).fill(OWNER))).rejects.toThrow(RangeError);
     expect(payloads).toHaveLength(0);
+  });
+});
+
+describe("createSolanaSender", () => {
+  // Answers like a Solana server would, and keeps the requests.
+  function fakeSenderServer(answer: {
+    result?: unknown;
+    error?: { code: number; message: string };
+  }) {
+    const payloads: Payload[] = [];
+    const transport = (async ({ payload }: { payload: unknown }) => {
+      payloads.push(payload as Payload);
+      return { jsonrpc: "2.0", id: (payload as { id: unknown }).id, ...answer };
+    }) as RpcTransport;
+    return { sender: createSolanaSender({ transport }), payloads };
+  }
+  // 64 fixed bytes: a signature in the right shape that names no real transaction.
+  const SIGNATURE = getBase58Decoder().decode(new Uint8Array(64).fill(9));
+
+  test("sends once, without the node's trial run or its own re-sending", async () => {
+    const { sender, payloads } = fakeSenderServer({ result: SIGNATURE });
+    expect(await sender.sendTransaction("AQID")).toBe(SIGNATURE);
+    expect(payloads[0]).toMatchObject({
+      method: "sendTransaction",
+      params: ["AQID", { encoding: "base64", skipPreflight: true, maxRetries: 0n }],
+    });
+  });
+
+  test("passes a refused send on", async () => {
+    const { sender } = fakeSenderServer({
+      error: { code: -32002, message: "Blockhash not found" },
+    });
+    await expect(sender.sendTransaction("AQID")).rejects.toThrow();
+  });
+
+  test.each<[string, unknown, unknown]>([
+    [
+      "a confirmed transaction",
+      {
+        confirmationStatus: "confirmed",
+        err: null,
+        slot: 1,
+        confirmations: 3,
+        status: { Ok: null },
+      },
+      { confirmationStatus: "confirmed", error: null },
+    ],
+    [
+      "a failed one, with Solana's error",
+      {
+        confirmationStatus: "confirmed",
+        err: { InstructionError: [2, { Custom: 6001 }] },
+        slot: 1,
+        confirmations: 3,
+        status: { Err: {} },
+      },
+      { confirmationStatus: "confirmed", error: { InstructionError: [2n, { Custom: 6001n }] } },
+    ],
+    ["one no node has seen", null, null],
+  ])("reads the status of %s, among recent transactions", async (_, status, expected) => {
+    const { sender, payloads } = fakeSenderServer({
+      result: { context: { slot: 1 }, value: [status] },
+    });
+    expect<unknown>(await sender.getSignatureStatus(SIGNATURE)).toEqual(expected);
+    expect(payloads[0]).toMatchObject({
+      method: "getSignatureStatuses",
+      params: [[SIGNATURE], { searchTransactionHistory: false }],
+    });
+  });
+
+  test("reads the block height at 'confirmed'", async () => {
+    const { sender, payloads } = fakeSenderServer({ result: 300_000_123 });
+    expect(await sender.getBlockHeight()).toBe(300_000_123n);
+    expect(payloads[0]).toMatchObject({
+      method: "getBlockHeight",
+      params: [{ commitment: "confirmed" }],
+    });
   });
 });
 

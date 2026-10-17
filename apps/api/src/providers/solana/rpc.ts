@@ -5,9 +5,16 @@ import {
   createSolanaRpcFromTransport,
   fetchAddressesForLookupTables,
   type RpcTransport,
+  signature,
 } from "@solana/kit";
 import { z } from "zod";
-import type { Simulation, SolanaReader, TokenAccount } from "./types";
+import type {
+  SignatureStatus,
+  Simulation,
+  SolanaReader,
+  SolanaSender,
+  TokenAccount,
+} from "./types";
 
 // Funds count once a supermajority of the network has voted on them, as the UI shows.
 const COMMITMENT = "confirmed";
@@ -53,11 +60,48 @@ export type SolanaReaderOptions =
   // Tests answer in place of a Solana server.
   | { transport: RpcTransport };
 
+const rpcFor = (options: SolanaReaderOptions) =>
+  "url" in options ? createSolanaRpc(options.url) : createSolanaRpcFromTransport(options.transport);
+
+const SignatureStatusSchema = z
+  .object({
+    confirmationStatus: z.enum(["processed", "confirmed", "finalized"]).nullable(),
+    err: z.unknown(),
+  })
+  .nullable();
+
+export function createSolanaSender(options: SolanaReaderOptions): SolanaSender {
+  const rpc = rpcFor(options);
+  return {
+    async sendTransaction(base64) {
+      return rpc
+        .sendTransaction(base64 as Base64EncodedWireTransaction, {
+          encoding: "base64",
+          skipPreflight: true,
+          maxRetries: 0n,
+        })
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+    },
+
+    async getSignatureStatus(sig): Promise<SignatureStatus | null> {
+      const { value } = await rpc
+        // Recent transactions only: the sender follows a trade for about a minute and a half.
+        .getSignatureStatuses([signature(sig)], { searchTransactionHistory: false })
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+      const status = SignatureStatusSchema.parse(value[0] ?? null);
+      return status && { confirmationStatus: status.confirmationStatus, error: status.err ?? null };
+    },
+
+    async getBlockHeight() {
+      return rpc
+        .getBlockHeight({ commitment: COMMITMENT })
+        .send({ abortSignal: AbortSignal.timeout(TIMEOUT_MS) });
+    },
+  };
+}
+
 export function createSolanaReader(options: SolanaReaderOptions): SolanaReader {
-  const rpc =
-    "url" in options
-      ? createSolanaRpc(options.url)
-      : createSolanaRpcFromTransport(options.transport);
+  const rpc = rpcFor(options);
   return {
     async getSolBalance(owner) {
       const { value } = await rpc

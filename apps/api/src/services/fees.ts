@@ -1,5 +1,6 @@
 // The platform fee (ADR 0005): an optional USDC fee inside each trade, off until the legal review.
 // A buy pays it before the swap, a sell after; this module only says how much and where to.
+import { BPS_PER_WHOLE } from "@repo/shared";
 import { associatedTokenAddress, USDC } from "@repo/solana";
 import type { Address } from "@solana/kit";
 import type { SolanaReader } from "../providers/solana/types";
@@ -7,8 +8,6 @@ import type { SolanaReader } from "../providers/solana/types";
 export type FeeSettings =
   | { enabled: false }
   | { enabled: true; bps: number; wallet: string; usdcAccount: Address };
-
-const WHOLE = 10_000;
 
 /** Fee settings from the env. With fees on, also the account the fee wallet keeps its USDC in. */
 export async function feeSettings(env: {
@@ -39,10 +38,10 @@ export function feeOn(baseMicro: bigint, bps: number): bigint {
   if (baseMicro < 0n) {
     throw new RangeError("A fee is charged on zero or more.");
   }
-  if (!Number.isInteger(bps) || bps < 0 || bps > WHOLE) {
+  if (!Number.isInteger(bps) || bps < 0 || bps > Number(BPS_PER_WHOLE)) {
     throw new RangeError("A fee rate is a whole number of basis points from 0 to 10,000.");
   }
-  return (baseMicro * BigInt(bps)) / BigInt(WHOLE);
+  return (baseMicro * BigInt(bps)) / BPS_PER_WHOLE;
 }
 
 /** A buy pays its fee off the top of the USDC it spends, and swaps the rest. */

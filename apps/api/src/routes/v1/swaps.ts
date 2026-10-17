@@ -3,6 +3,7 @@ import { isSolanaAddress } from "@repo/solana";
 import { ErrorBodySchema } from "../../lib/errors";
 import { createRouter } from "../../lib/router";
 import { type AuthEnv, BEARER_AUTH, requireAuth } from "../../middleware/auth";
+import { limitPerUser } from "../../middleware/rate-limit";
 import type { PrivyProvider } from "../../providers/privy/types";
 import { HIGH_IMPACT_BPS, QUOTE_TTL_MS, type Quote, type SwapService } from "../../services/swaps";
 import type { UserService } from "../../services/users";
@@ -112,6 +113,20 @@ const QuoteSchema = z
 
 const errorContent = { "application/json": { schema: ErrorBodySchema } };
 
+// Per person (spec 9.6): each quote asks Jupiter and Solana several times.
+export const QUOTES_PER_MINUTE = 30;
+
+const rateLimited = (perMinute: number) => ({
+  description: `\`RATE_LIMITED\`: more than ${perMinute} in a minute. Try again after \`Retry-After\` seconds.`,
+  headers: z.object({
+    "Retry-After": z.string().openapi({
+      description: "Seconds until the next one is allowed.",
+      example: "20",
+    }),
+  }),
+  content: errorContent,
+});
+
 const quoteRoute = createRoute({
   method: "post",
   path: "/swaps/quote",
@@ -142,6 +157,7 @@ const quoteRoute = createRoute({
       content: errorContent,
     },
     409: { description: "`WALLET_NOT_READY`: see GET /v1/me.", content: errorContent },
+    429: rateLimited(QUOTES_PER_MINUTE),
     502: {
       description: "`QUOTE_UNAVAILABLE`: no route for this trade right now.",
       content: errorContent,
@@ -172,6 +188,7 @@ export function swapRoutes({ privy, users, swaps }: SwapDeps) {
 
   const router = createRouter<AuthEnv>();
   router.use("/swaps/*", requireAuth(privy));
+  router.use(quoteRoute.path, limitPerUser({ limit: QUOTES_PER_MINUTE, windowMs: 60_000 }));
   return router.openapi(quoteRoute, async (c) => {
     const body = c.req.valid("json");
     // The wallet comes from the account, which got it from Privy: never from the request.
