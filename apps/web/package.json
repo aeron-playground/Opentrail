@@ -35,7 +35,7 @@
     "tailwind-merge": "3.7.0"
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "20.14.5",
+    "@happy-dom/global-registrator": "21.0.3",
     "@repo/tsconfig": "workspace:*",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/router-plugin": "1.168.46",
