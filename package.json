@@ -26,11 +26,11 @@
     "openapi": "bun run --cwd apps/api openapi && bun run --cwd packages/api-client generate"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
-    "@commitlint/cli": "21.2.3",
-    "@commitlint/config-conventional": "21.2.3",
+    "@biomejs/biome": "2.6.2",
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "lefthook": "2.2.2",
-    "turbo": "2.11.8",
+    "turbo": "2.11.10",
     "typescript": "6.0.3"
   },
   "overrides": {

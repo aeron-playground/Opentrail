@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "1.6.3",
-    "@privy-io/node": "0.35.0",
+    "@privy-io/node": "0.36.0",
     "@repo/db": "workspace:*",
     "@repo/pnl": "workspace:*",
     "@repo/server": "workspace:*",
@@ -27,6 +27,6 @@
   "devDependencies": {
     "@repo/api-client": "workspace:*",
     "@repo/tsconfig": "workspace:*",
-    "@types/bun": "1.4.3"
+    "@types/bun": "1.4.4"
   }
 }
