@@ -13,20 +13,20 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "1.6.3",
-    "@privy-io/node": "0.35.0",
+    "@privy-io/node": "0.37.0",
     "@repo/db": "workspace:*",
     "@repo/pnl": "workspace:*",
     "@repo/server": "workspace:*",
     "@repo/shared": "workspace:*",
     "@repo/solana": "workspace:*",
-    "@solana/kit": "8.5.0",
+    "@solana/kit": "8.6.0",
     "drizzle-orm": "0.45.4",
-    "hono": "4.13.13",
+    "hono": "4.13.14",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@repo/api-client": "workspace:*",
     "@repo/tsconfig": "workspace:*",
-    "@types/bun": "1.4.3"
+    "@types/bun": "1.4.4"
   }
 }
