@@ -19,7 +19,7 @@ jobs:
     steps:
       # The release pull request is opened with the project bot's token, because pull requests
       # opened with GITHUB_TOKEN don't start CI, and the required checks would never report.
-      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+      - uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         id: bot
         with:
           client-id: ${{ vars.BOT_CLIENT_ID }}
